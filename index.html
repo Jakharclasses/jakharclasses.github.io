@@ -982,7 +982,7 @@ function profile(){
   ${R({c:"#1457d9",i:"📞",t:"Contact Us",s:"YouTube · Telegram · Email",on:"contact()"})}</div></main>`,"prof",false,home);
   const b=document.getElementById("rst");
   b.onclick=()=>{if(!b.dataset.s){b.dataset.s=1;b.textContent="पक्का? सारा डेटा मिट जाएगा — फिर से दबाएँ";return}
-    ["pyq_saved","pyq_wrong","jk_done","jk_hist","jk_days","jk_review"].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});toast("डेटा रीसेट हो गया");home()};
+    ["pyq_saved","pyq_wrong","jk_done","jk_hist","jk_days","jk_review","jk_prog"].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});toast("डेटा रीसेट हो गया");home()};
 }
 function toggleDark(){const on=!document.documentElement.classList.contains("dark");document.documentElement.classList.toggle("dark",on);store.set("jk_theme",[on?"dark":"light"]);profile()}
 function privacy(){
@@ -1009,9 +1009,43 @@ function start(f,l,n,m){
   mode=m||"practice";Q=QS.filter(f);if(n)Q=Q.sort(()=>Math.random()-.5).slice(0,n);
   if(!Q.length)return toast("अभी इसमें कोई प्रश्न नहीं है");
   label=l||"PYQ अभ्यास";
+  const sp=progAll()[progKey()];
+  if(sp&&Array.isArray(sp.qs))return resumeAsk(sp);
   if(mode==="test")intro();else begin();
 }
-function begin(){finished=false;state=Q.map(()=>({picked:null,time:0,review:false}));cur=0;render()}
+/* ---------- अधूरे टेस्ट की प्रगति (localStorage: jk_prog) — रीसेट या सबमिट तक सेव ---------- */
+const progAll=()=>{const o=store.get("jk_prog");return o&&!Array.isArray(o)?o:{}};
+const progKey=()=>mode+"|"+label;
+function clearProg(){const o=progAll();delete o[progKey()];store.set("jk_prog",o)}
+function saveProg(live){
+  if(finished||!Q.length||state.length!==Q.length)return;
+  if(live&&!document.getElementById("timer"))return;
+  if(cur===0&&!state.some(x=>x.picked!==null))return;
+  const t=state.map(x=>x.time);
+  if(live&&!stopped())t[cur]+=Math.round((Date.now()-startTime)/1000);
+  const o=progAll();
+  o[progKey()]={m:mode,l:label,qs:Q.map(q=>q.question),p:state.map(x=>x.picked),t:t,c:cur,ts:Date.now()};
+  store.set("jk_prog",o);
+}
+function resumeAsk(sp){
+  const it=sp.qs.map((t,i)=>({q:QS.find(x=>x.question===t),p:sp.p[i]==null?null:sp.p[i],t:sp.t[i]||0})).filter(x=>x.q);
+  if(!it.length){clearProg();return mode==="test"?intro():begin()}
+  const ans=it.filter(x=>x.p!==null).length,tot=it.reduce((a,x)=>a+x.t,0),c0=Math.min(Math.max(0,sp.c|0),it.length-1);
+  view(hdr(BACK,"","टेस्ट जारी रखें")+`<main class="pg"><div class="card"><h2 style="margin:0;font-size:19px">${label}</h2><div class="sub" style="margin:0 0 12px">${mode==="test"?"Test Mode":"Practice Mode"}</div>
+  <p style="margin:0 0 6px">आपने यह टेस्ट बीच में छोड़ा था। आप जहाँ छोड़ा था वहीं से जारी रख सकते हैं।</p>
+  <ul class="ins"><li>उत्तर दिए: <b>${ans} / ${it.length}</b></li><li>आप प्रश्न <b>${c0+1}</b> पर थे</li><li>अब तक का समय: <b>${fmt(tot)}</b></li></ul>
+  <button class="btn" style="width:100%;margin-top:12px" id="rsm">▶ जहाँ छोड़ा था वहीं से जारी रखें</button>
+  <button class="btn ghost" style="width:100%;margin-top:10px" id="rsn">🔄 नया टेस्ट शुरू करें</button></div></main>`,"",false,ret||home);
+  document.getElementById("rsm").onclick=()=>{
+    const rvS=new Set(store.get("jk_review"));
+    Q=it.map(x=>x.q);state=it.map(x=>({picked:x.p,time:x.t,review:rvS.has(x.q.question)}));
+    cur=c0;finished=false;render();
+  };
+  document.getElementById("rsn").onclick=()=>{clearProg();if(mode==="test")intro();else begin()};
+}
+document.addEventListener("visibilitychange",()=>{if(document.hidden)saveProg(true)});
+window.addEventListener("pagehide",()=>saveProg(true));
+function begin(){finished=false;const rvS=new Set(store.get("jk_review"));state=Q.map(q=>({picked:null,time:0,review:rvS.has(q.question)}));cur=0;render()}
 function intro(){
   view(hdr(BACK,"","टेस्ट निर्देश")+`<main class="pg"><div class="card"><h2 style="margin:0;font-size:19px">${label}</h2><div class="sub" style="margin:0 0 12px">Test Mode</div>
   <ul class="ins"><li>कुल प्रश्न: <b>${Q.length}</b></li><li>हर सही उत्तर: <b style="color:var(--ok)">+1 अंक</b></li>
@@ -1095,6 +1129,7 @@ async function trRun(q){
   const t2=document.getElementById("tr");if(t2)t2.innerHTML=TRI}
 
 function render(keep){
+  if(!finished)saveProg();
   const q=Q[cur],st=state[cur],test=mode==="test",done=st.picked!==null,show=finished||(!test&&done),last=cur===Q.length-1;
   const answered=state.filter(s=>s.picked!==null).length,sv=new Set(store.get("pyq_saved")).has(q.question),hide=test&&!finished;
   view(hdr(BACK,`<button class="ib" id="sv">${BM(sv)}</button>`,`${label}<br><small style="font-weight:400;font-size:11px;opacity:.85">${test?"Test Mode":"Practice Mode"}</small>`)+`<main class="pg">
@@ -1134,7 +1169,7 @@ function render(keep){
   if(clr)clr.onclick=()=>{stopTimer();st.picked=null;render(true)};
   sb.onclick=()=>{const s=new Set(store.get("pyq_saved"));if(s.has(q.question))s.delete(q.question);else s.add(q.question);
     store.set("pyq_saved",[...s]);sb.innerHTML=BM(s.has(q.question));toast(s.has(q.question)?"सेव किया":"सेव हटाया")};
-  document.getElementById("bk").onclick=()=>finished?result():ask("टेस्ट बीच में छोड़ें? इसका रिज़ल्ट सेव नहीं होगा।","जारी रखें","हाँ, छोड़ें",ret||home);
+  document.getElementById("bk").onclick=()=>finished?result():ask("टेस्ट बीच में छोड़ें? आपकी प्रगति सेव रहेगी, आप बाद में यहीं से जारी रख सकेंगे।","जारी रखें","हाँ, छोड़ें",()=>{saveProg(true);(ret||home)()});
 }
 function ask(msg,no,yes,fn){
   const box=document.getElementById("askbox");
@@ -1148,19 +1183,21 @@ function trySubmit(){
   if(!left&&!rv)return finish();
   ask([left?left+" प्रश्न बाकी हैं":"",rv?rv+" प्रश्न रिव्यू में हैं":""].filter(Boolean).join(" और ")+"। फिर भी सबमिट करें?","नहीं, वापस जाएँ","हाँ, सबमिट करें",finish);
 }
-function pick(i){if(finished)return;if(mode==="practice"&&state[cur].picked!==null)return;stopTimer();state[cur].picked=i;render(true)}
+function pick(i){if(finished)return;if(mode==="practice"&&state[cur].picked!==null)return;stopTimer();state[cur].picked=i;
+  if(i!==Q[cur].answer){const ws=new Set(store.get("pyq_wrong"));ws.add(Q[cur].question);store.set("pyq_wrong",[...ws])}
+  render(true)}
 function go(n){if(!stopped())stopTimer();cur=n;render()}
 
 function finish(){
   if(!stopped())stopTimer();
-  clearInterval(tick);finished=true;
+  clearInterval(tick);finished=true;clearProg();
   let r=0,w=0,s=0,t=0;
   state.forEach((x,i)=>{t+=x.time;if(x.picked===null)s++;else if(x.picked===Q[i].answer)r++;else w++});
   const ws=new Set(store.get("pyq_wrong")),ds=new Set(store.get("jk_done"));
-  state.forEach((x,i)=>{if(x.picked===null)return;ds.add(Q[i].question);if(x.picked===Q[i].answer)ws.delete(Q[i].question);else ws.add(Q[i].question)});
+  state.forEach((x,i)=>{if(x.picked===null)return;ds.add(Q[i].question);if(x.picked!==Q[i].answer)ws.add(Q[i].question)});
   store.set("pyq_wrong",[...ws]);store.set("jk_done",[...ds]);
   const sc=mode==="test"?+(r-w*NEG).toFixed(2):r;
-  const H=store.get("jk_hist");H.unshift({n:label,r:r,w:w,s:s,m:mode,sc:sc,ts:Date.now(),qs:Q.map(q=>q.question),p:state.map(x=>x.picked),t:state.map(x=>x.time),rv:state.map(x=>x.review?1:0)});store.set("jk_hist",H.slice(0,30));
+  const H=store.get("jk_hist");H.unshift({n:label,r:r,w:w,s:s,m:mode,sc:sc,ts:Date.now(),qs:Q.map(q=>q.question),p:state.map(x=>x.picked),t:state.map(x=>x.time),rv:state.map(x=>x.review?1:0)});store.set("jk_hist",H);
   const D=new Set(store.get("jk_days"));D.add(day(new Date()));store.set("jk_days",[...D].slice(-400));
   window.__w=Q.filter((q,i)=>state[i].picked!==null&&state[i].picked!==q.answer).map(q=>q.question);
   window.__r=Q.filter((q,i)=>state[i].review).map(q=>q.question);
