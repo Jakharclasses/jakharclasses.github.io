@@ -13,7 +13,8 @@
   .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
   h1{font-size:20px;margin:6px 0 12px}
   input,select,button{font:inherit;padding:10px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
-  input{margin-bottom:10px}
+  input,textarea{margin-bottom:10px}
+  textarea{font:inherit;padding:10px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
   button{background:var(--pri);color:#fff;border:0;font-weight:600;cursor:pointer}
   button.sec{background:transparent;color:var(--tx);border:1px solid var(--bd);width:auto}
   .row{display:flex;gap:8px;align-items:center}
@@ -47,6 +48,25 @@
       <button class="sec" id="logoutBtn">Logout</button>
     </div>
     <div id="adminState" class="card"></div>
+    <div class="card">
+      <button class="sec" id="toggleAdd" style="width:100%">+ Naya sawal jodo</button>
+      <div id="addBox" class="hide" style="margin-top:12px">
+        <select id="aSub" style="margin-bottom:10px"></select>
+        <select id="aChap" style="margin-bottom:10px"></select>
+        <textarea id="aQ" rows="3" placeholder="Sawal"></textarea>
+        <input id="aO0" placeholder="Option 1"><input id="aO1" placeholder="Option 2">
+        <input id="aO2" placeholder="Option 3"><input id="aO3" placeholder="Option 4">
+        <select id="aAns" style="margin-bottom:10px">
+          <option value="0">Sahi jawab: Option 1</option><option value="1">Sahi jawab: Option 2</option>
+          <option value="2">Sahi jawab: Option 3</option><option value="3">Sahi jawab: Option 4</option>
+        </select>
+        <textarea id="aExp" rows="3" placeholder="Explanation"></textarea>
+        <input id="aEx" placeholder="Exams (comma se alag), jaise: RPSC RAS 2021, Patwari 2021">
+        <label style="display:block;margin-bottom:10px;font-size:14px"><input id="aAct" type="checkbox" style="width:auto;margin:0 6px 0 0"> Turant active karo (live app me dikhe)</label>
+        <button id="saveAdd">Save sawal</button>
+        <div id="addMsg" class="msg"></div>
+      </div>
+    </div>
     <input id="search" type="search" placeholder="Sawal / subject / chapter me khojo...">
     <select id="statusF" style="margin-bottom:8px">
       <option value="all">Sab (active + hidden)</option>
@@ -117,7 +137,7 @@ async function loadQuestions() {
   $("list").innerHTML = '<div class="meta">Load ho raha hai...</div>';
   try {
     ALL = await api("/rest/v1/questions?select=id,subject,chapter,question,options,answer,explanation,exams,is_active,created_at&order=created_at.desc&limit=1000");
-    render();
+    render(); fillSubjects();
   } catch (e) {
     $("list").innerHTML = '<div class="msg">Load error: ' + esc(e.message) + '</div>';
   }
@@ -144,6 +164,41 @@ function render() {
   $("more").textContent = rows.length > SHOW ? ("Pehle " + SHOW + " dikh rahe hain. Khoj se chhota karo.") : "";
 }
 
+
+function fillSubjects() {
+  const m = {};
+  ALL.forEach(q => { (m[q.subject] = m[q.subject] || new Set()).add(q.chapter); });
+  window.SC = m;
+  $("aSub").innerHTML = Object.keys(m).map(s => '<option>' + esc(s) + '</option>').join("");
+  fillChapters();
+}
+function fillChapters() {
+  const s = $("aSub").value, c = window.SC && window.SC[s] ? [...window.SC[s]] : [];
+  $("aChap").innerHTML = c.map(x => '<option>' + esc(x) + '</option>').join("");
+}
+async function saveNew() {
+  const msg = $("addMsg"); msg.style.color = "var(--bad)"; msg.textContent = "";
+  const question = $("aQ").value.trim(), explanation = $("aExp").value.trim();
+  const options = [0,1,2,3].map(i => $("aO" + i).value.trim());
+  if (!question) { msg.textContent = "Sawal likho."; return; }
+  if (options.some(o => !o)) { msg.textContent = "Chaaron options bharo."; return; }
+  if (new Set(options).size < 4) { msg.textContent = "Options alag-alag hone chahiye."; return; }
+  if (ALL.some(q => q.question === question)) { msg.textContent = "Ye sawal pehle se hai (same text)."; return; }
+  const exams = $("aEx").value.split(",").map(s => s.trim()).filter(Boolean);
+  const body = { subject: $("aSub").value, chapter: $("aChap").value, question, options,
+    answer: parseInt($("aAns").value, 10), explanation, exams, is_active: $("aAct").checked };
+  $("saveAdd").disabled = true;
+  try {
+    await api("/rest/v1/questions", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(body) });
+    msg.style.color = "var(--ok)"; msg.textContent = "Save ho gaya.";
+    ["aQ","aO0","aO1","aO2","aO3","aExp","aEx"].forEach(i => $(i).value = "");
+    await loadQuestions();
+  } catch (e) { msg.textContent = "Save fail: " + e.message; }
+  $("saveAdd").disabled = false;
+}
+$("toggleAdd").onclick = () => $("addBox").classList.toggle("hide");
+$("aSub").onchange = fillChapters;
+$("saveAdd").onclick = saveNew;
 $("loginBtn").onclick = login;
 $("pw").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
 $("logoutBtn").onclick = logout;
