@@ -45,7 +45,7 @@
   <div id="panel" class="hide">
     <div class="row" style="margin-bottom:8px">
       <div id="who" class="meta" style="flex:1"></div>
-      <button class="sec" id="logoutBtn">Logout</button>
+      <button class="sec" id="backupBtn" style="margin-right:6px">⬇️ Backup</button><button class="sec" id="logoutBtn">Logout</button>
     </div>
     <div id="adminState" class="card"></div>
     <div class="card">
@@ -256,6 +256,21 @@ $("list").addEventListener("click", async e => {
     catch (er) { alert("Fail: " + er.message); b.disabled = false; }
   }
 });
+
+async function backupAll() {
+  const b = $("backupBtn"); b.disabled = true;
+  try {
+    const rows = await api("/rest/v1/questions?select=*&order=created_at.asc&limit=5000");
+    const d = new Date().toISOString().slice(0, 10);
+    const blob = new Blob([JSON.stringify(rows, null, 1)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "jakhar_questions_" + d + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    alert("Backup ban gaya: " + rows.length + " sawal (hidden samet). File Downloads me hai.");
+  } catch (e) { alert("Backup fail: " + e.message); }
+  b.disabled = false;
+}
+$("backupBtn").onclick = backupAll;
 $("loginBtn").onclick = login;
 $("pw").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
 $("logoutBtn").onclick = logout;
