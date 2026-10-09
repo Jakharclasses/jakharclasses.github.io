@@ -1,0 +1,42 @@
+<!DOCTYPE html><html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>JAKHAR Step 13 - Progress to ID check</title>
+<style>body{font-family:system-ui,sans-serif;max-width:760px;margin:0 auto;padding:16px;line-height:1.5}input{width:100%;padding:10px;margin:6px 0 12px;box-sizing:border-box}button{padding:10px 18px;font-size:16px}.ok{color:#15803d}.bad{color:#b91c1c}.box{border:1px solid #ccc;border-radius:8px;padding:10px;margin:10px 0}pre{white-space:pre-wrap;word-break:break-word;font-size:13px}</style></head><body>
+<h2>Step 13: Purana progress → Question ID check</h2>
+<p><b>Sirf padhta hai.</b> Local Storage me kuch likhta, badalta ya hatata nahi. Sirf <b>publishable (anon)</b> key daalo.</p>
+<label>Publishable (anon) key</label><input id="key" type="password" placeholder="sb_publishable_... ya eyJ...">
+<button id="run">Check chalao</button>
+<div id="out"></div>
+<script>
+const URL_BASE='https://gpqrkxyypadgvguomfrr.supabase.co/rest/v1/questions';
+const out=document.getElementById('out');
+const add=h=>out.insertAdjacentHTML('beforeend',h);
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const rd=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}};
+async function fetchAll(key){let all=[],from=0,step=500;
+ while(true){const r=await fetch(URL_BASE+'?select=id,question&order=created_at.asc,id.asc',{headers:{apikey:key,Authorization:'Bearer '+key,Range:from+'-'+(from+step-1)}});
+  if(!r.ok&&r.status!==206)throw new Error('HTTP '+r.status+' '+await r.text());
+  const d=await r.json();all=all.concat(d);if(d.length<step)break;from+=step;}
+ return all;}
+document.getElementById('run').onclick=async()=>{
+ out.innerHTML='';const key=document.getElementById('key').value.trim();
+ if(!key){add('<p class=bad>Key daalo.</p>');return}
+ try{
+  const db=await fetchAll(key);const map=new Map();
+  db.forEach(r=>{if(!map.has(r.question))map.set(r.question,[]);map.get(r.question).push(r.id)});
+  const keys=['jk_done','jk_review','pyq_saved','pyq_wrong'];
+  let allOk=true,found=false,rows='';
+  const check=(name,arr)=>{
+   const uniq=[...new Set(arr)];let mapped=0,amb=0,un=[];
+   uniq.forEach(t=>{const m=map.get(t);if(!m)un.push(t);else if(m.length>1){amb++;mapped++}else mapped++});
+   if(un.length)allOk=false;
+   rows+='<tr><td>'+name+'</td><td>'+uniq.length+'</td><td>'+mapped+'</td><td>'+amb+'</td><td class="'+(un.length?'bad':'ok')+'">'+un.length+'</td></tr>';
+   return un};
+  let unAll=[];
+  keys.forEach(k=>{const v=rd(k);if(Array.isArray(v)){found=true;unAll=unAll.concat(check(k,v))}});
+  const H=rd('jk_hist');
+  if(Array.isArray(H)){found=true;const t=[];H.forEach(h=>{if(h&&Array.isArray(h.qs))t.push(...h.qs)});unAll=unAll.concat(check('jk_hist ('+H.length+' tests)',t))}
+  if(!found){add('<div class=box class=bad><b class=bad>Is page ke origin par koi progress nahi mila.</b><br>Agar ye file apni live GitHub site wale folder me upload karke wahin se nahi kholi, to Local Storage alag hota hai.</div>');return}
+  add('<div class=box><table border=1 cellpadding=6 style="border-collapse:collapse;width:100%"><tr><th>Key</th><th>Unique text</th><th>ID mili</th><th>Duplicate-text</th><th>Nahi mili</th></tr>'+rows+'</table></div>');
+  if(unAll.length)add('<div class=box><b>ID nahi mili</b><pre>'+[...new Set(unAll)].map(esc).join('\n\n')+'</pre></div>');
+  add('<p class="'+(allOk?'ok':'bad')+'"><b>'+(allOk?'PASS: purane progress ka har text Supabase ID se map ho gaya.':'FAIL: upar wali list dekho.')+'</b></p>');
+ }catch(e){add('<p class=bad>Error: '+esc(e.message)+'</p>')}};
+</script></body></html>
