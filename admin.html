@@ -159,7 +159,10 @@ function render() {
     '<div class="card"><div class="q">' + esc(q.question) + '</div>' +
     '<div class="meta">' + esc(q.subject) + ' › ' + esc(q.chapter) + '</div>' +
     '<div style="margin-top:6px"><span class="tag ' + (q.is_active ? "on" : "hid") + '">' + (q.is_active ? "active" : "hidden") + '</span>' +
-    '<span class="meta">Ans: ' + esc((q.options || [])[q.answer]) + '</span></div></div>'
+    '<span class="meta">Ans: ' + esc((q.options || [])[q.answer]) + '</span></div>' +
+    '<div class="row" style="margin-top:10px"><button class="sec" data-act="tog" data-id="' + q.id + '">' + (q.is_active ? "Hide karo" : "Show karo") + '</button>' +
+    '<button class="sec" data-act="edit" data-id="' + q.id + '">Edit</button></div>' +
+    '<div id="ed_' + q.id + '"></div></div>'
   ).join("") || '<div class="meta">Koi sawal nahi mila.</div>';
   $("more").textContent = rows.length > SHOW ? ("Pehle " + SHOW + " dikh rahe hain. Khoj se chhota karo.") : "";
 }
@@ -199,6 +202,60 @@ async function saveNew() {
 $("toggleAdd").onclick = () => $("addBox").classList.toggle("hide");
 $("aSub").onchange = fillChapters;
 $("saveAdd").onclick = saveNew;
+
+async function patchQ(id, body) {
+  const r = await api("/rest/v1/questions?id=eq." + id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(body) });
+  if (!r || !r.length) throw new Error("Koi row update nahi hui (admin permission check karo).");
+  return r[0];
+}
+function optsHtml(arr, cur) {
+  const a = arr.includes(cur) ? arr : [cur].concat(arr);
+  return a.map(x => '<option' + (x === cur ? ' selected' : '') + '>' + esc(x) + '</option>').join("");
+}
+function openEdit(id) {
+  const q = ALL.find(x => x.id === id), box = $("ed_" + id);
+  if (box.innerHTML) { box.innerHTML = ""; return; }
+  const subs = Object.keys(window.SC);
+  const chs = [...(window.SC[q.subject] || [])];
+  box.innerHTML = '<div style="margin-top:10px">' +
+    '<select id="es_' + id + '" style="margin-bottom:10px">' + optsHtml(subs, q.subject) + '</select>' +
+    '<select id="ec_' + id + '" style="margin-bottom:10px">' + optsHtml(chs, q.chapter) + '</select>' +
+    '<textarea id="eq_' + id + '" rows="3">' + esc(q.question) + '</textarea>' +
+    [0,1,2,3].map(i => '<input id="eo' + i + '_' + id + '" value="' + esc((q.options || [])[i]) + '">').join("") +
+    '<select id="ea_' + id + '" style="margin-bottom:10px">' + [0,1,2,3].map(i => '<option value="' + i + '"' + (i === q.answer ? ' selected' : '') + '>Sahi jawab: Option ' + (i + 1) + '</option>').join("") + '</select>' +
+    '<textarea id="ex_' + id + '" rows="3">' + esc(q.explanation) + '</textarea>' +
+    '<input id="ee_' + id + '" value="' + esc((q.exams || []).join(", ")) + '">' +
+    '<div class="meta" style="margin-bottom:8px">Dhyan: sawal ka text badalne par us sawal ka purana progress (done/saved/wrong) jud nahi payega.</div>' +
+    '<button data-act="save" data-id="' + id + '">Save badlaav</button><div id="em_' + id + '" class="msg"></div></div>';
+  $("es_" + id).onchange = () => {
+    const c = [...(window.SC[$("es_" + id).value] || [])];
+    $("ec_" + id).innerHTML = c.map(x => '<option>' + esc(x) + '</option>').join("");
+  };
+}
+async function saveEdit(id) {
+  const msg = $("em_" + id); msg.style.color = "var(--bad)"; msg.textContent = "";
+  const question = $("eq_" + id).value.trim();
+  const options = [0,1,2,3].map(i => $("eo" + i + "_" + id).value.trim());
+  if (!question) { msg.textContent = "Sawal khaali nahi ho sakta."; return; }
+  if (options.some(o => !o) || new Set(options).size < 4) { msg.textContent = "Chaaron options bharo aur alag rakho."; return; }
+  if (ALL.some(q => q.id !== id && q.question === question)) { msg.textContent = "Ye text kisi aur sawal me pehle se hai."; return; }
+  const body = { subject: $("es_" + id).value, chapter: $("ec_" + id).value, question, options,
+    answer: parseInt($("ea_" + id).value, 10), explanation: $("ex_" + id).value.trim(),
+    exams: $("ee_" + id).value.split(",").map(s => s.trim()).filter(Boolean), updated_at: new Date().toISOString() };
+  try { await patchQ(id, body); await loadQuestions(); }
+  catch (e) { msg.textContent = "Save fail: " + e.message; }
+}
+$("list").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-act]"); if (!b) return;
+  const id = b.dataset.id, q = ALL.find(x => x.id === id);
+  if (b.dataset.act === "edit") openEdit(id);
+  else if (b.dataset.act === "save") saveEdit(id);
+  else if (b.dataset.act === "tog") {
+    b.disabled = true;
+    try { await patchQ(id, { is_active: !q.is_active, updated_at: new Date().toISOString() }); await loadQuestions(); }
+    catch (er) { alert("Fail: " + er.message); b.disabled = false; }
+  }
+});
 $("loginBtn").onclick = login;
 $("pw").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
 $("logoutBtn").onclick = logout;
