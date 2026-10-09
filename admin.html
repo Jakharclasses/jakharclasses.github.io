@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JAKHAR Admin</title>
+<style>
+  :root{--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mut:#667085;--bd:#e3e6ea;--pri:#2b5cff;--bad:#c62828;--ok:#2e7d32}
+  @media (prefers-color-scheme:dark){:root{--bg:#14171a;--card:#1d2125;--tx:#e8eaed;--mut:#9aa3ad;--bd:#2c3238;--pri:#6c8cff;--bad:#ef6b6b;--ok:#6fcf74}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Noto Sans Devanagari",sans-serif;line-height:1.5}
+  .wrap{max-width:760px;margin:0 auto;padding:16px}
+  .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+  h1{font-size:20px;margin:6px 0 12px}
+  input,select,button{font:inherit;padding:10px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
+  input{margin-bottom:10px}
+  button{background:var(--pri);color:#fff;border:0;font-weight:600;cursor:pointer}
+  button.sec{background:transparent;color:var(--tx);border:1px solid var(--bd);width:auto}
+  .row{display:flex;gap:8px;align-items:center}
+  .msg{color:var(--bad);font-size:14px;min-height:20px}
+  .stats{display:flex;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--mut);margin:8px 0}
+  .stats b{color:var(--tx)}
+  .q{font-weight:600;margin-bottom:4px}
+  .meta{font-size:12px;color:var(--mut)}
+  .tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:99px;border:1px solid var(--bd);margin-right:4px}
+  .hid{color:var(--bad);border-color:var(--bad)}
+  .on{color:var(--ok);border-color:var(--ok)}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>JAKHAR Admin Panel</h1>
+
+  <!-- LOGIN -->
+  <div id="loginBox" class="card">
+    <input id="em" type="email" placeholder="Admin email" autocomplete="username">
+    <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
+    <button id="loginBtn">Login</button>
+    <div id="loginMsg" class="msg"></div>
+  </div>
+
+  <!-- PANEL -->
+  <div id="panel" class="hide">
+    <div class="row" style="margin-bottom:8px">
+      <div id="who" class="meta" style="flex:1"></div>
+      <button class="sec" id="logoutBtn">Logout</button>
+    </div>
+    <div id="adminState" class="card"></div>
+    <input id="search" type="search" placeholder="Sawal / subject / chapter me khojo...">
+    <select id="statusF" style="margin-bottom:8px">
+      <option value="all">Sab (active + hidden)</option>
+      <option value="active">Sirf active</option>
+      <option value="hidden">Sirf hidden</option>
+    </select>
+    <div id="stats" class="stats"></div>
+    <div id="list"></div>
+    <div id="more" class="meta" style="text-align:center;padding:8px"></div>
+  </div>
+</div>
+
+<script>
+const SB_URL = "https://gpqrkxyypadgvguomfrr.supabase.co";
+const SB_KEY = "sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq"; // publishable key (public hai)
+let TOKEN = null, ALL = [], USER = null;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+async function api(path, opts = {}) {
+  const r = await fetch(SB_URL + path, {
+    ...opts,
+    headers: { apikey: SB_KEY, Authorization: "Bearer " + (TOKEN || SB_KEY), "Content-Type": "application/json", ...(opts.headers || {}) }
+  });
+  const txt = await r.text();
+  let j = null; try { j = txt ? JSON.parse(txt) : null; } catch (e) {}
+  if (!r.ok) throw new Error((j && (j.msg || j.message || j.error_description || j.error)) || ("HTTP " + r.status));
+  return j;
+}
+
+async function login() {
+  $("loginMsg").textContent = "";
+  const email = $("em").value.trim(), password = $("pw").value;
+  if (!email || !password) { $("loginMsg").textContent = "Email aur password dono daalo."; return; }
+  $("loginBtn").disabled = true;
+  try {
+    const j = await api("/auth/v1/token?grant_type=password", { method: "POST", body: JSON.stringify({ email, password }) });
+    TOKEN = j.access_token; USER = j.user;
+    $("pw").value = "";
+    await openPanel();
+  } catch (e) {
+    $("loginMsg").textContent = "Login fail: " + e.message;
+  }
+  $("loginBtn").disabled = false;
+}
+
+function logout() {
+  TOKEN = null; USER = null; ALL = [];
+  $("panel").classList.add("hide");
+  $("loginBox").classList.remove("hide");
+}
+
+async function openPanel() {
+  $("loginBox").classList.add("hide");
+  $("panel").classList.remove("hide");
+  $("who").textContent = "Login: " + (USER && USER.email || "");
+  // admin check (is_admin() function)
+  let isAdmin = false;
+  try { isAdmin = await api("/rest/v1/rpc/is_admin", { method: "POST", body: "{}" }); } catch (e) {}
+  $("adminState").innerHTML = isAdmin
+    ? '<span class="tag on">ADMIN OK</span> Aap admin hain.'
+    : '<span class="tag hid">ADMIN NAHI</span> Ye user admins table me nahi hai (sirf active sawal dikhenge).';
+  await loadQuestions();
+}
+
+async function loadQuestions() {
+  $("list").innerHTML = '<div class="meta">Load ho raha hai...</div>';
+  try {
+    ALL = await api("/rest/v1/questions?select=id,subject,chapter,question,options,answer,explanation,exams,is_active,created_at&order=created_at.desc&limit=1000");
+    render();
+  } catch (e) {
+    $("list").innerHTML = '<div class="msg">Load error: ' + esc(e.message) + '</div>';
+  }
+}
+
+function render() {
+  const t = $("search").value.trim().toLowerCase(), f = $("statusF").value;
+  const rows = ALL.filter(q => {
+    if (f === "active" && !q.is_active) return false;
+    if (f === "hidden" && q.is_active) return false;
+    if (!t) return true;
+    return (q.question + " " + q.subject + " " + q.chapter).toLowerCase().includes(t);
+  });
+  const act = ALL.filter(q => q.is_active).length;
+  $("stats").innerHTML = '<span>Total: <b>' + ALL.length + '</b></span><span>Active: <b>' + act +
+    '</b></span><span>Hidden: <b>' + (ALL.length - act) + '</b></span><span>Dikh rahe: <b>' + rows.length + '</b></span>';
+  const SHOW = 50;
+  $("list").innerHTML = rows.slice(0, SHOW).map(q =>
+    '<div class="card"><div class="q">' + esc(q.question) + '</div>' +
+    '<div class="meta">' + esc(q.subject) + ' › ' + esc(q.chapter) + '</div>' +
+    '<div style="margin-top:6px"><span class="tag ' + (q.is_active ? "on" : "hid") + '">' + (q.is_active ? "active" : "hidden") + '</span>' +
+    '<span class="meta">Ans: ' + esc((q.options || [])[q.answer]) + '</span></div></div>'
+  ).join("") || '<div class="meta">Koi sawal nahi mila.</div>';
+  $("more").textContent = rows.length > SHOW ? ("Pehle " + SHOW + " dikh rahe hain. Khoj se chhota karo.") : "";
+}
+
+$("loginBtn").onclick = login;
+$("pw").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+$("logoutBtn").onclick = logout;
+$("search").oninput = render;
+$("statusF").onchange = render;
+</script>
+</body>
+</html>
