@@ -1335,6 +1335,29 @@ splash();
       m.style.color="#2e7d32";m.textContent="✅ सेव हुआ। सर्वर पर अब कुल "+total+" निशान हैं"+(miss?" ("+miss+" पुराने प्रश्न बिना ID के छूटे)":"")+"।";
     }catch(e){m.style.color="#c62828";m.textContent="Error: "+e.message}
   }
+  async function downloadProgress(){
+    const m=document.getElementById("acS");m.style.color="";m.textContent="रुकिए...";
+    try{
+      await refresh();const s=load();if(!s)throw new Error("दोबारा लॉगिन करें");
+      const textOf={};QUESTIONS.forEach(q=>{if(q.id)textOf[q.id]=q.question});
+      let all=[],from=0,step=1000;
+      while(true){
+        const r=await fetch(BASE+"/rest/v1/user_flags?select=question_id,kind&order=created_at.asc,question_id.asc",{headers:{apikey:KEY,Authorization:"Bearer "+s.access_token,Range:from+"-"+(from+step-1)}});
+        if(!r.ok&&r.status!==206){const j=await r.json().catch(()=>null);throw new Error((j&&(j.message||j.msg))||("HTTP "+r.status))}
+        const d=await r.json();all=all.concat(d);if(d.length<step)break;from+=step;
+      }
+      const keyOf={done:"jk_done",saved:"pyq_saved",wrong:"pyq_wrong",review:"jk_review"};
+      const add={jk_done:0,pyq_saved:0,pyq_wrong:0,jk_review:0};let miss=0;
+      const sets={};Object.values(keyOf).forEach(k=>{sets[k]=new Set(store.get(k))});
+      all.forEach(r=>{const k=keyOf[r.kind],txt=textOf[r.question_id];
+        if(!k)return;if(!txt){miss++;return}
+        if(!sets[k].has(txt)){sets[k].add(txt);add[k]++}});
+      const total=add.jk_done+add.pyq_saved+add.pyq_wrong+add.jk_review;
+      if(total>0)Object.keys(sets).forEach(k=>{if(add[k]>0)store.set(k,Array.from(sets[k]))});
+      if(total>0){toast("सर्वर से "+total+" नए निशान जुड़े");profile();return}
+      m.style.color="#2e7d32";m.textContent="✅ कुछ नया नहीं मिला। आपके फ़ोन पर सब पहले से है ("+all.length+" निशान सर्वर पर)"+(miss?"; "+miss+" निशान के प्रश्न अब ऐप में नहीं हैं":"")+"।";
+    }catch(e){m.style.color="#c62828";m.textContent="Error: "+e.message}
+  }
   window.getAuthSession=load;
   window.acctRender=function(){
     const el=document.getElementById("acct");if(!el)return;
@@ -1342,10 +1365,12 @@ splash();
     if(s){
       el.innerHTML='<b>👤 अकाउंट</b><p style="margin:8px 0;font-size:13px;color:var(--mute)">लॉगिन: '+esc(s.email)+'</p>'+
         '<button class="btn" id="acSync" style="width:100%;margin-bottom:8px">☁️ प्रोग्रेस सर्वर पर सेव करें</button>'+
+        '<button class="btn ghost" id="acDown" style="width:100%;margin-bottom:8px">⬇️ सर्वर से प्रोग्रेस वापस लाएँ</button>'+
         '<div id="acS" style="font-size:13px;margin-bottom:8px;min-height:18px"></div>'+
         '<button class="btn ghost" id="acOut" style="width:100%">लॉगआउट</button>';
       document.getElementById("acOut").onclick=()=>{save(null);acctRender()};
       document.getElementById("acSync").onclick=uploadProgress;
+      document.getElementById("acDown").onclick=downloadProgress;
       return;
     }
     const inp='display:block;width:100%;box-sizing:border-box;padding:10px 12px;margin:8px 0;border-radius:8px;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;font:inherit';
