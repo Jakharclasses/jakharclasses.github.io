@@ -79,6 +79,25 @@
         <div id="bkMsg" class="msg" style="white-space:pre-wrap"></div>
       </div>
     </div>
+    <div class="card">
+      <button class="sec" id="toggleMat" style="width:100%">📚 Study Material (PDF / YouTube)</button>
+      <div id="matBox" class="hide" style="margin-top:12px">
+        <input id="mTitle" placeholder="Title (jaise: राजस्थान की जलवायु - Notes)">
+        <input id="mCat" list="mCatList" placeholder="Category / Subject (jaise: राजस्थान का भूगोल)">
+        <datalist id="mCatList"></datalist>
+        <select id="mKind" style="margin-bottom:10px">
+          <option value="file">PDF file upload karo (Supabase)</option>
+          <option value="youtube">YouTube video link</option>
+          <option value="pdflink">PDF ka link (R2 / Drive / aur kahin)</option>
+        </select>
+        <input id="mFile" type="file" accept="application/pdf,.pdf">
+        <input id="mUrl" class="hide" placeholder="https://...">
+        <label style="display:block;margin-bottom:10px;font-size:14px"><input id="mAct" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Turant active karo</label>
+        <button id="mSave">Save karo</button>
+        <div id="mMsg" class="msg"></div>
+        <div id="mList" style="margin-top:12px"></div>
+      </div>
+    </div>
     <input id="search" type="search" placeholder="Sawal / subject / chapter me khojo...">
     <select id="statusF" style="margin-bottom:8px">
       <option value="all">Sab (active + hidden)</option>
@@ -143,6 +162,7 @@ async function openPanel() {
     ? '<span class="tag on">ADMIN OK</span> Aap admin hain.'
     : '<span class="tag hid">ADMIN NAHI</span> Ye user admins table me nahi hai (sirf active sawal dikhenge).';
   await loadQuestions();
+  loadMaterials();
 }
 
 async function loadQuestions() {
@@ -362,6 +382,80 @@ function bulkTemplate() {
 $("toggleBulk").onclick = () => $("bulkBox").classList.toggle("hide");
 $("bkFile").onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $("bkText").value = r.result; bulkCheck(); }; r.readAsText(f, "utf-8"); };
 $("bkCheck").onclick = bulkCheck; $("bkGo").onclick = bulkGo; $("tplBtn").onclick = bulkTemplate;
+
+let MATS = [];
+const PUB = SB_URL + "/storage/v1/object/public/study-material/";
+function matUrl(m) { return m.file_path ? PUB + m.file_path.split("/").map(encodeURIComponent).join("/") : m.url; }
+async function loadMaterials() {
+  try { MATS = await api("/rest/v1/materials?select=*&order=created_at.desc&limit=1000"); renderMats(); }
+  catch (e) { $("mList").innerHTML = '<div class="msg">Study material load error: ' + esc(e.message) + '</div>'; }
+}
+function renderMats() {
+  const cats = [...new Set(MATS.map(m => m.category).filter(Boolean).concat(Object.keys(window.SC || {})))];
+  $("mCatList").innerHTML = cats.map(c => '<option value="' + esc(c) + '">').join("");
+  $("mList").innerHTML = MATS.map(m =>
+    '<div class="card" style="margin-bottom:8px"><div class="q">' + esc(m.title) + '</div>' +
+    '<div class="meta">' + esc(m.category) + '</div>' +
+    '<div style="margin:6px 0"><span class="tag">' + (m.kind === "youtube" ? "YouTube" : "PDF") + '</span>' +
+    '<span class="tag ' + (m.is_active ? "on" : "hid") + '">' + (m.is_active ? "active" : "hidden") + '</span></div>' +
+    '<div class="row"><a href="' + esc(matUrl(m)) + '" target="_blank" rel="noopener" style="padding:10px 12px;border:1px solid var(--bd);border-radius:8px;color:var(--tx);text-decoration:none">Kholo</a>' +
+    '<button class="sec" data-mact="tog" data-id="' + m.id + '">' + (m.is_active ? "Hide" : "Show") + '</button>' +
+    '<button class="sec" data-mact="del" data-id="' + m.id + '" style="color:var(--bad)">Delete</button></div></div>'
+  ).join("") || '<div class="meta">Abhi koi study material nahi.</div>';
+}
+function matKindUI() {
+  const k = $("mKind").value;
+  $("mFile").classList.toggle("hide", k !== "file");
+  $("mUrl").classList.toggle("hide", k === "file");
+  $("mUrl").placeholder = k === "youtube" ? "https://youtu.be/... ya https://www.youtube.com/watch?v=..." : "https://... (PDF ka seedha link)";
+}
+async function matSave() {
+  const msg = $("mMsg"); msg.style.color = "var(--bad)"; msg.textContent = "";
+  const title = $("mTitle").value.trim(), category = $("mCat").value.trim(), k = $("mKind").value;
+  if (!title) { msg.textContent = "Title likho."; return; }
+  let row = { title, category, is_active: $("mAct").checked };
+  $("mSave").disabled = true;
+  try {
+    if (k === "file") {
+      const f = $("mFile").files[0];
+      if (!f) throw new Error("PDF file chuno.");
+      if (!/\.pdf$/i.test(f.name) && f.type !== "application/pdf") throw new Error("Sirf PDF file chalegi.");
+      if (f.size > 50 * 1024 * 1024) throw new Error("File 50 MB se badi hai.");
+      const path = "pdfs/" + Date.now() + "_" + Math.random().toString(36).slice(2, 8) + ".pdf";
+      msg.style.color = ""; msg.textContent = "Upload ho raha hai (" + (f.size / 1048576).toFixed(1) + " MB)...";
+      await api("/storage/v1/object/study-material/" + path, { method: "POST", headers: { "Content-Type": "application/pdf", "x-upsert": "false" }, body: f });
+      row.kind = "pdf"; row.file_path = path;
+    } else {
+      const u = $("mUrl").value.trim();
+      if (!/^https:\/\//i.test(u)) throw new Error("Link https:// se shuru hona chahiye.");
+      if (k === "youtube" && !/(youtube\.com|youtu\.be)/i.test(u)) throw new Error("Ye YouTube ka link nahi lag raha.");
+      row.kind = k === "youtube" ? "youtube" : "pdf"; row.url = u;
+    }
+    await api("/rest/v1/materials", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify(row) });
+    msg.style.color = "var(--ok)"; msg.textContent = "Save ho gaya.";
+    ["mTitle", "mUrl"].forEach(i => $(i).value = ""); $("mFile").value = "";
+    await loadMaterials();
+  } catch (e) { msg.style.color = "var(--bad)"; msg.textContent = "Fail: " + e.message; }
+  $("mSave").disabled = false;
+}
+$("mList").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-mact]"); if (!b) return;
+  const m = MATS.find(x => x.id === b.dataset.id); if (!m) return;
+  try {
+    if (b.dataset.mact === "tog") {
+      const r = await api("/rest/v1/materials?id=eq." + m.id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ is_active: !m.is_active }) });
+      if (!r || !r.length) throw new Error("Update nahi hua (admin permission check karo).");
+    } else if (b.dataset.mact === "del") {
+      if (!confirm('"' + m.title + '" hamesha ke liye hata dein?')) return;
+      if (m.file_path) await api("/storage/v1/object/study-material/" + m.file_path, { method: "DELETE" });
+      const r = await api("/rest/v1/materials?id=eq." + m.id, { method: "DELETE", headers: { Prefer: "return=representation" } });
+      if (!r || !r.length) throw new Error("Delete nahi hua.");
+    }
+    await loadMaterials();
+  } catch (er) { alert("Fail: " + er.message); }
+});
+$("toggleMat").onclick = () => $("matBox").classList.toggle("hide");
+$("mKind").onchange = matKindUI; $("mSave").onclick = matSave; matKindUI();
 $("loginBtn").onclick = login;
 $("pw").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
 $("logoutBtn").onclick = logout;
