@@ -1318,11 +1318,21 @@ splash();
     try{save(pack(await call("/auth/v1/token?grant_type=refresh_token",{refresh_token:s.refresh_token})))}
     catch(e){if(/invalid|expired|not found|revoked/i.test(e.message))save(null)}
   }
+  async function qmap(){
+    const idOf={},textOf={};
+    QUESTIONS.forEach(q=>{if(q.id){idOf[q.question]=q.id;textOf[q.id]=q.question}});
+    if(Object.keys(idOf).length<QUESTIONS.length*0.9){
+      const r=await fetch(BASE+"/rest/v1/questions?select=id,question&is_active=eq.true",{headers:{apikey:KEY,Range:"0-4999"}});
+      if(!r.ok)throw new Error("प्रश्नों की ID नहीं मिल पाई (HTTP "+r.status+")");
+      (await r.json()).forEach(q=>{idOf[q.question]=q.id;textOf[q.id]=q.question});
+    }
+    return {idOf,textOf};
+  }
   async function uploadProgress(){
     const m=document.getElementById("acS");m.style.color="";m.textContent="रुकिए...";
     try{
       await refresh();const s=load();if(!s)throw new Error("दोबारा लॉगिन करें");
-      const idOf={};QUESTIONS.forEach(q=>{if(q.id)idOf[q.question]=q.id});
+      const {idOf}=await qmap();
       const kinds=[["jk_done","done"],["pyq_saved","saved"],["pyq_wrong","wrong"],["jk_review","review"]];
       const rows=[];let miss=0;
       kinds.forEach(([k,kind])=>{store.get(k).forEach(txt=>{const id=idOf[txt];if(id)rows.push({question_id:id,kind:kind});else miss++})});
@@ -1348,7 +1358,7 @@ splash();
     const m=document.getElementById("acS");m.style.color="";m.textContent="रुकिए...";
     try{
       await refresh();const s=load();if(!s)throw new Error("दोबारा लॉगिन करें");
-      const textOf={};QUESTIONS.forEach(q=>{if(q.id)textOf[q.id]=q.question});
+      const {textOf}=await qmap();
       let all=[],from=0,step=1000;
       while(true){
         const r=await fetch(BASE+"/rest/v1/user_flags?select=question_id,kind&order=created_at.asc,question_id.asc",{headers:{apikey:KEY,Authorization:"Bearer "+s.access_token,Range:from+"-"+(from+step-1)}});
@@ -1363,15 +1373,19 @@ splash();
         if(!sets[k].has(txt)){sets[k].add(txt);add[k]++}});
       const hr=await fetch(BASE+"/rest/v1/user_history?select=data&order=taken_at.desc",{headers:{apikey:KEY,Authorization:"Bearer "+s.access_token,Range:"0-4999"}});
       if(!hr.ok){const j=await hr.json().catch(()=>null);throw new Error((j&&(j.message||j.msg))||("History HTTP "+hr.status))}
-      const HL=store.get("jk_hist"),haveTs=new Set(HL.map(h=>String(h.ts))),addH=[];
-      (await hr.json()).forEach(row=>{const d=row.data;if(!d||!d.ts||haveTs.has(String(d.ts)))return;haveTs.add(String(d.ts));
+      const HL=store.get("jk_hist"),haveTs=new Set(HL.map(h=>String(h.ts))),addH=[];let fixed=0;
+      (await hr.json()).forEach(row=>{const d=row.data;if(!d||!d.ts)return;
+        if(haveTs.has(String(d.ts))){const loc=HL.find(h=>String(h.ts)===String(d.ts));
+          if(loc&&d.qi&&(!loc.qs||loc.qs.some(x=>!x))){loc.qs=d.qi.map(id=>textOf[id]||null);loc.p=d.p;loc.t=d.t;loc.rv=d.rv;fixed++}
+          return}
+        haveTs.add(String(d.ts));
         const e={n:d.n,r:d.r,w:d.w,s:d.s,m:d.m,sc:d.sc,ts:d.ts};
         if(d.qi){e.qs=d.qi.map(id=>textOf[id]||null);e.p=d.p;e.t=d.t;e.rv=d.rv}
         addH.push(e)});
-      if(addH.length)store.set("jk_hist",HL.concat(addH).sort((x,y)=>y.ts-x.ts));
+      if(addH.length||fixed)store.set("jk_hist",HL.concat(addH).sort((x,y)=>y.ts-x.ts));
       const total=add.jk_done+add.pyq_saved+add.pyq_wrong+add.jk_review;
       if(total>0)Object.keys(sets).forEach(k=>{if(add[k]>0)store.set(k,Array.from(sets[k]))});
-      if(total>0||addH.length){toast("सर्वर से "+total+" नए निशान और "+addH.length+" टेस्ट जुड़े");profile();return}
+      if(total>0||addH.length||fixed){toast("सर्वर से "+total+" नए निशान, "+addH.length+" नए टेस्ट जुड़े"+(fixed?", "+fixed+" टेस्ट सुधारे":""));profile();return}
       m.style.color="#2e7d32";m.textContent="✅ कुछ नया नहीं मिला। आपके फ़ोन पर सब पहले से है ("+all.length+" निशान सर्वर पर)"+(miss?"; "+miss+" निशान के प्रश्न अब ऐप में नहीं हैं":"")+"।";
     }catch(e){m.style.color="#c62828";m.textContent="Error: "+e.message}
   }
