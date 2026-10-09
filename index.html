@@ -195,6 +195,10 @@ a.row{text-decoration:none;color:inherit}
 .dark .smenu,.dark .trb{background:#19243a}.dark .smenu button:active,.dark .trb.on{background:#26324e}
 .dark .vb{background:#2b2410;color:#ffe7a3;border-color:#8a6a14;box-shadow:none}
 </style>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#1457d9">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
 </head>
 <body>
 <div class="wrap" id="app"></div>
@@ -1426,6 +1430,12 @@ splash();
   };
   window.addEventListener("load",refresh);
 })();
+</script>
+<script>
+/* Offline support: service worker (sirf secure https page par) */
+if("serviceWorker" in navigator&&location.protocol==="https:"){
+  window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){})});
+}
 </script>
 </body>
 </html>
