@@ -121,7 +121,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 async function api(path, opts = {}) {
   const r = await fetch(SB_URL + path, {
     ...opts,
-    headers: { apikey: SB_KEY, Authorization: "Bearer " + (TOKEN || SB_KEY), "Content-Type": "application/json", ...(opts.headers || {}) }
+    headers: { apikey: SB_KEY, Authorization: "Bearer " + (TOKEN || SB_KEY), ...(opts.body ? { "Content-Type": "application/json" } : {}), ...(opts.headers || {}) }
   });
   const txt = await r.text();
   let j = null; try { j = txt ? JSON.parse(txt) : null; } catch (e) {}
