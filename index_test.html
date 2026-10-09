@@ -795,41 +795,7 @@ function home(){
   <div class="sh"><h3>हाल की गतिविधि</h3><a onclick="goTab('tests')">सभी देखें →</a></div>
   <div class="card act">${H.length?H.slice(0,3).map(actRow).join(""):"<small>अभी कोई टेस्ट नहीं दिया — ऊपर से शुरू करें।</small>"}</div></main>`,"home");
 }
-const studySoon=()=>studyMat("home");
-/* ---------- Study Material (Supabase 'materials' table se) ---------- */
-const SM_BASE="https://gpqrkxyypadgvguomfrr.supabase.co",SM_KEY="sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq";
-let SMX=[],SMC=[];
-const smE=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const smUrl=m=>m.file_path?SM_BASE+"/storage/v1/object/public/study-material/"+m.file_path.split("/").map(encodeURIComponent).join("/"):m.url;
-const smBack=f=>f==="more"?seeMore:home;
-function smShell(f,body){view(hdr(BACK,"","Study Material")+'<main class="pg">'+body+'</main>',f==="more"?"":"home",false,smBack(f))}
-async function studyMat(f){
-  clearInterval(tick);
-  smShell(f,'<div class="card cs"><small>लोड हो रहा है...</small></div>');
-  try{
-    const r=await fetch(SM_BASE+"/rest/v1/materials?select=id,title,category,kind,url,file_path&is_active=eq.true&order=created_at.desc&limit=1000",{headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}});
-    if(!r.ok)throw new Error("HTTP "+r.status);
-    SMX=await r.json();
-  }catch(e){
-    smShell(f,'<div class="card cs"><div class="csi">📡</div><p>Study Material अभी लोड नहीं हो पाया।<br>इंटरनेट जाँचकर दोबारा कोशिश करें।</p><button class="btn" id="smr">दोबारा कोशिश करें</button></div>');
-    document.getElementById("smr").onclick=()=>studyMat(f);return;
-  }
-  smHome(f);
-}
-function smHome(f){
-  const g={};SMX.forEach(m=>{const c=(m.category||"").trim()||"अन्य";(g[c]=g[c]||[]).push(m)});
-  SMC=Object.keys(g).map(k=>({k,items:g[k]}));
-  if(!SMC.length){smShell(f,'<div class="card cs"><div class="csi">📖</div><p>अभी कोई Study Material नहीं है।<br>जल्द ही जोड़ा जाएगा।</p></div>');return}
-  smShell(f,'<div class="list">'+SMC.map((c,i)=>R({c:"#0891b2",i:"📁",t:smE(c.k),s:c.items.length+" फ़ाइलें",on:"smCat("+i+",'"+f+"')"})).join("")+'</div>');
-}
-function smCat(i,f){
-  const c=SMC[i];if(!c)return smHome(f);
-  view(hdr(BACK,"",smE(c.k))+'<main class="pg"><div class="list">'+c.items.map(m=>{
-    const u=smUrl(m);if(!/^https:\/\//i.test(u||""))return"";
-    const yt=m.kind==="youtube";
-    return R({c:yt?"#e11d1d":"#1457d9",i:yt?"▶️":"📄",t:smE(m.title),s:yt?"YouTube Video":"PDF",href:smE(u),ext:1});
-  }).join("")+'</div></main>',"",false,()=>smHome(f));
-}
+const studySoon=()=>comingSoon("Study Material",()=>goTab("home"),"home","स्टडी मटेरियल और PDF");
 const mockSoon=f=>f==="tests"?modesSoon("Full Mock Test","All Subjects Combined",()=>tests(),"tests"):modesSoon("Full Mock Test","All Subjects Combined",()=>home(),"home");
 
 /* ---------- 1. Chapter Wise PYQ Test: विषय → चैप्टर → Test/Practice ---------- */
@@ -909,13 +875,54 @@ function mistakes(){
 const mistSoon=t=>comingSoon(t,mistakes,"mist");
 
 /* ---------- 5. YouTube ---------- */
-function youtube(){
+function youtube(nf){
   clearInterval(tick);
-  view(hdr(BACK,"","YouTube")+`<main class="pg"><div class="list">
+  const pc=SMOK?SMX.filter(m=>m.kind!=="youtube").length:0;
+  view(hdr(BACK,"","YouTube")+`<main class="pg" id="ytroot"><div class="list">
   ${R({c:"#e11d1d",i:YT,raw:1,t:"Videos",s:"वीडियो लेक्चर",b:YT_VIDEOS.length||"Coming Soon",soon:!YT_VIDEOS.length,on:YT_VIDEOS.length?"ytVideos()":"ytSoon('Videos')"})}
-  ${R({c:"#e11d1d",i:"📄",t:"PDF",s:"नोट्स और PDF",b:"Coming Soon",soon:1,on:"ytSoon('PDF')"})}</div></main>`,"",false,home);
+  ${R({c:"#e11d1d",i:"📄",t:"PDF",s:"नोट्स और PDF",b:pc||"",on:"studyMat()"})}</div></main>`,"",false,home);
+  if(nf!==1)smLoad().then(()=>{if(document.getElementById("ytroot"))youtube(1)}).catch(()=>{});
 }
 const ytSoon=t=>comingSoon(t,youtube,"");
+/* ---------- Admin panel ke 'materials' (Supabase) : PDF list + YouTube videos ---------- */
+const SM_BASE="https://gpqrkxyypadgvguomfrr.supabase.co",SM_KEY="sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq";
+let SMX=[],SMC=[],SMOK=false;
+const smE=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const smUrl=m=>m.file_path?SM_BASE+"/storage/v1/object/public/study-material/"+m.file_path.split("/").map(encodeURIComponent).join("/"):m.url;
+function smMerge(){
+  for(let i=YT_VIDEOS.length-1;i>=0;i--)if(YT_VIDEOS[i].db)YT_VIDEOS.splice(i,1);
+  SMX.filter(m=>m.kind==="youtube"&&ytId(m.url)).reverse().forEach(m=>{
+    if(!YT_VIDEOS.some(v=>ytId(v.url)===ytId(m.url)))YT_VIDEOS.push({url:m.url,title:m.title,db:1});
+  });
+}
+function smLoad(){
+  return fetch(SM_BASE+"/rest/v1/materials?select=id,title,category,kind,url,file_path&is_active=eq.true&order=created_at.desc&limit=1000",{headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}})
+  .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
+  .then(d=>{SMX=d;SMOK=true;smMerge();return d});
+}
+function smShell(body){view(hdr(BACK,"","PDF")+'<main class="pg">'+body+'</main>',"",false,youtube)}
+async function studyMat(){
+  clearInterval(tick);
+  smShell('<div class="card cs"><small>लोड हो रहा है...</small></div>');
+  try{await smLoad()}catch(e){
+    smShell('<div class="card cs"><div class="csi">📡</div><p>PDF अभी लोड नहीं हो पाईं।<br>इंटरनेट जाँचकर दोबारा कोशिश करें।</p><button class="btn" id="smr">दोबारा कोशिश करें</button></div>');
+    document.getElementById("smr").onclick=studyMat;return;
+  }
+  smHome();
+}
+function smHome(){
+  const g={};SMX.filter(m=>m.kind!=="youtube").forEach(m=>{const c=(m.category||"").trim()||"अन्य";(g[c]=g[c]||[]).push(m)});
+  SMC=Object.keys(g).map(k=>({k,items:g[k]}));
+  if(!SMC.length){smShell('<div class="card cs"><div class="csi">📄</div><p>अभी कोई PDF नहीं है।<br>जल्द ही जोड़ी जाएँगी।</p></div>');return}
+  smShell('<div class="list">'+SMC.map((c,i)=>R({c:"#e11d1d",i:"📁",t:smE(c.k),s:c.items.length+" PDF",on:"smCat("+i+")"})).join("")+'</div>');
+}
+function smCat(i){
+  const c=SMC[i];if(!c)return smHome();
+  view(hdr(BACK,"",smE(c.k))+'<main class="pg"><div class="list">'+c.items.map(m=>{
+    const u=smUrl(m);if(!/^https:\/\//i.test(u||""))return"";
+    return R({c:"#1457d9",i:"📄",t:smE(m.title),s:"PDF खोलें",href:smE(u),ext:1});
+  }).join("")+'</div></main>',"",false,smHome);
+}
 
 /* =====================================================
    YouTube Videos — नया वीडियो जोड़ने के लिए नीचे YT_VIDEOS में
@@ -1035,7 +1042,7 @@ function ytClose(noBack){
 function seeMore(){
   clearInterval(tick);
   view(hdr(BACK,"","See More")+`<main class="pg"><div class="list">
-  ${R({c:"#0891b2",i:"📖",t:"Study Material & PDF",s:"स्टडी मटेरियल और PDF",on:"studyMat('more')"})}
+  ${R({c:"#0891b2",i:"📖",t:"Study Material & PDF",s:"स्टडी मटेरियल और PDF",b:"Coming Soon",soon:1,on:"smSoon('Study Material & PDF')"})}
   ${R({c:"#1457d9",i:"🎓",t:"Courses",s:"अपनी तैयारी के लिए Courses",b:"Coming Soon",soon:1,on:"smSoon('Courses')"})}
   ${R({c:"#e8590c",i:"🧭",t:"Prepare According to Your Exam",s:"अपनी परीक्षा के अनुसार तैयारी",b:EXAMS.length+" परीक्षाएँ",on:"examList()"})}
   ${R({c:"#7c3aed",i:"👥",t:"Student Community",s:"विद्यार्थियों का समुदाय",b:"Coming Soon",soon:1,on:"smSoon('Student Community')"})}
