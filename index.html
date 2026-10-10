@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b3a8c">
+<link rel="preconnect" href="https://gpqrkxyypadgvguomfrr.supabase.co" crossorigin>
 <title>JAKHAR</title>
 <style>
 :root{--navy:#0b3a8c;--main:#1457d9;--bg:#eef3fb;--ink:#16202e;--mute:#64748b;--line:#d9e1ee;--ok:#16a34a;--okbg:#dcfce7;--bad:#dc2626;--badbg:#fee2e2}
@@ -215,6 +216,21 @@ a.row{text-decoration:none;color:inherit}
 .dvno{font-size:13px;color:var(--mute)}
 .dvpg{display:block;width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:6px;margin-bottom:10px}
 .dark .sq,.dark .dvc{background:#19243a}.dark .dvr{background:#142038;border-color:#2b3956}.dark .dvk{background:#19243a;border-color:#2b3956}.dark .dvr h4{color:#9db8ff}.dark .dvp{background:#101a2e}
+
+/* ===== Step 4: login screens ===== */
+.lg{max-width:520px;margin:0 auto;min-height:100vh;position:relative;background-color:#12306b;background-image:var(--lgbg),linear-gradient(180deg,#f3c77a 0%,#e9a85a 38%,#2a4f9a 75%,#0b2a63 100%);background-repeat:no-repeat;background-position:top center;background-size:100% auto,cover;padding:var(--lgtop) 14px 28px;font-family:"Noto Sans Devanagari","Segoe UI",Arial,sans-serif;color:#2a1a08}
+.lgc{background:rgba(255,248,235,.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.7);border-radius:22px;padding:18px 16px 16px;box-shadow:0 10px 30px rgba(11,42,99,.28)}
+.lgc h2{margin:0;font-size:22px;color:#0b3a8c}.lgc .sub{margin:2px 0 12px;font-size:13px;color:#6b5a44}
+.lgc label{display:block;font-size:12px;font-weight:700;color:#5a4a34;margin:10px 0 4px}
+.lgc input{display:block;width:100%;padding:12px;border-radius:12px;border:1px solid #d8c3a0;background:#fff;color:#2a1a08;font:inherit;font-size:16px}
+.lgc input:focus{outline:2px solid #1457d9;border-color:#1457d9}
+.lgp{position:relative}.lgp input{padding-right:48px}.lgp button{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:42px;height:42px;border:0;background:none;font-size:18px}
+.lgb{display:block;width:100%;margin-top:14px;padding:13px;border:0;border-radius:12px;background:linear-gradient(180deg,#1457d9,#0b3a8c);color:#fff;font-weight:700;font-size:16px}
+.lgb:disabled{opacity:.6}
+.lgl{background:none;border:0;color:#0b3a8c;font-weight:700;font-size:14px;padding:10px 4px;text-decoration:underline}
+.lgr{display:flex;justify-content:space-between;align-items:center;margin-top:4px;flex-wrap:wrap}
+.lgw{margin-top:10px;padding:8px 10px;border-radius:10px;background:#fdecec;border:1px solid #e57373;color:#c62828;font-size:13px;font-weight:700;line-height:1.4}
+.lgm{min-height:20px;margin-top:10px;font-size:13px;font-weight:600}.lgm.e{color:#c62828}.lgm.o{color:#16803a}
 </style>
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#1457d9">
@@ -757,6 +773,7 @@ const BM=on=>`<svg viewBox="0 0 24 24" fill="${on?"#ffd21f":"none"}" stroke="${o
 const BACK='<button class="ib" id="bk"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H5M11.5 5.5L5 12l6.5 6.5"/></svg></button>';
 function hdr(l,r,t){const f=t.replace(/<[^>]*>/g,"").length>30?' style="font-size:15px"':"";return `<header class="hd">${l||'<span class="ib"></span>'}<h1${f}>${t}</h1>${r||'<span class="ib"></span>'}</header>`}
 function view(html,tab,keep,bf){
+  if(window.JKAuth&&!window.__lgOK&&!JKAuth.isLoggedIn()&&window.loginScreen){loginScreen();return}  /* Step 5: login ke bina koi screen nahi */
   app.className="wrap"+(tab?" nb":"");
   app.innerHTML=html+(tab?`<nav class="bn">${TABS.map(t=>`<button class="${t[0]===tab?"on":""}" onclick="goTab('${t[0]}')"><span>${t[1]}</span>${t[2]}</button>`).join("")}</nav>`:"");
   if(!keep)window.scrollTo(0,0);
@@ -776,8 +793,8 @@ function comingSoon(t,bf,tab,sub){
 
 /* ---------- फ्रंट पेज ---------- */
 function splash(){
-  view(`<div class="spl2"><img src="${SPLASH_IMG}" alt="JAKHAR Classes"><div class="gsw"><button class="gs2" id="gs">Get Started →</button></div></div>`);
-  document.getElementById("gs").onclick=()=>{store.set("jk_seen",[1]);home()};
+  window.__lgOK=1;view(`<div class="spl2"><img src="${SPLASH_IMG}" alt="JAKHAR Classes"><div class="gsw"><button class="gs2" id="gs">Get Started →</button></div></div>`);
+  window.__lgOK=0;document.getElementById("gs").onclick=()=>{store.set("jk_seen",[1]);(window.JKAuth&&!JKAuth.isLoggedIn())?loginScreen():home()};
 }
 
 /* ---------- स्वागत संदेश (घंटी) ---------- */
@@ -1193,14 +1210,10 @@ function profile(){
   <p style="margin:12px 0 0;font-size:13px;color:var(--mute)">टेस्ट दिए: ${H.length} · सेव: ${cnt("pyq_saved")} · गलत: ${cnt("pyq_wrong")}</p></div>
   <div class="card" id="acct"></div>
   <div class="card"><b>🌐 ${lang==="en"?"Language":"भाषा · Language"}</b><div class="lgs"><button class="${lang==="en"?"":"on"}" onclick="setLang('hi')">हिंदी</button><button class="${lang==="en"?"on":""}" onclick="setLang('en')">English</button></div></div>
-  <button class="btn ghost" style="width:100%;margin-bottom:14px" id="rst">🗑 सारा डेटा रीसेट करें</button>
   <div class="list">${R({c:"#334155",i:"🌙",t:"Dark Theme",s:"आँखों को आराम — डार्क मोड",b:document.documentElement.classList.contains("dark")?"चालू":"बंद",on:"toggleDark()"})}
   ${R({c:"#64748b",i:"🔒",t:"Privacy Policy",s:"आपका डेटा कैसे सुरक्षित रहता है",on:"privacy()"})}
   ${R({c:"#1457d9",i:"📞",t:"Contact Us",s:"YouTube · Telegram · Email",on:"contact()"})}</div></main>`,"prof",false,home);
   if(window.acctRender)acctRender();
-  const b=document.getElementById("rst");
-  b.onclick=()=>{if(!b.dataset.s){b.dataset.s=1;b.textContent="पक्का? सारा डेटा मिट जाएगा — फिर से दबाएँ";return}
-    ["pyq_saved","pyq_wrong","jk_done","jk_hist","jk_days","jk_review","jk_prog"].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});toast("डेटा रीसेट हो गया");home()};
 }
 function toggleDark(){const on=!document.documentElement.classList.contains("dark");document.documentElement.classList.toggle("dark",on);store.set("jk_theme",[on?"dark":"light"]);profile()}
 function privacy(){
@@ -1483,8 +1496,9 @@ splash();
     if(!r.ok)throw new Error((j&&(j.msg||j.message||j.error_description||j.error))||("HTTP "+r.status));
     return j;
   }
-  function pack(j){return {access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Math.floor(Date.now()/1000)+(j.expires_in||3600),email:(j.user&&j.user.email)||""}}
-  async function refresh(){
+  function pack(j){return {access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Math.floor(Date.now()/1000)+(j.expires_in||3600),email:(j.user&&j.user.email)||"",uid:(j.user&&j.user.id)||""}}
+  let RP=null;function refresh(){return RP||(RP=refreshOnce().finally(()=>{RP=null}))}
+  async function refreshOnce(){
     const s=load();if(!s||!s.refresh_token)return;
     if(s.expires_at-60>Date.now()/1000)return;
     try{save(pack(await call("/auth/v1/token?grant_type=refresh_token",{refresh_token:s.refresh_token})))}
@@ -1562,18 +1576,91 @@ splash();
     }catch(e){m.style.color="#c62828";m.textContent="Error: "+e.message}
   }
   window.getAuthSession=load;
+  /* ===== JKAuth (Step 3): login / signup / logout / password reset ek jagah. Session format wahi rahta hai (jkx_auth). ===== */
+  const FR=[
+    [/^busy$/,""],
+    [/^EMPTY$/,"ईमेल और पासवर्ड भरें।"],
+    [/^BADEMAIL$/,"सही ईमेल लिखें।"],
+    [/^SHORTPW$/,"पासवर्ड कम से कम 8 अक्षर का रखें।"],
+    [/^NOREC$/,"लिंक पुराना हो गया है। दोबारा 'पासवर्ड भूल गए' से नया लिंक मँगाएँ।"],
+    [/invalid login credentials/i,"ईमेल या पासवर्ड गलत है।"],
+    [/email not confirmed/i,"पहले अपना ईमेल कन्फ़र्म करें (ईमेल में आया लिंक खोलें)।"],
+    [/already registered|already been registered|user already/i,"यह ईमेल पहले से रजिस्टर है। लॉगिन करें।"],
+    [/rate limit|too many|security purposes|over_.*limit/i,"बहुत बार कोशिश हो गई। थोड़ी देर बाद फिर कोशिश करें।"],
+    [/failed to fetch|networkerror|load failed|network request/i,"इंटरनेट नहीं है या कमज़ोर है। जाँचकर फिर कोशिश करें।"],
+    [/at least \d+ char|password should|weak password/i,"पासवर्ड कम से कम 8 अक्षर का रखें।"],
+    [/different from the old|same as the old|should be different/i,"नया पासवर्ड पुराने से अलग रखें।"],
+    [/expired|invalid.*(token|link)|link.*invalid|otp_expired|jwt/i,"लिंक पुराना हो गया है। दोबारा 'पासवर्ड भूल गए' से नया लिंक मँगाएँ।"],
+    [/invalid.*email|unable to validate email|email.*invalid/i,"सही ईमेल लिखें।"],
+    [/signups? not allowed|signup.*disabled/i,"अभी नए अकाउंट नहीं बन रहे।"]
+  ];
+  function friendly(e){const m=String((e&&e.message)||e||"");for(let i=0;i<FR.length;i++)if(FR[i][0].test(m))return FR[i][1];return "कुछ गड़बड़ हुई। फिर कोशिश करें।"}
+  const validEmail=s=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(s||"").trim());
+  const busy={};
+  async function once(k,fn){if(busy[k])throw new Error("busy");busy[k]=1;try{return await fn()}finally{busy[k]=0}}
+  let REC=null,LINKERR="";
+  async function authedGet(path,token){
+    const r=await fetch(BASE+path,{headers:{apikey:KEY,Authorization:"Bearer "+token}});
+    const j=await r.json().catch(()=>null);
+    if(!r.ok)throw new Error((j&&(j.msg||j.message||j.error_description||j.error))||("HTTP "+r.status));
+    return j;
+  }
+  async function ensureUid(){
+    try{
+      await refresh();const s=load();if(!s)return "";
+      if(s.uid)return s.uid;
+      const u=await authedGet("/auth/v1/user",s.access_token);
+      s.uid=u.id||"";if(u.email)s.email=u.email;save(s);return s.uid;
+    }catch(e){return ""}
+  }
+  function signIn(email,password){return once("in",async()=>{
+    email=String(email||"").trim();if(!email||!password)throw new Error("EMPTY");
+    save(pack(await call("/auth/v1/token?grant_type=password",{email,password})));return load()})}
+  function signUp(email,password){return once("up",async()=>{
+    email=String(email||"").trim();if(!email||!password)throw new Error("EMPTY");
+    if(!validEmail(email))throw new Error("BADEMAIL");if(String(password).length<8)throw new Error("SHORTPW");
+    const j=await call("/auth/v1/signup",{email,password});
+    if(j&&j.access_token){save(pack(j));return {session:true}}
+    return {session:false}})}
+  function resetPassword(email){return once("reset",async()=>{
+    email=String(email||"").trim();if(!validEmail(email))throw new Error("BADEMAIL");
+    await call("/auth/v1/recover?redirect_to="+encodeURIComponent(location.origin+location.pathname),{email});return true})}
+  function signOut(){
+    const s=load();save(null);   /* pehle device se hatao, taaki offline me bhi logout ho jaye */
+    if(s&&s.access_token){try{fetch(BASE+"/auth/v1/logout?scope=local",{method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+s.access_token}}).catch(()=>{})}catch(e){}}
+  }
+  function updatePassword(pw){return once("newpw",async()=>{
+    if(!REC)throw new Error("NOREC");if(String(pw||"").length<8)throw new Error("SHORTPW");
+    const r=await fetch(BASE+"/auth/v1/user",{method:"PUT",headers:{apikey:KEY,Authorization:"Bearer "+REC.access_token,"Content-Type":"application/json"},body:JSON.stringify({password:pw})});
+    const j=await r.json().catch(()=>null);
+    if(!r.ok)throw new Error((j&&(j.msg||j.message||j.error_description||j.error))||("HTTP "+r.status));
+    save({access_token:REC.access_token,refresh_token:REC.refresh_token,expires_at:REC.expires_at,email:(j&&j.email)||"",uid:(j&&j.id)||""});
+    REC=null;return load()})}
+  /* Email ke link se lautne par URL ke #hash me tokens aate hain (password reset / confirm). Yahan padhkar URL saaf kar dete hain. */
+  function takeFromUrl(){
+    try{
+      const h=(location.hash||"").replace(/^#/,"");if(!h)return;
+      const p=new URLSearchParams(h);
+      if(p.get("error_description")||p.get("error")){LINKERR=p.get("error_description")||p.get("error");}
+      else if(p.get("access_token")&&p.get("refresh_token")){
+        const s={access_token:p.get("access_token"),refresh_token:p.get("refresh_token"),expires_at:Math.floor(Date.now()/1000)+(parseInt(p.get("expires_in"),10)||3600),email:"",uid:""};
+        if(p.get("type")==="recovery")REC=s;else{save(s);ensureUid()}
+      }else return;
+      history.replaceState(null,"",location.pathname+location.search);
+    }catch(e){}
+  }
+  takeFromUrl();
+  window.JKAuth={getSession:load,isLoggedIn:()=>!!load(),uid:()=>(load()||{}).uid||"",ensureUid,signIn,signUp,signOut,resetPassword,updatePassword,takeFromUrl,pendingRecovery:()=>REC,linkError:()=>LINKERR,refresh,friendly,validEmail};
+  window.addEventListener("load",function(){ensureUid()});
   window.acctRender=function(){
     const el=document.getElementById("acct");if(!el)return;
     const s=load();
     if(s){
       el.innerHTML='<b>👤 अकाउंट</b><p style="margin:8px 0;font-size:13px;color:var(--mute)">लॉगिन: '+esc(s.email)+'</p>'+
-        '<button class="btn" id="acSync" style="width:100%;margin-bottom:8px">☁️ प्रोग्रेस सर्वर पर सेव करें</button>'+
-        '<button class="btn ghost" id="acDown" style="width:100%;margin-bottom:8px">⬇️ सर्वर से प्रोग्रेस वापस लाएँ</button>'+
-        '<div id="acS" style="font-size:13px;margin-bottom:8px;min-height:18px"></div>'+
+        '<div id="syncChip" style="margin:0 0 8px;padding:8px 10px;border:1px solid rgba(128,128,128,.35);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer"></div>'+
         '<button class="btn ghost" id="acOut" style="width:100%">लॉगआउट</button>';
-      document.getElementById("acOut").onclick=()=>{save(null);acctRender()};
-      document.getElementById("acSync").onclick=uploadProgress;
-      document.getElementById("acDown").onclick=downloadProgress;
+      document.getElementById("acOut").onclick=()=>{signOut();loginScreen()};
+      if(window.JKSync)JKSync.paint();
       return;
     }
     const inp='display:block;width:100%;box-sizing:border-box;padding:10px 12px;margin:8px 0;border-radius:8px;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;font:inherit';
@@ -1597,6 +1684,219 @@ splash();
     document.getElementById("acUp").onclick=()=>go("up");
   };
   window.addEventListener("load",refresh);
+})();
+</script>
+<script>
+/* ===== Step 4: Login / Sign Up / Forgot / New-password screens =====
+   JK_LOGIN: background badalna ho to sirf yahan ki lines badlo. Auth code ko mat chhuo.
+   bg      = image ki file ka path (GitHub me jahan rakhi hai)
+   cardTop = card kitna neeche shuru ho (vw me). Portrait/chehra card ke upar dikhna chahiye. */
+const JK_LOGIN={bg:"login-background.webp",cardTop:66};
+(function(){
+  const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const $=id=>document.getElementById(id);
+  function shell(inner){
+    window.__lgOK=1;view('<div class="lg" style="--lgbg:url(\''+esc(JK_LOGIN.bg)+'\');--lgtop:'+JK_LOGIN.cardTop+'vw"><div class="lgc">'+inner+'</div></div>');window.__lgOK=0;
+  }
+  function msg(t,ok){const m=$("lgM");if(m){m.className="lgm "+(ok?"o":"e");m.textContent=t||""}}
+  function eye(id){const b=$(id+"Eye"),i=$(id);if(b)b.onclick=()=>{const h=i.type==="password";i.type=h?"text":"password";b.innerHTML=h?EYE_ON:EYE_OFF}}
+  const EYE_ON='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#5a4a34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>',EYE_OFF='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#5a4a34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/></svg>';
+  function pw(id,label,ac,ph){return '<label for="'+id+'">'+label+'</label><div class="lgp"><input id="'+id+'" type="password" autocomplete="'+ac+'" placeholder="'+(ph||"Yahan apna password likhein")+'"><button type="button" id="'+id+'Eye" aria-label="show/hide password">'+EYE_OFF+'</button></div>'}
+  async function run(btn,fn){
+    const lbl=btn.textContent;btn.disabled=true;btn.textContent="\u0915\u0943\u092a\u092f\u093e \u0930\u0941\u0915\u0947\u0902...";msg("");
+    try{await fn()}catch(e){if(!(e&&e.message==="busy"))msg(JKAuth.friendly(e))}
+    if(document.body.contains(btn)){btn.disabled=false;btn.textContent=lbl}
+  }
+  window.loginScreen=function(note,ok){
+    shell('<h2>\u0935\u093e\u092a\u0938 \u0938\u094d\u0935\u093e\u0917\u0924 \u0939\u0948 \u{1F44B}</h2><p class="sub">Welcome Back \u2022 \u0905\u092a\u0928\u0947 \u0905\u0915\u093e\u0909\u0902\u091f \u092e\u0947\u0902 \u0932\u0949\u0917\u093f\u0928 \u0915\u0930\u0947\u0902</p>'+
+      '<label for="lgE">Email</label><input id="lgE" type="email" autocomplete="username" inputmode="email" placeholder="Yahan apni email likhein">'+
+      pw("lgP","Password","current-password")+
+      '<div class="lgr"><span></span><button class="lgl" id="lgF" type="button">Forgot Password?</button></div>'+
+      '<button class="lgb" id="lgGo" type="button">Login</button><div class="lgm" id="lgM"></div>'+
+      '<div style="text-align:center;font-size:14px">\u0928\u092f\u093e \u092f\u0942\u091c\u093c\u0930? <button class="lgl" id="lgNew" type="button">Create an Account</button></div>');
+    eye("lgP");if(note)msg(note,ok);
+    const go=()=>run($("lgGo"),async()=>{await JKAuth.signIn($("lgE").value,$("lgP").value);home();window.JKSync&&JKSync.run()});
+    $("lgGo").onclick=go;$("lgP").onkeydown=e=>{if(e.key==="Enter")go()};
+    $("lgF").onclick=()=>forgotScreen($("lgE").value);$("lgNew").onclick=()=>signupScreen();
+  };
+  window.signupScreen=function(){
+    shell('<h2>\u0928\u092f\u093e \u0905\u0915\u093e\u0909\u0902\u091f \u092c\u0928\u093e\u090f\u0902</h2><p class="sub">Create Account \u2022 \u0938\u093f\u0930\u094d\u092b \u0915\u0941\u091b \u0938\u0947\u0915\u0902\u0921 \u0915\u093e \u0915\u093e\u092e</p>'+
+      '<label for="suE">Email</label><input id="suE" type="email" autocomplete="username" inputmode="email" placeholder="Yahan apni email likhein">'+
+      pw("suP","Password (\u0915\u092e \u0938\u0947 \u0915\u092e 8 \u0905\u0915\u094d\u0937\u0930)","new-password")+
+      pw("suC","Confirm Password","new-password","Password dobara likhein")+
+      '<div class="lgw">Dhyan dein: Yahan aapko naya password create karna hai. Apne Gmail ka purana password nahi daalna hai.</div>'+
+      '<button class="lgb" id="suGo" type="button">Sign Up</button><div class="lgm" id="lgM"></div>'+
+      '<div style="text-align:center;font-size:14px">\u092a\u0939\u0932\u0947 \u0938\u0947 \u0905\u0915\u093e\u0909\u0902\u091f \u0939\u0948? <button class="lgl" id="suBack" type="button">Login</button></div>');
+    eye("suP");eye("suC");
+    const go=()=>run($("suGo"),async()=>{
+      const e=$("suE").value.trim(),p=$("suP").value;
+      if(!e||!p)throw new Error("EMPTY");
+      if(!JKAuth.validEmail(e))throw new Error("BADEMAIL");
+      if(p.length<8)throw new Error("SHORTPW");
+      if(p!==$("suC").value){msg("\u0926\u094b\u0928\u094b\u0902 password \u090f\u0915 \u091c\u0948\u0938\u0947 \u0928\u0939\u0940\u0902 \u0939\u0948\u0902");return}
+      const r=await JKAuth.signUp(e,p);
+      if(r&&r.session){home();window.JKSync&&JKSync.run()}else loginScreen("\u0905\u0915\u093e\u0909\u0902\u091f \u092c\u0928 \u0917\u092f\u093e\u0964 \u0905\u092c Login \u0915\u0930\u0947\u0902\u0964",true);
+    });
+    $("suGo").onclick=go;$("suC").onkeydown=e=>{if(e.key==="Enter")go()};$("suBack").onclick=()=>loginScreen();
+  };
+  window.forgotScreen=function(prefill){
+    shell('<h2>Password \u092d\u0942\u0932 \u0917\u090f?</h2><p class="sub">\u0905\u092a\u0928\u093e email \u0921\u093e\u0932\u0947\u0902, \u0939\u092e reset \u0932\u093f\u0902\u0915 \u092d\u0947\u091c\u0947\u0902\u0917\u0947\u0964</p>'+
+      '<label for="fpE">Email</label><input id="fpE" type="email" autocomplete="username" inputmode="email" placeholder="Yahan apni email likhein" value="'+esc(prefill||"")+'">'+
+      '<button class="lgb" id="fpGo" type="button">Reset Link \u092d\u0947\u091c\u0947\u0902</button><div class="lgm" id="lgM"></div>'+
+      '<div style="text-align:center"><button class="lgl" id="fpBack" type="button">\u2190 Login \u092a\u0930 \u0935\u093e\u092a\u0938</button></div>');
+    $("fpGo").onclick=()=>run($("fpGo"),async()=>{await JKAuth.resetPassword($("fpE").value);msg("\u0932\u093f\u0902\u0915 \u092d\u0947\u091c \u0926\u093f\u092f\u093e\u0964 Email (\u0914\u0930 Spam) \u0926\u0947\u0916\u0947\u0902\u0964",true)});
+    $("fpBack").onclick=()=>loginScreen();
+  };
+  window.newPwScreen=function(){
+    shell('<h2>\u0928\u092f\u093e Password \u0938\u0947\u091f \u0915\u0930\u0947\u0902</h2><p class="sub">\u0915\u092e \u0938\u0947 \u0915\u092e 8 \u0905\u0915\u094d\u0937\u0930</p>'+
+      pw("npP","New Password","new-password")+pw("npC","Confirm Password","new-password","Password dobara likhein")+
+      '<button class="lgb" id="npGo" type="button">Password Save \u0915\u0930\u0947\u0902</button><div class="lgm" id="lgM"></div>');
+    eye("npP");eye("npC");
+    $("npGo").onclick=()=>run($("npGo"),async()=>{
+      const p=$("npP").value;if(p.length<8)throw new Error("SHORTPW");
+      if(p!==$("npC").value){msg("\u0926\u094b\u0928\u094b\u0902 password \u090f\u0915 \u091c\u0948\u0938\u0947 \u0928\u0939\u0940\u0902 \u0939\u0948\u0902");return}
+      await JKAuth.updatePassword(p);home();window.JKSync&&JKSync.run();
+    });
+  };
+  /* Email ke link se lautne par: reset form ya link-error dikhao */
+  window.addEventListener("load",async function(){
+    if(!window.JKAuth)return;
+    if(JKAuth.pendingRecovery()){newPwScreen();return}
+    if(JKAuth.linkError()){loginScreen(JKAuth.friendly(JKAuth.linkError()),false);return}
+    try{await JKAuth.refresh()}catch(e){}
+    const onSplash=!!$("gs"),onLogin=!!document.querySelector(".lg");
+    if(JKAuth.isLoggedIn()){if(onSplash)home()}
+    else if(!onSplash&&!onLogin)loginScreen("Session khatam ho gaya. Dobara login karein.",false);
+  });
+})();
+</script>
+<script>
+/* ===== Step 6: Automatic sync (JKSync). Union-merge + removals via "shadow" (server state at last sync). ===== */
+(function(){
+  const BASE="https://gpqrkxyypadgvguomfrr.supabase.co",KEY="sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq";
+  const KINDS={done:"jk_done",saved:"pyq_saved",wrong:"pyq_wrong",review:"jk_review"};
+  const KN=Object.keys(KINDS),LK=KN.map(k=>KINDS[k]),WATCH=new Set(LK.concat(["jk_hist"])),MK="jkx_sync";
+  let state="idle",running=false,again=false,timer=null,retryN=0,applying=false;
+  const rawSet=store.set;
+  store.set=function(k){const r=rawSet.apply(store,arguments);if(!applying&&WATCH.has(k))touch();return r};
+  function meta(){try{return JSON.parse(localStorage.getItem(MK)||"null")||{}}catch(e){return{}}}
+  function saveMeta(m){try{localStorage.setItem(MK,JSON.stringify(m))}catch(e){}}
+  function backup(key){try{const o={ts:Date.now()};LK.concat(["jk_hist"]).forEach(k=>o[k]=store.get(k));localStorage.setItem(key||"jkx_bak_last",JSON.stringify(o))}catch(e){}}
+  const hd=(tok,x)=>Object.assign({apikey:KEY,Authorization:"Bearer "+tok,"Content-Type":"application/json"},x||{});
+  async function must(r){if(!r.ok&&r.status!==206){const j=await r.json().catch(()=>null);const e=new Error((j&&(j.message||j.msg))||("HTTP "+r.status));e.status=r.status;throw e}return r}
+  async function fetchAll(path,tok,step){
+    let all=[],from=0;
+    while(true){
+      const r=await must(await fetch(BASE+path,{headers:hd(tok,{Range:from+"-"+(from+step-1)})}));
+      const d=await r.json();all=all.concat(d);if(d.length<step)break;from+=step;
+    }
+    return all;
+  }
+  async function qmap(tok){
+    const idOf={},textOf={};
+    QUESTIONS.forEach(q=>{if(q.id){idOf[q.question]=q.id;textOf[q.id]=q.question}});
+    if(Object.keys(idOf).length<QUESTIONS.length*0.9){
+      (await fetchAll("/rest/v1/questions?select=id,question&is_active=eq.true",tok,1000)).forEach(q=>{idOf[q.question]=q.id;textOf[q.id]=q.question});
+    }
+    return {idOf,textOf};
+  }
+  async function doSync(){
+    await JKAuth.refresh();let s=JKAuth.getSession();if(!s)throw new Error("login nahi hai");
+    const uid=s.uid||await JKAuth.ensureUid();if(!uid)throw new Error("uid nahi mila");
+    s=JKAuth.getSession()||s;const tok=s.access_token;
+    const {idOf,textOf}=await qmap(tok);
+    let m=meta();
+    const hasLocal=LK.some(k=>store.get(k).length)||store.get("jk_hist").length>0;
+    if(m.uid!==uid){
+      if(hasLocal){
+        const merge=confirm("Is phone par pehle ka progress mila hai. Ise is account me jodna hai?\n\nOK = jodo (recommended)\nCancel = alag rakho (is account ka server wala data dikhega; purana data backup me rahega)");
+        if(!merge){backup("jkx_bak_"+Date.now());applying=true;try{LK.forEach(k=>rawSet.call(store,k,[]));rawSet.call(store,"jk_hist",[])}finally{applying=false}}
+      }
+      m={uid:uid,shadow:{},lastSync:0,pending:true};saveMeta(m);
+    }
+    const shadow=m.shadow||{};
+    const rows=await fetchAll("/rest/v1/user_flags?select=question_id,kind&order=created_at.asc,question_id.asc",tok,1000);
+    const S={},L={},H={},up={},dl={},al={},rl={};
+    KN.forEach(k=>{S[k]=new Set();L[k]=new Set();H[k]=new Set(shadow[k]||[]);up[k]=[];dl[k]=[];al[k]=[];rl[k]=[]});
+    rows.forEach(r=>{if(S[r.kind])S[r.kind].add(r.question_id)});
+    KN.forEach(k=>store.get(KINDS[k]).forEach(t=>{const id=idOf[t];if(id)L[k].add(id)}));
+    /* device wipe (Reset / storage clear) = removal nahi maana jayega; server se wapas aayega */
+    const wipe=!hasLocal&&KN.some(k=>H[k].size);
+    KN.forEach(k=>{
+      L[k].forEach(id=>{if(!S[k].has(id)){if(H[k].has(id)&&!wipe)rl[k].push(id);else up[k].push(id)}});
+      S[k].forEach(id=>{if(!L[k].has(id)){if(H[k].has(id)&&!wipe&&textOf[id])dl[k].push(id);else al[k].push(id)}});
+    });
+    /* server par upload */
+    const upRows=[];KN.forEach(k=>up[k].forEach(id=>upRows.push({question_id:id,kind:k})));
+    for(let i=0;i<upRows.length;i+=400)await must(await fetch(BASE+"/rest/v1/user_flags",{method:"POST",headers:hd(tok,{Prefer:"resolution=ignore-duplicates"}),body:JSON.stringify(upRows.slice(i,i+400))}));
+    /* server se hatao (jo is phone se hataya gaya) */
+    for(const k of KN)for(let i=0;i<dl[k].length;i+=80)await must(await fetch(BASE+"/rest/v1/user_flags?user_id=eq."+uid+"&kind=eq."+k+"&question_id=in.("+dl[k].slice(i,i+80).join(",")+")",{method:"DELETE",headers:hd(tok)}));
+    /* phone me badlav (delta, taaki beech me hua naya badlav na mite) */
+    let changed=false;
+    if(KN.some(k=>rl[k].length))backup();
+    applying=true;
+    try{
+      KN.forEach(k=>{
+        const key=KINDS[k],rmT=new Set(rl[k].map(id=>textOf[id]).filter(Boolean)),addT=al[k].map(id=>textOf[id]).filter(Boolean);
+        if(!rmT.size&&!addT.length)return;
+        const cur=store.get(key),have=new Set(cur),n=cur.filter(t=>!rmT.has(t));
+        addT.forEach(t=>{if(!have.has(t)){n.push(t);have.add(t)}});
+        rawSet.call(store,key,n);changed=true;
+      });
+    }finally{applying=false}
+    /* history: union by ts (kabhi delete nahi) */
+    const hrows=await fetchAll("/rest/v1/user_history?select=data&order=taken_at.desc",tok,1000);
+    const srvTs=new Set();hrows.forEach(r=>{if(r.data&&r.data.ts)srvTs.add(String(r.data.ts))});
+    const newH=store.get("jk_hist").filter(h=>h&&h.ts&&!srvTs.has(String(h.ts))).map(h=>({data:{n:h.n,r:h.r,w:h.w,s:h.s,m:h.m,sc:h.sc,ts:h.ts,qi:h.qs?h.qs.map(x=>idOf[x]||null):null,p:h.p,t:h.t,rv:h.rv}}));
+    for(let i=0;i<newH.length;i+=25){
+      const part=newH.slice(i,i+25),r=await fetch(BASE+"/rest/v1/user_history",{method:"POST",headers:hd(tok),body:JSON.stringify(part)});
+      if(r.status===409){for(const one of part){const r2=await fetch(BASE+"/rest/v1/user_history",{method:"POST",headers:hd(tok),body:JSON.stringify([one])});if(!r2.ok&&r2.status!==409)await must(r2)}}
+      else await must(r);
+    }
+    const fresh=store.get("jk_hist"),haveTs=new Set(fresh.map(h=>String(h&&h.ts))),addH=[];
+    hrows.forEach(row=>{const d=row.data;if(!d||!d.ts||haveTs.has(String(d.ts)))return;haveTs.add(String(d.ts));
+      const e={n:d.n,r:d.r,w:d.w,s:d.s,m:d.m,sc:d.sc,ts:d.ts};
+      if(d.qi){e.qs=d.qi.map(id=>textOf[id]||null);e.p=d.p;e.t=d.t;e.rv=d.rv}
+      addH.push(e)});
+    if(addH.length){applying=true;try{rawSet.call(store,"jk_hist",fresh.concat(addH).sort((x,y)=>y.ts-x.ts))}finally{applying=false}changed=true}
+    /* nayi shadow = server ki ab ki halat */
+    const ns={};KN.forEach(k=>{const f=new Set(S[k]);up[k].forEach(id=>f.add(id));dl[k].forEach(id=>f.delete(id));ns[k]=Array.from(f)});
+    const m2=meta();m2.uid=uid;m2.shadow=ns;m2.lastSync=Date.now();m2.pending=again;saveMeta(m2);
+    if(changed){if(document.querySelector(".greet"))home();else if(document.getElementById("acct"))profile()}
+  }
+  async function run(){
+    if(!window.JKAuth||!JKAuth.isLoggedIn())return;
+    if(running){again=true;return}
+    if(!navigator.onLine){setState("offline");return}
+    running=true;clearTimeout(timer);setState("syncing");
+    try{await doSync();retryN=0;setState("synced")}
+    catch(e){
+      try{console.warn("sync:",e&&e.message)}catch(_){}
+      if(navigator.onLine){setState("failed");const d=[5,15,45,120,300];timer=setTimeout(run,d[Math.min(retryN++,4)]*1000)}else setState("offline");
+    }
+    running=false;
+    if(again){again=false;clearTimeout(timer);timer=setTimeout(run,500)}
+  }
+  function touch(){
+    if(!window.JKAuth||!JKAuth.isLoggedIn())return;
+    const m=meta();m.pending=true;saveMeta(m);paint();clearTimeout(timer);timer=setTimeout(run,3000);
+  }
+  function setState(s){state=s;paint()}
+  function fmt(t){try{return new Date(t).toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit"})}catch(e){return ""}}
+  function paint(){
+    const el=document.getElementById("syncChip");if(!el)return;
+    const m=meta();let t,c;
+    if(state==="syncing"){t="Syncing...";c="#1457d9"}
+    else if(state==="offline"){t="Offline - net aane par sync hoga";c="#b26a00"}
+    else if(state==="failed"){t="Sync Failed - tap karke dobara try karein";c="#c62828"}
+    else{t=m.lastSync?"Synced - "+fmt(m.lastSync):(m.pending?"Sync baaki hai":"Sync ke liye taiyar");c="#16803a"}
+    el.textContent=t;el.style.color=c;el.onclick=()=>{retryN=0;run()};
+  }
+  window.addEventListener("online",()=>{retryN=0;run()});
+  window.addEventListener("offline",()=>setState("offline"));
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&meta().pending)run()});
+  window.addEventListener("load",()=>setTimeout(run,1500));
+  window.JKSync={run,touch,paint,state:()=>state,_doSync:doSync};
 })();
 </script>
 <script>
