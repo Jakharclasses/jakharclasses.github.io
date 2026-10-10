@@ -1663,9 +1663,11 @@ splash();
       el.innerHTML='<b>👤 अकाउंट</b><p style="margin:8px 0;font-size:13px;color:var(--mute)">लॉगिन: '+esc(s.email)+'</p>'+
         '<button class="btn" id="acSync" style="width:100%;margin-bottom:8px">☁️ प्रोग्रेस सर्वर पर सेव करें</button>'+
         '<button class="btn ghost" id="acDown" style="width:100%;margin-bottom:8px">⬇️ सर्वर से प्रोग्रेस वापस लाएँ</button>'+
+        '<div id="syncChip" style="margin:0 0 8px;padding:8px 10px;border:1px solid rgba(128,128,128,.35);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer"></div>'+
         '<div id="acS" style="font-size:13px;margin-bottom:8px;min-height:18px"></div>'+
         '<button class="btn ghost" id="acOut" style="width:100%">लॉगआउट</button>';
       document.getElementById("acOut").onclick=()=>{signOut();loginScreen()};
+      if(window.JKSync)JKSync.paint();
       document.getElementById("acSync").onclick=uploadProgress;
       document.getElementById("acDown").onclick=downloadProgress;
       return;
@@ -1722,7 +1724,7 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
       '<button class="lgb" id="lgGo" type="button">Login</button><div class="lgm" id="lgM"></div>'+
       '<div style="text-align:center;font-size:14px">\u0928\u092f\u093e \u092f\u0942\u091c\u093c\u0930? <button class="lgl" id="lgNew" type="button">Create an Account</button></div>');
     eye("lgP");if(note)msg(note,ok);
-    const go=()=>run($("lgGo"),async()=>{await JKAuth.signIn($("lgE").value,$("lgP").value);home()});
+    const go=()=>run($("lgGo"),async()=>{await JKAuth.signIn($("lgE").value,$("lgP").value);home();window.JKSync&&JKSync.run()});
     $("lgGo").onclick=go;$("lgP").onkeydown=e=>{if(e.key==="Enter")go()};
     $("lgF").onclick=()=>forgotScreen($("lgE").value);$("lgNew").onclick=()=>signupScreen();
   };
@@ -1742,7 +1744,7 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
       if(p.length<8)throw new Error("SHORTPW");
       if(p!==$("suC").value){msg("\u0926\u094b\u0928\u094b\u0902 password \u090f\u0915 \u091c\u0948\u0938\u0947 \u0928\u0939\u0940\u0902 \u0939\u0948\u0902");return}
       const r=await JKAuth.signUp(e,p);
-      if(r&&r.session)home();else loginScreen("\u0905\u0915\u093e\u0909\u0902\u091f \u092c\u0928 \u0917\u092f\u093e\u0964 \u0905\u092c Login \u0915\u0930\u0947\u0902\u0964",true);
+      if(r&&r.session){home();window.JKSync&&JKSync.run()}else loginScreen("\u0905\u0915\u093e\u0909\u0902\u091f \u092c\u0928 \u0917\u092f\u093e\u0964 \u0905\u092c Login \u0915\u0930\u0947\u0902\u0964",true);
     });
     $("suGo").onclick=go;$("suC").onkeydown=e=>{if(e.key==="Enter")go()};$("suBack").onclick=()=>loginScreen();
   };
@@ -1762,7 +1764,7 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
     $("npGo").onclick=()=>run($("npGo"),async()=>{
       const p=$("npP").value;if(p.length<8)throw new Error("SHORTPW");
       if(p!==$("npC").value){msg("\u0926\u094b\u0928\u094b\u0902 password \u090f\u0915 \u091c\u0948\u0938\u0947 \u0928\u0939\u0940\u0902 \u0939\u0948\u0902");return}
-      await JKAuth.updatePassword(p);home();
+      await JKAuth.updatePassword(p);home();window.JKSync&&JKSync.run();
     });
   };
   /* Email ke link se lautne par: reset form ya link-error dikhao */
@@ -1775,6 +1777,135 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
     if(JKAuth.isLoggedIn()){if(onSplash)home()}
     else if(!onSplash&&!onLogin)loginScreen("Session khatam ho gaya. Dobara login karein.",false);
   });
+})();
+</script>
+<script>
+/* ===== Step 6: Automatic sync (JKSync). Union-merge + removals via "shadow" (server state at last sync). ===== */
+(function(){
+  const BASE="https://gpqrkxyypadgvguomfrr.supabase.co",KEY="sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq";
+  const KINDS={done:"jk_done",saved:"pyq_saved",wrong:"pyq_wrong",review:"jk_review"};
+  const KN=Object.keys(KINDS),LK=KN.map(k=>KINDS[k]),WATCH=new Set(LK.concat(["jk_hist"])),MK="jkx_sync";
+  let state="idle",running=false,again=false,timer=null,retryN=0,applying=false;
+  const rawSet=store.set;
+  store.set=function(k){const r=rawSet.apply(store,arguments);if(!applying&&WATCH.has(k))touch();return r};
+  function meta(){try{return JSON.parse(localStorage.getItem(MK)||"null")||{}}catch(e){return{}}}
+  function saveMeta(m){try{localStorage.setItem(MK,JSON.stringify(m))}catch(e){}}
+  function backup(key){try{const o={ts:Date.now()};LK.concat(["jk_hist"]).forEach(k=>o[k]=store.get(k));localStorage.setItem(key||"jkx_bak_last",JSON.stringify(o))}catch(e){}}
+  const hd=(tok,x)=>Object.assign({apikey:KEY,Authorization:"Bearer "+tok,"Content-Type":"application/json"},x||{});
+  async function must(r){if(!r.ok&&r.status!==206){const j=await r.json().catch(()=>null);const e=new Error((j&&(j.message||j.msg))||("HTTP "+r.status));e.status=r.status;throw e}return r}
+  async function fetchAll(path,tok,step){
+    let all=[],from=0;
+    while(true){
+      const r=await must(await fetch(BASE+path,{headers:hd(tok,{Range:from+"-"+(from+step-1)})}));
+      const d=await r.json();all=all.concat(d);if(d.length<step)break;from+=step;
+    }
+    return all;
+  }
+  async function qmap(tok){
+    const idOf={},textOf={};
+    QUESTIONS.forEach(q=>{if(q.id){idOf[q.question]=q.id;textOf[q.id]=q.question}});
+    if(Object.keys(idOf).length<QUESTIONS.length*0.9){
+      (await fetchAll("/rest/v1/questions?select=id,question&is_active=eq.true",tok,1000)).forEach(q=>{idOf[q.question]=q.id;textOf[q.id]=q.question});
+    }
+    return {idOf,textOf};
+  }
+  async function doSync(){
+    await JKAuth.refresh();let s=JKAuth.getSession();if(!s)throw new Error("login nahi hai");
+    const uid=s.uid||await JKAuth.ensureUid();if(!uid)throw new Error("uid nahi mila");
+    s=JKAuth.getSession()||s;const tok=s.access_token;
+    const {idOf,textOf}=await qmap(tok);
+    let m=meta();
+    const hasLocal=LK.some(k=>store.get(k).length)||store.get("jk_hist").length>0;
+    if(m.uid!==uid){
+      if(hasLocal){
+        const merge=confirm("Is phone par pehle ka progress mila hai. Ise is account me jodna hai?\n\nOK = jodo (recommended)\nCancel = alag rakho (is account ka server wala data dikhega; purana data backup me rahega)");
+        if(!merge){backup("jkx_bak_"+Date.now());applying=true;try{LK.forEach(k=>rawSet.call(store,k,[]));rawSet.call(store,"jk_hist",[])}finally{applying=false}}
+      }
+      m={uid:uid,shadow:{},lastSync:0,pending:true};saveMeta(m);
+    }
+    const shadow=m.shadow||{};
+    const rows=await fetchAll("/rest/v1/user_flags?select=question_id,kind&order=created_at.asc,question_id.asc",tok,1000);
+    const S={},L={},H={},up={},dl={},al={},rl={};
+    KN.forEach(k=>{S[k]=new Set();L[k]=new Set();H[k]=new Set(shadow[k]||[]);up[k]=[];dl[k]=[];al[k]=[];rl[k]=[]});
+    rows.forEach(r=>{if(S[r.kind])S[r.kind].add(r.question_id)});
+    KN.forEach(k=>store.get(KINDS[k]).forEach(t=>{const id=idOf[t];if(id)L[k].add(id)}));
+    /* device wipe (Reset / storage clear) = removal nahi maana jayega; server se wapas aayega */
+    const wipe=!hasLocal&&KN.some(k=>H[k].size);
+    KN.forEach(k=>{
+      L[k].forEach(id=>{if(!S[k].has(id)){if(H[k].has(id)&&!wipe)rl[k].push(id);else up[k].push(id)}});
+      S[k].forEach(id=>{if(!L[k].has(id)){if(H[k].has(id)&&!wipe&&textOf[id])dl[k].push(id);else al[k].push(id)}});
+    });
+    /* server par upload */
+    const upRows=[];KN.forEach(k=>up[k].forEach(id=>upRows.push({question_id:id,kind:k})));
+    for(let i=0;i<upRows.length;i+=400)await must(await fetch(BASE+"/rest/v1/user_flags",{method:"POST",headers:hd(tok,{Prefer:"resolution=ignore-duplicates"}),body:JSON.stringify(upRows.slice(i,i+400))}));
+    /* server se hatao (jo is phone se hataya gaya) */
+    for(const k of KN)for(let i=0;i<dl[k].length;i+=80)await must(await fetch(BASE+"/rest/v1/user_flags?user_id=eq."+uid+"&kind=eq."+k+"&question_id=in.("+dl[k].slice(i,i+80).join(",")+")",{method:"DELETE",headers:hd(tok)}));
+    /* phone me badlav (delta, taaki beech me hua naya badlav na mite) */
+    let changed=false;
+    if(KN.some(k=>rl[k].length))backup();
+    applying=true;
+    try{
+      KN.forEach(k=>{
+        const key=KINDS[k],rmT=new Set(rl[k].map(id=>textOf[id]).filter(Boolean)),addT=al[k].map(id=>textOf[id]).filter(Boolean);
+        if(!rmT.size&&!addT.length)return;
+        const cur=store.get(key),have=new Set(cur),n=cur.filter(t=>!rmT.has(t));
+        addT.forEach(t=>{if(!have.has(t)){n.push(t);have.add(t)}});
+        rawSet.call(store,key,n);changed=true;
+      });
+    }finally{applying=false}
+    /* history: union by ts (kabhi delete nahi) */
+    const hrows=await fetchAll("/rest/v1/user_history?select=data&order=taken_at.desc",tok,1000);
+    const srvTs=new Set();hrows.forEach(r=>{if(r.data&&r.data.ts)srvTs.add(String(r.data.ts))});
+    const newH=store.get("jk_hist").filter(h=>h&&h.ts&&!srvTs.has(String(h.ts))).map(h=>({data:{n:h.n,r:h.r,w:h.w,s:h.s,m:h.m,sc:h.sc,ts:h.ts,qi:h.qs?h.qs.map(x=>idOf[x]||null):null,p:h.p,t:h.t,rv:h.rv}}));
+    for(let i=0;i<newH.length;i+=25){
+      const part=newH.slice(i,i+25),r=await fetch(BASE+"/rest/v1/user_history",{method:"POST",headers:hd(tok),body:JSON.stringify(part)});
+      if(r.status===409){for(const one of part){const r2=await fetch(BASE+"/rest/v1/user_history",{method:"POST",headers:hd(tok),body:JSON.stringify([one])});if(!r2.ok&&r2.status!==409)await must(r2)}}
+      else await must(r);
+    }
+    const fresh=store.get("jk_hist"),haveTs=new Set(fresh.map(h=>String(h&&h.ts))),addH=[];
+    hrows.forEach(row=>{const d=row.data;if(!d||!d.ts||haveTs.has(String(d.ts)))return;haveTs.add(String(d.ts));
+      const e={n:d.n,r:d.r,w:d.w,s:d.s,m:d.m,sc:d.sc,ts:d.ts};
+      if(d.qi){e.qs=d.qi.map(id=>textOf[id]||null);e.p=d.p;e.t=d.t;e.rv=d.rv}
+      addH.push(e)});
+    if(addH.length){applying=true;try{rawSet.call(store,"jk_hist",fresh.concat(addH).sort((x,y)=>y.ts-x.ts))}finally{applying=false}changed=true}
+    /* nayi shadow = server ki ab ki halat */
+    const ns={};KN.forEach(k=>{const f=new Set(S[k]);up[k].forEach(id=>f.add(id));dl[k].forEach(id=>f.delete(id));ns[k]=Array.from(f)});
+    const m2=meta();m2.uid=uid;m2.shadow=ns;m2.lastSync=Date.now();m2.pending=again;saveMeta(m2);
+    if(changed){if(document.querySelector(".greet"))home();else if(document.getElementById("acct"))profile()}
+  }
+  async function run(){
+    if(!window.JKAuth||!JKAuth.isLoggedIn())return;
+    if(running){again=true;return}
+    if(!navigator.onLine){setState("offline");return}
+    running=true;clearTimeout(timer);setState("syncing");
+    try{await doSync();retryN=0;setState("synced")}
+    catch(e){
+      try{console.warn("sync:",e&&e.message)}catch(_){}
+      if(navigator.onLine){setState("failed");const d=[5,15,45,120,300];timer=setTimeout(run,d[Math.min(retryN++,4)]*1000)}else setState("offline");
+    }
+    running=false;
+    if(again){again=false;clearTimeout(timer);timer=setTimeout(run,500)}
+  }
+  function touch(){
+    if(!window.JKAuth||!JKAuth.isLoggedIn())return;
+    const m=meta();m.pending=true;saveMeta(m);paint();clearTimeout(timer);timer=setTimeout(run,3000);
+  }
+  function setState(s){state=s;paint()}
+  function fmt(t){try{return new Date(t).toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit"})}catch(e){return ""}}
+  function paint(){
+    const el=document.getElementById("syncChip");if(!el)return;
+    const m=meta();let t,c;
+    if(state==="syncing"){t="Syncing...";c="#1457d9"}
+    else if(state==="offline"){t="Offline - net aane par sync hoga";c="#b26a00"}
+    else if(state==="failed"){t="Sync Failed - tap karke dobara try karein";c="#c62828"}
+    else{t=m.lastSync?"Synced - "+fmt(m.lastSync):(m.pending?"Sync baaki hai":"Sync ke liye taiyar");c="#16803a"}
+    el.textContent=t;el.style.color=c;el.onclick=()=>{retryN=0;run()};
+  }
+  window.addEventListener("online",()=>{retryN=0;run()});
+  window.addEventListener("offline",()=>setState("offline"));
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&meta().pending)run()});
+  window.addEventListener("load",()=>setTimeout(run,1500));
+  window.JKSync={run,touch,paint,state:()=>state,_doSync:doSync};
 })();
 </script>
 <script>
