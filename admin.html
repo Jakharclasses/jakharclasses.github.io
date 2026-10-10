@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>JAKHAR Admin</title>
+<title>JAKHAR Admin (DV test)</title>
 <style>
   :root{--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mut:#667085;--bd:#e3e6ea;--pri:#2b5cff;--bad:#c62828;--ok:#2e7d32}
   @media (prefers-color-scheme:dark){:root{--bg:#14171a;--card:#1d2125;--tx:#e8eaed;--mut:#9aa3ad;--bd:#2c3238;--pri:#6c8cff;--bad:#ef6b6b;--ok:#6fcf74}}
@@ -98,6 +98,29 @@
         <div id="mList" style="margin-top:12px"></div>
       </div>
     </div>
+    <div class="card" id="dvCard">
+      <button class="sec" id="toggleDv" style="width:100%">📑 Lab Assistant Geography DV Documents</button>
+      <div id="dvBox" class="hide" style="margin-top:12px">
+        <div class="meta" style="margin-bottom:8px">Naya PDF jodo (ye YouTube/Study Material PDF se bilkul alag list hai).</div>
+        <input id="dvTitle" placeholder="PDF Title (jaise: Attestation Form — Latest Version)">
+        <input id="dvFile" type="file" accept="application/pdf,.pdf">
+        <input id="dvOrder" type="number" min="1" placeholder="Display order (khali = sabse last me)">
+        <textarea id="dvRemark" rows="2" placeholder="Pehla Admin Remark (optional)"></textarea>
+        <button id="dvUpload">Upload PDF</button>
+        <div id="dvProg" class="meta" style="margin-top:6px"></div>
+        <div id="dvMsg" class="msg"></div>
+        <div id="dvList" style="margin-top:12px"></div>
+      </div>
+    </div>
+    <div id="dvModal" class="hide" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;padding:16px;overflow:auto">
+      <div class="card" style="max-width:520px;margin:8vh auto 0">
+        <div class="meta">PDF</div>
+        <div class="q" id="dvMTitle" style="margin-bottom:8px"></div>
+        <textarea id="dvMText" rows="5" placeholder="Remark likho"></textarea>
+        <div id="dvMMsg" class="msg"></div>
+        <div class="row"><button id="dvMSave">Save Remark</button><button class="sec" id="dvMCancel">Cancel</button></div>
+      </div>
+    </div>
     <input id="search" type="search" placeholder="Sawal / subject / chapter me khojo...">
     <select id="statusF" style="margin-bottom:8px">
       <option value="all">Sab (active + hidden)</option>
@@ -146,7 +169,7 @@ async function login() {
 }
 
 function logout() {
-  TOKEN = null; USER = null; ALL = [];
+  TOKEN = null; USER = null; ALL = []; DVD = []; DVR = {};
   $("panel").classList.add("hide");
   $("loginBox").classList.remove("hide");
 }
@@ -163,6 +186,7 @@ async function openPanel() {
     : '<span class="tag hid">ADMIN NAHI</span> Ye user admins table me nahi hai (sirf active sawal dikhenge).';
   await loadQuestions();
   loadMaterials();
+  loadDv();
 }
 
 async function loadQuestions() {
@@ -461,6 +485,211 @@ $("pw").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
 $("logoutBtn").onclick = logout;
 $("search").oninput = render;
 $("statusF").onchange = render;
+
+/* ================= Lab Assistant Geography DV Documents ================= */
+const DV_T = "/rest/v1/lab_assistant_geography_dv_documents";
+const DV_R = "/rest/v1/lab_assistant_geography_dv_remarks";
+const DV_BUCKET = "dv-documents";
+const DV_MAX = 20 * 1024 * 1024;
+const DV_PUB = SB_URL + "/storage/v1/object/public/" + DV_BUCKET + "/";
+let DVD = [], DVR = {}, DV_OPEN = {}, DV_MODAL = null;
+
+const dvUrl = d => DV_PUB + d.file_path.split("/").map(encodeURIComponent).join("/");
+const dvDate = s => new Date(s).toLocaleString("en-IN", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+const dvSafeName = n => (String(n || "document").replace(/\.pdf$/i, "").replace(/[^\w\u0900-\u097F\- ]+/g, "").trim().slice(0, 80) || "document") + ".pdf";
+
+function dvPut(path, file, onProg) {
+  return new Promise((res, rej) => {
+    const x = new XMLHttpRequest();
+    x.open("POST", SB_URL + "/storage/v1/object/" + DV_BUCKET + "/" + path);
+    x.setRequestHeader("apikey", SB_KEY);
+    x.setRequestHeader("Authorization", "Bearer " + (TOKEN || SB_KEY));
+    x.setRequestHeader("Content-Type", "application/pdf");
+    x.setRequestHeader("x-upsert", "false");
+    x.upload.onprogress = e => { if (e.lengthComputable && onProg) onProg(Math.round(e.loaded / e.total * 100)); };
+    x.onload = () => {
+      if (x.status >= 200 && x.status < 300) return res();
+      let m = ""; try { const j = JSON.parse(x.responseText); m = j.message || j.error || ""; } catch (e) {}
+      rej(new Error(m || ("Upload HTTP " + x.status)));
+    };
+    x.onerror = () => rej(new Error("Network error (upload)"));
+    x.send(file);
+  });
+}
+const dvDelFile = p => api("/storage/v1/object/" + DV_BUCKET + "/" + p, { method: "DELETE" }).catch(() => {});
+function dvCheck(f) {
+  if (!f) throw new Error("PDF file chuno.");
+  if (!/\.pdf$/i.test(f.name) && f.type !== "application/pdf") throw new Error("Sirf PDF file chalegi.");
+  if (f.size > DV_MAX) throw new Error("File 20 MB se badi hai (" + (f.size / 1048576).toFixed(1) + " MB).");
+}
+const dvNewPath = () => "docs/" + Date.now() + "_" + Math.random().toString(36).slice(2, 8) + ".pdf";
+
+async function loadDv() {
+  const L = $("dvList");
+  if (!DVD.length) L.innerHTML = '<div class="meta">Load ho raha hai...</div>';
+  try {
+    const [d, r] = await Promise.all([
+      api(DV_T + "?select=*&order=display_order.asc,created_at.asc&limit=1000"),
+      api(DV_R + "?select=*&order=created_at.asc&limit=5000")
+    ]);
+    DVD = d || []; DVR = {};
+    (r || []).forEach(x => (DVR[x.document_id] = DVR[x.document_id] || []).push(x));
+    renderDv();
+  } catch (e) { L.innerHTML = '<div class="msg">DV load error: ' + esc(e.message) + '</div>'; }
+}
+
+function renderDv() {
+  $("dvList").innerHTML = DVD.map((d, i) => {
+    const rs = DVR[d.id] || [], open = DV_OPEN[d.id];
+    const rem = rs.map(r =>
+      '<div style="border:1px solid var(--bd);border-radius:8px;padding:8px;margin-top:6px">' +
+      '<div class="meta"><b>Admin</b> — ' + esc(dvDate(r.created_at)) + '</div>' +
+      '<div style="white-space:pre-wrap;word-break:break-word">' + esc(r.remark_text) + '</div>' +
+      '<div class="row" style="margin-top:6px"><button class="sec" data-dv="remedit" data-id="' + r.id + '" data-d="' + d.id + '">Edit</button>' +
+      '<button class="sec" data-dv="remdel" data-id="' + r.id + '" data-d="' + d.id + '" style="color:var(--bad)">Delete</button></div></div>'
+    ).join("") || '<div class="meta">No updates yet</div>';
+    return '<div class="card" style="margin-bottom:8px">' +
+      '<div class="q">' + (i + 1) + '. ' + esc(d.title) + '</div>' +
+      '<div class="meta">' + esc(d.file_name || "") + ' · Added ' + esc(dvDate(d.created_at)) + '</div>' +
+      '<div style="margin:6px 0"><span class="tag ' + (d.is_active ? "on" : "hid") + '">' + (d.is_active ? "active" : "hidden") + '</span>' +
+      '<span class="tag">' + rs.length + ' remark' + (rs.length === 1 ? "" : "s") + '</span></div>' +
+      '<div class="row" style="flex-wrap:wrap;margin-bottom:6px">' +
+      '<a href="' + esc(dvUrl(d)) + '" target="_blank" rel="noopener" style="padding:10px 12px;border:1px solid var(--bd);border-radius:8px;color:var(--tx);text-decoration:none">View PDF</a>' +
+      '<button class="sec" data-dv="title" data-id="' + d.id + '">Edit Title</button>' +
+      '<button class="sec" data-dv="addrem" data-id="' + d.id + '">Add Remark</button>' +
+      '<button class="sec" data-dv="viewrem" data-id="' + d.id + '">' + (open ? "Hide" : "View") + ' Remarks</button></div>' +
+      '<div class="row" style="flex-wrap:wrap">' +
+      '<button class="sec" data-dv="up" data-id="' + d.id + '"' + (i === 0 ? " disabled" : "") + '>▲</button>' +
+      '<button class="sec" data-dv="down" data-id="' + d.id + '"' + (i === DVD.length - 1 ? " disabled" : "") + '>▼</button>' +
+      '<button class="sec" data-dv="replace" data-id="' + d.id + '">Replace PDF</button>' +
+      '<button class="sec" data-dv="tog" data-id="' + d.id + '">' + (d.is_active ? "Hide" : "Show") + '</button>' +
+      '<button class="sec" data-dv="del" data-id="' + d.id + '" style="color:var(--bad)">Delete</button></div>' +
+      (open ? '<div style="margin-top:8px">' + rem + '</div>' : "") +
+      '</div>';
+  }).join("") || '<div class="meta">Abhi koi DV PDF nahi.</div>';
+}
+
+async function dvUpload() {
+  const msg = $("dvMsg"), pr = $("dvProg");
+  msg.style.color = "var(--bad)"; msg.textContent = ""; pr.textContent = "";
+  const title = $("dvTitle").value.trim(), f = $("dvFile").files[0], rmk = $("dvRemark").value.trim();
+  let ord = parseInt($("dvOrder").value, 10);
+  $("dvUpload").disabled = true;
+  let path = null;
+  try {
+    if (!title) throw new Error("PDF Title likho.");
+    dvCheck(f);
+    if (!(ord >= 1)) ord = DVD.reduce((m, d) => Math.max(m, d.display_order || 0), 0) + 1;
+    path = dvNewPath();
+    await dvPut(path, f, p => pr.textContent = "Upload: " + p + "%");
+    pr.textContent = "Database me save ho raha hai...";
+    const row = await api(DV_T, { method: "POST", headers: { Prefer: "return=representation" },
+      body: JSON.stringify({ title, file_path: path, file_name: dvSafeName(f.name), display_order: ord }) });
+    if (!row || !row.length) throw new Error("Save nahi hua (admin permission check karo).");
+    if (rmk) await api(DV_R, { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ document_id: row[0].id, remark_text: rmk }) });
+    path = null;
+    msg.style.color = "var(--ok)"; msg.textContent = "PDF upload ho gaya.";
+    ["dvTitle", "dvOrder", "dvRemark"].forEach(i => $(i).value = ""); $("dvFile").value = ""; pr.textContent = "";
+    await loadDv();
+  } catch (e) {
+    if (path) await dvDelFile(path);
+    msg.style.color = "var(--bad)"; msg.textContent = "Fail: " + e.message; pr.textContent = "";
+  }
+  $("dvUpload").disabled = false;
+}
+
+async function dvReorder(id, dir) {
+  const i = DVD.findIndex(d => d.id === id), j = i + dir;
+  if (i < 0 || j < 0 || j >= DVD.length) return;
+  const a = DVD.slice(); [a[i], a[j]] = [a[j], a[i]];
+  await Promise.all(a.map((d, k) => d.display_order === k + 1 ? null :
+    api(DV_T + "?id=eq." + d.id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ display_order: k + 1 }) })
+      .then(r => { if (!r || !r.length) throw new Error("Order update nahi hua."); })));
+}
+
+function dvOpenModal(mode, doc, remark) {
+  DV_MODAL = { mode, id: doc.id, rid: remark && remark.id };
+  $("dvMTitle").textContent = doc.title;
+  $("dvMText").value = remark ? remark.remark_text : "";
+  $("dvMMsg").textContent = "";
+  $("dvModal").classList.remove("hide");
+  $("dvMText").focus();
+}
+async function dvModalSave() {
+  const t = $("dvMText").value.trim(); if (!DV_MODAL) return;
+  if (!t) { $("dvMMsg").textContent = "Remark likho."; return; }
+  $("dvMSave").disabled = true;
+  try {
+    if (DV_MODAL.mode === "add") {
+      await api(DV_R, { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ document_id: DV_MODAL.id, remark_text: t }) });
+      DV_OPEN[DV_MODAL.id] = true;
+    } else {
+      const r = await api(DV_R + "?id=eq." + DV_MODAL.rid, { method: "PATCH", headers: { Prefer: "return=representation" },
+        body: JSON.stringify({ remark_text: t, updated_at: new Date().toISOString() }) });
+      if (!r || !r.length) throw new Error("Update nahi hua.");
+    }
+    $("dvModal").classList.add("hide"); DV_MODAL = null;
+    await loadDv();
+  } catch (e) { $("dvMMsg").textContent = "Fail: " + e.message; }
+  $("dvMSave").disabled = false;
+}
+
+$("dvList").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-dv]"); if (!b) return;
+  const act = b.dataset.dv;
+  const doc = DVD.find(x => x.id === (b.dataset.d || b.dataset.id));
+  if (!doc) return;
+  try {
+    if (act === "title") {
+      const t = prompt("Naya title:", doc.title); if (t === null) return;
+      if (!t.trim()) throw new Error("Title khali nahi ho sakta.");
+      const r = await api(DV_T + "?id=eq." + doc.id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ title: t.trim(), updated_at: new Date().toISOString() }) });
+      if (!r || !r.length) throw new Error("Update nahi hua.");
+    } else if (act === "addrem") { dvOpenModal("add", doc); return; }
+    else if (act === "viewrem") { DV_OPEN[doc.id] = !DV_OPEN[doc.id]; renderDv(); return; }
+    else if (act === "remedit") { const r = (DVR[doc.id] || []).find(x => x.id === b.dataset.id); if (r) dvOpenModal("edit", doc, r); return; }
+    else if (act === "remdel") {
+      if (!confirm("Ye remark hamesha ke liye hata dein?")) return;
+      const r = await api(DV_R + "?id=eq." + b.dataset.id, { method: "DELETE", headers: { Prefer: "return=representation" } });
+      if (!r || !r.length) throw new Error("Delete nahi hua.");
+    } else if (act === "up" || act === "down") { await dvReorder(doc.id, act === "up" ? -1 : 1); }
+    else if (act === "tog") {
+      const r = await api(DV_T + "?id=eq." + doc.id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ is_active: !doc.is_active, updated_at: new Date().toISOString() }) });
+      if (!r || !r.length) throw new Error("Update nahi hua.");
+    } else if (act === "replace") {
+      const inp = document.createElement("input"); inp.type = "file"; inp.accept = "application/pdf,.pdf";
+      inp.onchange = async () => {
+        const f = inp.files[0]; let np = null;
+        try {
+          dvCheck(f);
+          if (!confirm('"' + doc.title + '" ki PDF is nayi file se badal dein? Remarks safe rahenge.')) return;
+          np = dvNewPath(); b.disabled = true; b.textContent = "Uploading...";
+          await dvPut(np, f);
+          const r = await api(DV_T + "?id=eq." + doc.id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ file_path: np, file_name: dvSafeName(f.name), updated_at: new Date().toISOString() }) });
+          if (!r || !r.length) throw new Error("Update nahi hua.");
+          dvDelFile(doc.file_path); np = null;
+        } catch (er) { if (np) await dvDelFile(np); alert("Fail: " + er.message); }
+        await loadDv();
+      };
+      inp.click(); return;
+    } else if (act === "del") {
+      const n = (DVR[doc.id] || []).length;
+      if (!confirm('"' + doc.title + '" hamesha ke liye hata dein?\nIske ' + n + ' remark(s) bhi hat jayenge. Dusre PDF par asar nahi padega.')) return;
+      const r = await api(DV_T + "?id=eq." + doc.id, { method: "DELETE", headers: { Prefer: "return=representation" } });
+      if (!r || !r.length) throw new Error("Delete nahi hua.");
+      await dvDelFile(doc.file_path);
+      // baaki PDF ka serial 1..n ek-saath kar do
+      DVD = DVD.filter(x => x.id !== doc.id);
+      await Promise.all(DVD.map((d, k) => d.display_order === k + 1 ? null :
+        api(DV_T + "?id=eq." + d.id, { method: "PATCH", body: JSON.stringify({ display_order: k + 1 }) }).catch(() => {})));
+    }
+    await loadDv();
+  } catch (er) { alert("Fail: " + er.message); }
+});
+$("toggleDv").onclick = () => $("dvBox").classList.toggle("hide");
+$("dvUpload").onclick = dvUpload;
+$("dvMSave").onclick = dvModalSave;
+$("dvMCancel").onclick = () => { $("dvModal").classList.add("hide"); DV_MODAL = null; };
 </script>
 </body>
 </html>

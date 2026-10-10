@@ -194,6 +194,27 @@ a.row{text-decoration:none;color:inherit}
 .vb svg{width:16px;height:16px;flex:none}
 .dark .smenu,.dark .trb{background:#19243a}.dark .smenu button:active,.dark .trb.on{background:#26324e}
 .dark .vb{background:#2b2410;color:#ffe7a3;border-color:#8a6a14;box-shadow:none}
+.sqg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.sq{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:150px;padding:14px;border:0;border-top:4px solid var(--c);border-radius:18px;background:#fff;box-shadow:0 2px 10px rgba(20,40,80,.08);text-align:left;color:var(--ink);text-decoration:none;font:inherit}
+.sqi{width:48px;height:48px;border-radius:14px;background:var(--c);color:#fff;display:grid;place-items:center;font-size:26px;margin-bottom:6px}
+.sq b{font-size:14.5px;line-height:1.25;overflow-wrap:anywhere}.sq small{font-size:11.5px;color:var(--mute);line-height:1.3}
+.sqb{margin-top:auto;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;background:#e8f0ff;color:var(--main)}.sqb.soon{background:#fff7e0;color:#92400e}
+.tiles2 .dvt b{font-size:13.5px;line-height:1.25;overflow-wrap:anywhere}
+.dvh{margin:2px 2px 12px}.dvh h2{margin:0 0 4px;font-size:18px;line-height:1.25}.dvh p{margin:0;color:var(--mute);font-size:13px}
+.dvc{background:#fff;border-radius:16px;box-shadow:0 2px 10px rgba(20,40,80,.08);margin-bottom:14px;overflow:hidden}
+.dvp{position:relative;height:300px;background:#e9eef7;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.dvp canvas{width:100%;height:100%;object-fit:contain;background:#fff}
+.dvf{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--mute)}.dvf span{font-size:56px}
+.dvn{position:absolute;top:10px;left:10px;z-index:1;min-width:30px;height:30px;padding:0 9px;border-radius:15px;background:rgba(11,58,140,.92);color:#fff;font-weight:700;font-size:14px;display:grid;place-items:center}
+.dvb{padding:14px}.dvt2{margin:0 0 10px;font-size:16px;line-height:1.35;overflow-wrap:anywhere;cursor:pointer}
+.dvd{width:100%;min-height:46px}.dve{color:var(--bad);font-size:13px;margin-top:6px}
+.dvr{margin-top:14px;padding:12px;border-radius:12px;background:#f3f6fc;border:1px solid var(--line)}
+.dvr h4{margin:0 0 8px;font-size:14px;color:var(--navy)}
+.dvk{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:8px}
+.dvkm{font-size:12px;color:var(--mute);margin-bottom:2px}.dvkt{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.dvno{font-size:13px;color:var(--mute)}
+.dvpg{display:block;width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:6px;margin-bottom:10px}
+.dark .sq,.dark .dvc{background:#19243a}.dark .dvr{background:#142038;border-color:#2b3956}.dark .dvk{background:#19243a;border-color:#2b3956}.dark .dvr h4{color:#9db8ff}.dark .dvp{background:#101a2e}
 </style>
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#1457d9">
@@ -790,7 +811,7 @@ function home(){
    <button style="background:#7c3aed" onclick="mockSoon()"><span>🎯</span><b>Full Mock Test</b><small>All Subjects Combined</small></button>
    <button style="background:#f59e0b" onclick="mistakes()"><span>🔍</span><b>Mistake Analysis</b><small>गलतियाँ सुधारें</small></button>
    <button style="background:#e11d1d" onclick="youtube()"><span class="yti">${YT}</span><b>YouTube</b><small>Videos &amp; PDF</small></button>
-   <button style="background:#0891b2" onclick="studySoon()"><span>📖</span><b>Study Material</b><small>स्टडी मटेरियल और PDF</small></button></div>
+   <button class="dvt" style="background:linear-gradient(135deg,#0f766e,#14b8a6)" onclick="dvDocs()"><span>📑</span><b>Lab Assistant Geography DV Documents</b><small>PDF · Forms · Updates</small></button></div>
   <button class="seemore" onclick="seeMore()">See More &nbsp;→</button>
   <div class="sh"><h3>हाल की गतिविधि</h3><a onclick="goTab('tests')">सभी देखें →</a></div>
   <div class="card act">${H.length?H.slice(0,3).map(actRow).join(""):"<small>अभी कोई टेस्ट नहीं दिया — ऊपर से शुरू करें।</small>"}</div></main>`,"home");
@@ -1038,16 +1059,122 @@ function ytClose(noBack){
 }
 
 
+function SQ(o){
+  const inner=`<span class="sqi">${o.i}</span><b>${o.t}</b><small>${o.s||""}</small>${o.b?`<span class="sqb${o.soon?" soon":""}">${o.b}</span>`:""}`;
+  return o.href?`<a class="sq" style="--c:${o.c}" href="${o.href}"${o.ext?' target="_blank" rel="noopener"':""}>${inner}</a>`:`<button class="sq" style="--c:${o.c}" onclick="${o.on}">${inner}</button>`;
+}
+/* ================= Lab Assistant Geography DV Documents (student side) ================= */
+const DV_PDFJS="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+let DVS={ok:0,docs:[],rem:{},shown:0},DV_LIB=null,DV_Q=Promise.resolve(),DV_IO=null;
+const dvE=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dvFileUrl=d=>SM_BASE+"/storage/v1/object/public/dv-documents/"+d.file_path.split("/").map(encodeURIComponent).join("/");
+const dvDate=s=>new Date(s).toLocaleString("en-IN",{day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"});
+const dvFname=d=>((String(d.title||"").replace(/[\\\/:*?"<>|]+/g,"").replace(/\s+/g," ").trim().slice(0,80))||"document")+".pdf";
+function dvLib(){
+  if(DV_LIB)return DV_LIB;
+  DV_LIB=new Promise((ok,no)=>{
+    if(window.pdfjsLib)return ok(window.pdfjsLib);
+    const s=document.createElement("script");s.src=DV_PDFJS+"pdf.min.js";
+    s.onload=()=>{try{window.pdfjsLib.GlobalWorkerOptions.workerSrc=DV_PDFJS+"pdf.worker.min.js";ok(window.pdfjsLib)}catch(e){DV_LIB=null;no(e)}};
+    s.onerror=()=>{DV_LIB=null;no(new Error("pdfjs"))};
+    document.head.appendChild(s);
+  });
+  return DV_LIB;
+}
+async function dvThumb(el){
+  const d=DVS.docs[+el.dataset.i];if(!d||el.dataset.t)return;el.dataset.t=1;
+  try{
+    const lib=await dvLib();
+    const pdf=await lib.getDocument({url:dvFileUrl(d)}).promise;
+    const pg=await pdf.getPage(1),v0=pg.getViewport({scale:1}),vp=pg.getViewport({scale:Math.min(2,520/v0.width)});
+    const c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;
+    await pg.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
+    const f=el.querySelector(".dvf");if(f)f.replaceWith(c);
+    pdf.destroy();
+  }catch(e){/* fallback PDF icon rehta hai */}
+}
+function dvCard(d,i){
+  const rs=DVS.rem[d.id]||[];
+  const rem=rs.length?rs.map(r=>`<div class="dvk"><div class="dvkm"><b>Admin</b> — ${dvE(dvDate(r.created_at))}</div><div class="dvkt">${dvE(r.remark_text)}</div></div>`).join(""):`<div class="dvno">No updates yet</div>`;
+  return `<div class="dvc"><div class="dvp" data-i="${i}" onclick="dvView(${i})"><span class="dvn">${i+1}</span><div class="dvf"><span>📄</span><small>PDF</small></div></div>
+  <div class="dvb"><h3 class="dvt2" onclick="dvView(${i})">${dvE(d.title)}</h3>
+  <div><button class="btn dvd" onclick="dvDl(${i},this)">⬇ Download PDF</button><div class="dve"></div></div>
+  <div class="dvr"><h4>Admin Remarks</h4>${rem}</div></div></div>`;
+}
+function dvMore(){
+  const box=document.getElementById("dvlist");if(!box)return;
+  const a=DVS.shown,b=Math.min(DVS.docs.length,a+8);
+  box.insertAdjacentHTML("beforeend",DVS.docs.slice(a,b).map((d,k)=>dvCard(d,a+k)).join(""));
+  DVS.shown=b;
+  if(!DV_IO)DV_IO=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){DV_IO.unobserve(e.target);DV_Q=DV_Q.then(()=>dvThumb(e.target))}}),{rootMargin:"250px"});
+  box.querySelectorAll(".dvp:not([data-o])").forEach(el=>{el.dataset.o=1;DV_IO.observe(el)});
+  const m=document.getElementById("dvmore");if(m)m.style.display=b<DVS.docs.length?"block":"none";
+}
+async function dvDocs(keep){
+  clearInterval(tick);DV_IO=null;
+  view(hdr(BACK,"","DV Documents")+`<main class="pg"><div class="dvh"><h2>Lab Assistant Geography DV Documents</h2><p>Important PDFs, document verification forms, and the latest administrative updates.</p></div><div id="dvroot"><div class="card cs"><small>लोड हो रहा है…</small></div></div></main>`,"",false,home);
+  if(!(keep===true&&DVS.ok)){
+    try{
+      const H={headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}},B=SM_BASE+"/rest/v1/";
+      const j=u=>fetch(B+u,H).then(x=>{if(!x.ok)throw new Error("HTTP "+x.status);return x.json()});
+      const [d,r]=await Promise.all([
+        j("lab_assistant_geography_dv_documents?select=id,title,file_path,file_name,display_order,created_at&is_active=eq.true&order=display_order.asc,created_at.asc&limit=500"),
+        j("lab_assistant_geography_dv_remarks?select=id,document_id,remark_text,created_at&order=created_at.asc&limit=5000")]);
+      DVS={ok:1,docs:d,rem:{},shown:0};
+      r.forEach(x=>(DVS.rem[x.document_id]=DVS.rem[x.document_id]||[]).push(x));
+    }catch(e){
+      const R0=document.getElementById("dvroot");if(!R0)return;
+      R0.innerHTML=`<div class="card cs"><div class="csi">📡</div><p>Documents load nahi ho paaye.<br>इंटरनेट जाँचकर दोबारा कोशिश करें।</p><button class="btn" id="dvretry">दोबारा कोशिश करें</button></div>`;
+      document.getElementById("dvretry").onclick=()=>dvDocs();return;
+    }
+  }
+  const R1=document.getElementById("dvroot");if(!R1)return;
+  DVS.shown=0;
+  if(!DVS.docs.length){R1.innerHTML=`<div class="card cs"><div class="csi">📄</div><p>अभी कोई PDF upload नहीं हुई है।<br>जल्द ही जोड़ी जाएँगी।</p></div>`;return}
+  R1.innerHTML=`<div id="dvlist"></div><button class="btn ghost" id="dvmore" style="width:100%;margin-top:6px" onclick="dvMore()">और दिखाएँ</button>`;
+  dvMore();
+}
+async function dvDl(i,b){
+  const d=DVS.docs[i];if(!d)return;
+  const e=b.parentNode.querySelector(".dve"),t=b.textContent;
+  e.textContent="";b.disabled=true;b.textContent="Preparing…";
+  try{
+    const r=await fetch(dvFileUrl(d));if(!r.ok)throw new Error("HTTP "+r.status);
+    const bl=await r.blob(),u=URL.createObjectURL(new Blob([bl],{type:"application/pdf"}));
+    const a=document.createElement("a");a.href=u;a.download=dvFname(d);document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u),30000);
+  }catch(x){e.textContent="Download नहीं हो पाया। इंटरनेट जाँचकर दोबारा कोशिश करें।"}
+  b.disabled=false;b.textContent=t;
+}
+async function dvView(i){
+  const d=DVS.docs[i];if(!d)return;clearInterval(tick);
+  const url=dvFileUrl(d);
+  view(hdr(BACK,"","DV Documents")+`<main class="pg"><div class="card"><div class="dvt2" style="cursor:default">${i+1}. ${dvE(d.title)}</div><div><button class="btn dvd" onclick="dvDl(${i},this)">⬇ Download PDF</button><div class="dve"></div></div></div><div id="dvpages"><div class="card cs"><small>PDF लोड हो रही है…</small></div></div></main>`,"",false,()=>dvDocs(true));
+  const fail=()=>{const bx=document.getElementById("dvpages");if(bx)bx.innerHTML=`<div class="card cs"><p>PDF यहाँ नहीं दिख पाई।</p><a class="btn" style="display:block;text-decoration:none;text-align:center" href="${dvE(url)}" target="_blank" rel="noopener">नए टैब में खोलें ↗</a></div>`};
+  try{
+    const lib=await dvLib(),pdf=await lib.getDocument({url}).promise,box=document.getElementById("dvpages");if(!box)return;
+    box.innerHTML="";
+    const w=box.clientWidth||340,dpr=Math.min(2,window.devicePixelRatio||1);
+    const p1=await pdf.getPage(1),v1=p1.getViewport({scale:1}),ratio=v1.height/v1.width;
+    const io=new IntersectionObserver(es=>es.forEach(async e=>{
+      if(!e.isIntersecting)return;io.unobserve(e.target);
+      try{const c=e.target,pg=await pdf.getPage(+c.dataset.n),v0=pg.getViewport({scale:1}),vp=pg.getViewport({scale:w/v0.width*dpr});
+        c.width=vp.width;c.height=vp.height;await pg.render({canvasContext:c.getContext("2d"),viewport:vp}).promise}catch(x){}
+    }),{rootMargin:"700px"});
+    for(let n=1;n<=pdf.numPages;n++){const c=document.createElement("canvas");c.className="dvpg";c.dataset.n=n;c.width=Math.round(w*dpr);c.height=Math.round(w*dpr*ratio);box.appendChild(c);io.observe(c)}
+  }catch(e){fail()}
+}
+
 /* ---------- See More (अलग मेन्यू) ---------- */
 function seeMore(){
   clearInterval(tick);
-  view(hdr(BACK,"","See More")+`<main class="pg"><div class="list">
-  ${R({c:"#0891b2",i:"📖",t:"Study Material & PDF",s:"स्टडी मटेरियल और PDF",b:"Coming Soon",soon:1,on:"smSoon('Study Material & PDF')"})}
-  ${R({c:"#1457d9",i:"🎓",t:"Courses",s:"अपनी तैयारी के लिए Courses",b:"Coming Soon",soon:1,on:"smSoon('Courses')"})}
-  ${R({c:"#e8590c",i:"🧭",t:"Prepare According to Your Exam",s:"अपनी परीक्षा के अनुसार तैयारी",b:EXAMS.length+" परीक्षाएँ",on:"examList()"})}
-  ${R({c:"#7c3aed",i:"👥",t:"Student Community",s:"विद्यार्थियों का समुदाय",b:"Coming Soon",soon:1,on:"smSoon('Student Community')"})}
-  ${R({c:"#f59e0b",i:"💡",t:"Your Suggestion",s:"अपना सुझाव ईमेल से भेजें",href:"mailto:"+CONTACT.mail+"?subject="+encodeURIComponent("JAKHAR App - Suggestion")})}
-  ${R({c:"#64748b",i:"✨",t:"Future Features",s:"आने वाले नए फ़ीचर्स",b:"Coming Soon",soon:1,on:"smSoon('Future Features')"})}</div></main>`,"",false,home);
+  view(hdr(BACK,"","See More")+`<main class="pg"><div class="sqg">
+  ${SQ({c:"#0891b2",i:"📖",t:"Study Material & PDF",s:"स्टडी मटेरियल और PDF",b:"Coming Soon",soon:1,on:"smSoon('Study Material & PDF')"})}
+  ${SQ({c:"#1457d9",i:"🎓",t:"Courses",s:"अपनी तैयारी के लिए Courses",b:"Coming Soon",soon:1,on:"smSoon('Courses')"})}
+  ${SQ({c:"#e8590c",i:"🧭",t:"Prepare According to Your Exam",s:"अपनी परीक्षा के अनुसार तैयारी",b:EXAMS.length+" परीक्षाएँ",on:"examList()"})}
+  ${SQ({c:"#7c3aed",i:"👥",t:"Student Community",s:"विद्यार्थियों का समुदाय",b:"Coming Soon",soon:1,on:"smSoon('Student Community')"})}
+  ${SQ({c:"#f59e0b",i:"💡",t:"Your Suggestion",s:"अपना सुझाव ईमेल से भेजें",href:"mailto:"+CONTACT.mail+"?subject="+encodeURIComponent("JAKHAR App - Suggestion")})}
+  ${SQ({c:"#64748b",i:"✨",t:"Future Features",s:"आने वाले नए फ़ीचर्स",b:"Coming Soon",soon:1,on:"smSoon('Future Features')"})}</div></main>`,"",false,home);
 }
 const smSoon=t=>comingSoon(t,seeMore,"");
 function examList(){
