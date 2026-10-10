@@ -773,6 +773,7 @@ const BM=on=>`<svg viewBox="0 0 24 24" fill="${on?"#ffd21f":"none"}" stroke="${o
 const BACK='<button class="ib" id="bk"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H5M11.5 5.5L5 12l6.5 6.5"/></svg></button>';
 function hdr(l,r,t){const f=t.replace(/<[^>]*>/g,"").length>30?' style="font-size:15px"':"";return `<header class="hd">${l||'<span class="ib"></span>'}<h1${f}>${t}</h1>${r||'<span class="ib"></span>'}</header>`}
 function view(html,tab,keep,bf){
+  if(window.JKAuth&&!window.__lgOK&&!JKAuth.isLoggedIn()&&window.loginScreen){loginScreen();return}  /* Step 5: login ke bina koi screen nahi */
   app.className="wrap"+(tab?" nb":"");
   app.innerHTML=html+(tab?`<nav class="bn">${TABS.map(t=>`<button class="${t[0]===tab?"on":""}" onclick="goTab('${t[0]}')"><span>${t[1]}</span>${t[2]}</button>`).join("")}</nav>`:"");
   if(!keep)window.scrollTo(0,0);
@@ -792,8 +793,8 @@ function comingSoon(t,bf,tab,sub){
 
 /* ---------- फ्रंट पेज ---------- */
 function splash(){
-  view(`<div class="spl2"><img src="${SPLASH_IMG}" alt="JAKHAR Classes"><div class="gsw"><button class="gs2" id="gs">Get Started →</button></div></div>`);
-  document.getElementById("gs").onclick=()=>{store.set("jk_seen",[1]);(window.JKAuth&&!JKAuth.isLoggedIn())?loginScreen():home()};
+  window.__lgOK=1;view(`<div class="spl2"><img src="${SPLASH_IMG}" alt="JAKHAR Classes"><div class="gsw"><button class="gs2" id="gs">Get Started →</button></div></div>`);
+  window.__lgOK=0;document.getElementById("gs").onclick=()=>{store.set("jk_seen",[1]);(window.JKAuth&&!JKAuth.isLoggedIn())?loginScreen():home()};
 }
 
 /* ---------- स्वागत संदेश (घंटी) ---------- */
@@ -1500,7 +1501,8 @@ splash();
     return j;
   }
   function pack(j){return {access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Math.floor(Date.now()/1000)+(j.expires_in||3600),email:(j.user&&j.user.email)||"",uid:(j.user&&j.user.id)||""}}
-  async function refresh(){
+  let RP=null;function refresh(){return RP||(RP=refreshOnce().finally(()=>{RP=null}))}
+  async function refreshOnce(){
     const s=load();if(!s||!s.refresh_token)return;
     if(s.expires_at-60>Date.now()/1000)return;
     try{save(pack(await call("/auth/v1/token?grant_type=refresh_token",{refresh_token:s.refresh_token})))}
@@ -1663,7 +1665,7 @@ splash();
         '<button class="btn ghost" id="acDown" style="width:100%;margin-bottom:8px">⬇️ सर्वर से प्रोग्रेस वापस लाएँ</button>'+
         '<div id="acS" style="font-size:13px;margin-bottom:8px;min-height:18px"></div>'+
         '<button class="btn ghost" id="acOut" style="width:100%">लॉगआउट</button>';
-      document.getElementById("acOut").onclick=()=>{save(null);acctRender()};
+      document.getElementById("acOut").onclick=()=>{signOut();loginScreen()};
       document.getElementById("acSync").onclick=uploadProgress;
       document.getElementById("acDown").onclick=downloadProgress;
       return;
@@ -1701,7 +1703,7 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
   const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const $=id=>document.getElementById(id);
   function shell(inner){
-    view('<div class="lg" style="--lgbg:url(\''+esc(JK_LOGIN.bg)+'\');--lgtop:'+JK_LOGIN.cardTop+'vw"><div class="lgc">'+inner+'</div></div>');
+    window.__lgOK=1;view('<div class="lg" style="--lgbg:url(\''+esc(JK_LOGIN.bg)+'\');--lgtop:'+JK_LOGIN.cardTop+'vw"><div class="lgc">'+inner+'</div></div>');window.__lgOK=0;
   }
   function msg(t,ok){const m=$("lgM");if(m){m.className="lgm "+(ok?"o":"e");m.textContent=t||""}}
   function eye(id){const b=$(id+"Eye"),i=$(id);if(b)b.onclick=()=>{const h=i.type==="password";i.type=h?"text":"password";b.innerHTML=h?EYE_ON:EYE_OFF}}
@@ -1716,7 +1718,6 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
     shell('<h2>\u0935\u093e\u092a\u0938 \u0938\u094d\u0935\u093e\u0917\u0924 \u0939\u0948 \u{1F44B}</h2><p class="sub">Welcome Back \u2022 \u0905\u092a\u0928\u0947 \u0905\u0915\u093e\u0909\u0902\u091f \u092e\u0947\u0902 \u0932\u0949\u0917\u093f\u0928 \u0915\u0930\u0947\u0902</p>'+
       '<label for="lgE">Email</label><input id="lgE" type="email" autocomplete="username" inputmode="email" placeholder="Yahan apni email likhein">'+
       pw("lgP","Password","current-password")+
-      '<div class="lgw">Dhyan dein: Yahan aapko naya password create karna hai. Apne Gmail ka purana password nahi daalna hai.</div>'+
       '<div class="lgr"><span></span><button class="lgl" id="lgF" type="button">Forgot Password?</button></div>'+
       '<button class="lgb" id="lgGo" type="button">Login</button><div class="lgm" id="lgM"></div>'+
       '<div style="text-align:center;font-size:14px">\u0928\u092f\u093e \u092f\u0942\u091c\u093c\u0930? <button class="lgl" id="lgNew" type="button">Create an Account</button></div>');
@@ -1730,6 +1731,7 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
       '<label for="suE">Email</label><input id="suE" type="email" autocomplete="username" inputmode="email" placeholder="Yahan apni email likhein">'+
       pw("suP","Password (\u0915\u092e \u0938\u0947 \u0915\u092e 8 \u0905\u0915\u094d\u0937\u0930)","new-password")+
       pw("suC","Confirm Password","new-password","Password dobara likhein")+
+      '<div class="lgw">Dhyan dein: Yahan aapko naya password create karna hai. Apne Gmail ka purana password nahi daalna hai.</div>'+
       '<button class="lgb" id="suGo" type="button">Sign Up</button><div class="lgm" id="lgM"></div>'+
       '<div style="text-align:center;font-size:14px">\u092a\u0939\u0932\u0947 \u0938\u0947 \u0905\u0915\u093e\u0909\u0902\u091f \u0939\u0948? <button class="lgl" id="suBack" type="button">Login</button></div>');
     eye("suP");eye("suC");
@@ -1764,10 +1766,14 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
     });
   };
   /* Email ke link se lautne par: reset form ya link-error dikhao */
-  window.addEventListener("load",function(){
+  window.addEventListener("load",async function(){
     if(!window.JKAuth)return;
-    if(JKAuth.pendingRecovery())newPwScreen();
-    else if(JKAuth.linkError())loginScreen(JKAuth.friendly(JKAuth.linkError()),false);
+    if(JKAuth.pendingRecovery()){newPwScreen();return}
+    if(JKAuth.linkError()){loginScreen(JKAuth.friendly(JKAuth.linkError()),false);return}
+    try{await JKAuth.refresh()}catch(e){}
+    const onSplash=!!$("gs"),onLogin=!!document.querySelector(".lg");
+    if(JKAuth.isLoggedIn()){if(onSplash)home()}
+    else if(!onSplash&&!onLogin)loginScreen("Session khatam ho gaya. Dobara login karein.",false);
   });
 })();
 </script>
