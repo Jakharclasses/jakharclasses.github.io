@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b3a8c">
+<link rel="preconnect" href="https://gpqrkxyypadgvguomfrr.supabase.co" crossorigin>
 <title>JAKHAR</title>
 <style>
 :root{--navy:#0b3a8c;--main:#1457d9;--bg:#eef3fb;--ink:#16202e;--mute:#64748b;--line:#d9e1ee;--ok:#16a34a;--okbg:#dcfce7;--bad:#dc2626;--badbg:#fee2e2}
@@ -228,6 +229,7 @@ a.row{text-decoration:none;color:inherit}
 .lgb:disabled{opacity:.6}
 .lgl{background:none;border:0;color:#0b3a8c;font-weight:700;font-size:14px;padding:10px 4px;text-decoration:underline}
 .lgr{display:flex;justify-content:space-between;align-items:center;margin-top:4px;flex-wrap:wrap}
+.lgw{margin-top:10px;padding:8px 10px;border-radius:10px;background:#fdecec;border:1px solid #e57373;color:#c62828;font-size:13px;font-weight:700;line-height:1.4}
 .lgm{min-height:20px;margin-top:10px;font-size:13px;font-weight:600}.lgm.e{color:#c62828}.lgm.o{color:#16803a}
 </style>
 <link rel="manifest" href="/manifest.webmanifest">
@@ -1624,7 +1626,7 @@ splash();
     return {session:false}})}
   function resetPassword(email){return once("reset",async()=>{
     email=String(email||"").trim();if(!validEmail(email))throw new Error("BADEMAIL");
-    await call("/auth/v1/recover",{email});return true})}
+    await call("/auth/v1/recover?redirect_to="+encodeURIComponent(location.origin+location.pathname),{email});return true})}
   function signOut(){
     const s=load();save(null);   /* pehle device se hatao, taaki offline me bhi logout ho jaye */
     if(s&&s.access_token){try{fetch(BASE+"/auth/v1/logout?scope=local",{method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+s.access_token}}).catch(()=>{})}catch(e){}}
@@ -1702,17 +1704,19 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
     view('<div class="lg" style="--lgbg:url(\''+esc(JK_LOGIN.bg)+'\');--lgtop:'+JK_LOGIN.cardTop+'vw"><div class="lgc">'+inner+'</div></div>');
   }
   function msg(t,ok){const m=$("lgM");if(m){m.className="lgm "+(ok?"o":"e");m.textContent=t||""}}
-  function eye(id){const b=$(id+"Eye"),i=$(id);if(b)b.onclick=()=>{const h=i.type==="password";i.type=h?"text":"password";b.textContent=h?"\u{1F648}":"\u{1F441}"}}
-  function pw(id,label,ac){return '<label for="'+id+'">'+label+'</label><div class="lgp"><input id="'+id+'" type="password" autocomplete="'+ac+'" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"><button type="button" id="'+id+'Eye" aria-label="show/hide">\u{1F441}</button></div>'}
+  function eye(id){const b=$(id+"Eye"),i=$(id);if(b)b.onclick=()=>{const h=i.type==="password";i.type=h?"text":"password";b.innerHTML=h?EYE_ON:EYE_OFF}}
+  const EYE_ON='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#5a4a34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>',EYE_OFF='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#5a4a34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/></svg>';
+  function pw(id,label,ac,ph){return '<label for="'+id+'">'+label+'</label><div class="lgp"><input id="'+id+'" type="password" autocomplete="'+ac+'" placeholder="'+(ph||"Yahan apna password likhein")+'"><button type="button" id="'+id+'Eye" aria-label="show/hide password">'+EYE_OFF+'</button></div>'}
   async function run(btn,fn){
-    btn.disabled=true;msg("");
+    const lbl=btn.textContent;btn.disabled=true;btn.textContent="\u0915\u0943\u092a\u092f\u093e \u0930\u0941\u0915\u0947\u0902...";msg("");
     try{await fn()}catch(e){if(!(e&&e.message==="busy"))msg(JKAuth.friendly(e))}
-    btn.disabled=false;
+    if(document.body.contains(btn)){btn.disabled=false;btn.textContent=lbl}
   }
   window.loginScreen=function(note,ok){
     shell('<h2>\u0935\u093e\u092a\u0938 \u0938\u094d\u0935\u093e\u0917\u0924 \u0939\u0948 \u{1F44B}</h2><p class="sub">Welcome Back \u2022 \u0905\u092a\u0928\u0947 \u0905\u0915\u093e\u0909\u0902\u091f \u092e\u0947\u0902 \u0932\u0949\u0917\u093f\u0928 \u0915\u0930\u0947\u0902</p>'+
-      '<label for="lgE">Email</label><input id="lgE" type="email" autocomplete="username" inputmode="email" placeholder="you@example.com">'+
+      '<label for="lgE">Email</label><input id="lgE" type="email" autocomplete="username" inputmode="email" placeholder="Yahan apni email likhein">'+
       pw("lgP","Password","current-password")+
+      '<div class="lgw">Dhyan dein: Yahan aapko naya password create karna hai. Apne Gmail ka purana password nahi daalna hai.</div>'+
       '<div class="lgr"><span></span><button class="lgl" id="lgF" type="button">Forgot Password?</button></div>'+
       '<button class="lgb" id="lgGo" type="button">Login</button><div class="lgm" id="lgM"></div>'+
       '<div style="text-align:center;font-size:14px">\u0928\u092f\u093e \u092f\u0942\u091c\u093c\u0930? <button class="lgl" id="lgNew" type="button">Create an Account</button></div>');
@@ -1723,9 +1727,9 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
   };
   window.signupScreen=function(){
     shell('<h2>\u0928\u092f\u093e \u0905\u0915\u093e\u0909\u0902\u091f \u092c\u0928\u093e\u090f\u0902</h2><p class="sub">Create Account \u2022 \u0938\u093f\u0930\u094d\u092b \u0915\u0941\u091b \u0938\u0947\u0915\u0902\u0921 \u0915\u093e \u0915\u093e\u092e</p>'+
-      '<label for="suE">Email</label><input id="suE" type="email" autocomplete="username" inputmode="email" placeholder="you@example.com">'+
+      '<label for="suE">Email</label><input id="suE" type="email" autocomplete="username" inputmode="email" placeholder="Yahan apni email likhein">'+
       pw("suP","Password (\u0915\u092e \u0938\u0947 \u0915\u092e 8 \u0905\u0915\u094d\u0937\u0930)","new-password")+
-      pw("suC","Confirm Password","new-password")+
+      pw("suC","Confirm Password","new-password","Password dobara likhein")+
       '<button class="lgb" id="suGo" type="button">Sign Up</button><div class="lgm" id="lgM"></div>'+
       '<div style="text-align:center;font-size:14px">\u092a\u0939\u0932\u0947 \u0938\u0947 \u0905\u0915\u093e\u0909\u0902\u091f \u0939\u0948? <button class="lgl" id="suBack" type="button">Login</button></div>');
     eye("suP");eye("suC");
@@ -1742,7 +1746,7 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
   };
   window.forgotScreen=function(prefill){
     shell('<h2>Password \u092d\u0942\u0932 \u0917\u090f?</h2><p class="sub">\u0905\u092a\u0928\u093e email \u0921\u093e\u0932\u0947\u0902, \u0939\u092e reset \u0932\u093f\u0902\u0915 \u092d\u0947\u091c\u0947\u0902\u0917\u0947\u0964</p>'+
-      '<label for="fpE">Email</label><input id="fpE" type="email" autocomplete="username" inputmode="email" placeholder="you@example.com" value="'+esc(prefill||"")+'">'+
+      '<label for="fpE">Email</label><input id="fpE" type="email" autocomplete="username" inputmode="email" placeholder="Yahan apni email likhein" value="'+esc(prefill||"")+'">'+
       '<button class="lgb" id="fpGo" type="button">Reset Link \u092d\u0947\u091c\u0947\u0902</button><div class="lgm" id="lgM"></div>'+
       '<div style="text-align:center"><button class="lgl" id="fpBack" type="button">\u2190 Login \u092a\u0930 \u0935\u093e\u092a\u0938</button></div>');
     $("fpGo").onclick=()=>run($("fpGo"),async()=>{await JKAuth.resetPassword($("fpE").value);msg("\u0932\u093f\u0902\u0915 \u092d\u0947\u091c \u0926\u093f\u092f\u093e\u0964 Email (\u0914\u0930 Spam) \u0926\u0947\u0916\u0947\u0902\u0964",true)});
@@ -1750,7 +1754,7 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
   };
   window.newPwScreen=function(){
     shell('<h2>\u0928\u092f\u093e Password \u0938\u0947\u091f \u0915\u0930\u0947\u0902</h2><p class="sub">\u0915\u092e \u0938\u0947 \u0915\u092e 8 \u0905\u0915\u094d\u0937\u0930</p>'+
-      pw("npP","New Password","new-password")+pw("npC","Confirm Password","new-password")+
+      pw("npP","New Password","new-password")+pw("npC","Confirm Password","new-password","Password dobara likhein")+
       '<button class="lgb" id="npGo" type="button">Password Save \u0915\u0930\u0947\u0902</button><div class="lgm" id="lgM"></div>');
     eye("npP");eye("npC");
     $("npGo").onclick=()=>run($("npGo"),async()=>{
