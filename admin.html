@@ -3,21 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>JAKHAR Admin (DV test)</title>
+<title>JAKHAR Admin (test)</title>
 <style>
-  :root{--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mut:#667085;--bd:#e3e6ea;--pri:#2b5cff;--bad:#c62828;--ok:#2e7d32}
-  @media (prefers-color-scheme:dark){:root{--bg:#14171a;--card:#1d2125;--tx:#e8eaed;--mut:#9aa3ad;--bd:#2c3238;--pri:#6c8cff;--bad:#ef6b6b;--ok:#6fcf74}}
+  :root{--bg:#eef3fb;--card:#fff;--tx:#14213d;--mut:#5b6b85;--bd:#d7e0f0;--pri:#1457d9;--navy:#0b3a8c;--bad:#c62828;--ok:#2e7d32}
+  @media (prefers-color-scheme:dark){:root{--bg:#0e1522;--card:#17202f;--tx:#e8edf6;--mut:#93a1b8;--bd:#273348;--pri:#5b8cff;--navy:#0b2a63;--bad:#ef6b6b;--ok:#6fcf74}}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Noto Sans Devanagari",sans-serif;line-height:1.5}
-  .wrap{max-width:760px;margin:0 auto;padding:16px}
+  .wrap{max-width:760px;margin:0 auto;padding:12px}
+  .hdr{background:linear-gradient(135deg,var(--navy),var(--pri));color:#fff;border-radius:14px;padding:14px;margin-bottom:12px}
+  .hdr h1{font-size:19px;margin:0 0 8px;color:#fff}
+  .hdr .meta{color:#dbe6ff;word-break:break-all}
+  .hdr button.sec{color:#fff;border-color:rgba(255,255,255,.55)}
   .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
   h1{font-size:20px;margin:6px 0 12px}
   input,select,button{font:inherit;padding:10px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
   input,textarea{margin-bottom:10px}
   textarea{font:inherit;padding:10px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
   button{background:var(--pri);color:#fff;border:0;font-weight:600;cursor:pointer}
+  button:disabled{opacity:.55;cursor:default}
   button.sec{background:transparent;color:var(--tx);border:1px solid var(--bd);width:auto}
-  .row{display:flex;gap:8px;align-items:center}
+  button.danger{background:transparent;color:var(--bad);border:1px solid var(--bad);width:auto}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .msg{color:var(--bad);font-size:14px;min-height:20px}
   .stats{display:flex;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--mut);margin:8px 0}
   .stats b{color:var(--tx)}
@@ -27,11 +33,21 @@
   .hid{color:var(--bad);border-color:var(--bad)}
   .on{color:var(--ok);border-color:var(--ok)}
   .hide{display:none}
+  #tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
+  #tabs button{background:var(--card);color:var(--tx);border:1px solid var(--bd);width:auto;white-space:nowrap;flex:1 0 auto;padding:9px 12px;font-size:14px}
+  #tabs button.act{background:var(--pri);color:#fff;border-color:var(--pri)}
+  .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px}
+  .stat{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;text-align:center}
+  .stat b{display:block;font-size:24px;color:var(--pri)}
+  .stat span{font-size:12px;color:var(--mut)}
+  .srow{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:14px}
+  .srow:last-child{border-bottom:0}
+  @media (max-width:430px){.wrap{padding:8px}.card{padding:12px}button.sec,button.danger{padding:9px 10px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>JAKHAR Admin Panel</h1>
+  <div class="hdr"><h1>JAKHAR Admin Panel</h1><div id="who" class="meta" style="margin-bottom:8px"></div><button class="sec hide" id="logoutBtn">Logout</button></div>
 
   <!-- LOGIN -->
   <div id="loginBox" class="card">
@@ -43,11 +59,20 @@
 
   <!-- PANEL -->
   <div id="panel" class="hide">
-    <div class="row" style="margin-bottom:8px">
-      <div id="who" class="meta" style="flex:1"></div>
-      <button class="sec" id="backupBtn" style="margin-right:6px">⬇️ Backup</button><button class="sec" id="logoutBtn">Logout</button>
-    </div>
     <div id="adminState" class="card"></div>
+    <div id="tabs">
+      <button data-tab="dash" class="act">📊 Dashboard</button>
+      <button data-tab="q">❓ Sawal</button>
+      <button data-tab="m">📚 Study Material</button>
+      <button data-tab="d">💾 Data</button>
+    </div>
+
+    <div class="pane" data-pane="dash">
+      <div id="dashStats" class="sgrid"></div>
+      <div class="card"><div class="q">Subject ke hisaab se sawal</div><div id="dashSubs"></div></div>
+    </div>
+
+    <div class="pane hide" data-pane="q">
     <div class="card">
       <button class="sec" id="toggleAdd" style="width:100%">+ Naya sawal jodo</button>
       <div id="addBox" class="hide" style="margin-top:12px">
@@ -79,6 +104,18 @@
         <div id="bkMsg" class="msg" style="white-space:pre-wrap"></div>
       </div>
     </div>
+      <input id="search" type="search" placeholder="Sawal / subject / chapter me khojo...">
+      <select id="statusF" style="margin-bottom:8px">
+        <option value="all">Sab (active + hidden)</option>
+        <option value="active">Sirf active</option>
+        <option value="hidden">Sirf hidden</option>
+      </select>
+      <div id="stats" class="stats"></div>
+      <div id="list"></div>
+      <div id="more" style="text-align:center;padding:8px"></div>
+    </div>
+
+    <div class="pane hide" data-pane="m">
     <div class="card">
       <button class="sec" id="toggleMat" style="width:100%">📚 Study Material (PDF / YouTube)</button>
       <div id="matBox" class="hide" style="margin-top:12px">
@@ -90,7 +127,8 @@
           <option value="youtube">YouTube video link</option>
           <option value="pdflink">PDF ka link (R2 / Drive / aur kahin)</option>
         </select>
-        <input id="mFile" type="file" accept="application/pdf,.pdf">
+        <input id="mFile" type="file" accept="application/pdf,.pdf" multiple>
+        <div id="mQ"></div>
         <input id="mUrl" class="hide" placeholder="https://...">
         <label style="display:block;margin-bottom:10px;font-size:14px"><input id="mAct" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Turant active karo</label>
         <button id="mSave">Save karo</button>
@@ -110,6 +148,22 @@
         <div id="dvList" style="margin-top:12px"></div>
       </div>
     </div>
+    </div>
+
+    <div class="pane hide" data-pane="d">
+      <div class="card">
+        <div class="q">Backup (JSON)</div>
+        <div class="meta" style="margin-bottom:10px">Saare sawal (hidden samet) ek JSON file me. Badi change se pehle ek backup le lo.</div>
+        <button id="backupBtn">⬇️ Backup JSON download karo</button>
+      </div>
+      <div class="card">
+        <div class="q">Sawal export (CSV)</div>
+        <div class="meta" style="margin-bottom:10px">Excel / Google Sheets me khulne wali file. Column wahi hain jo import template me hain, to baad me wapas import bhi ho sakti hai.</div>
+        <div class="row"><button id="expAll">⬇️ Saare sawal (CSV)</button></div>
+        <div class="row" style="margin-top:8px"><button class="sec" id="expFiltered">⬇️ Sirf khoj/filter wale (Sawal tab jaisa)</button></div>
+        <div id="expMsg" class="msg"></div>
+      </div>
+    </div>
     <div id="dvModal" class="hide" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;padding:16px;overflow:auto">
       <div class="card" style="max-width:520px;margin:8vh auto 0">
         <div class="meta">PDF</div>
@@ -119,22 +173,13 @@
         <div class="row"><button id="dvMSave">Save Remark</button><button class="sec" id="dvMCancel">Cancel</button></div>
       </div>
     </div>
-    <input id="search" type="search" placeholder="Sawal / subject / chapter me khojo...">
-    <select id="statusF" style="margin-bottom:8px">
-      <option value="all">Sab (active + hidden)</option>
-      <option value="active">Sirf active</option>
-      <option value="hidden">Sirf hidden</option>
-    </select>
-    <div id="stats" class="stats"></div>
-    <div id="list"></div>
-    <div id="more" class="meta" style="text-align:center;padding:8px"></div>
   </div>
 </div>
 
 <script>
 const SB_URL = "https://gpqrkxyypadgvguomfrr.supabase.co";
 const SB_KEY = "sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq"; // publishable key (public hai)
-let TOKEN = null, ALL = [], USER = null;
+let TOKEN = null, ALL = [], USER = null, SHOWN = 50;
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -208,17 +253,18 @@ function render() {
   const act = ALL.filter(q => q.is_active).length;
   $("stats").innerHTML = '<span>Total: <b>' + ALL.length + '</b></span><span>Active: <b>' + act +
     '</b></span><span>Hidden: <b>' + (ALL.length - act) + '</b></span><span>Dikh rahe: <b>' + rows.length + '</b></span>';
-  const SHOW = 50;
+  const SHOW = SHOWN;
   $("list").innerHTML = rows.slice(0, SHOW).map(q =>
     '<div class="card"><div class="q">' + esc(q.question) + '</div>' +
     '<div class="meta">' + esc(q.subject) + ' › ' + esc(q.chapter) + '</div>' +
     '<div style="margin-top:6px"><span class="tag ' + (q.is_active ? "on" : "hid") + '">' + (q.is_active ? "active" : "hidden") + '</span>' +
     '<span class="meta">Ans: ' + esc((q.options || [])[q.answer]) + '</span></div>' +
     '<div class="row" style="margin-top:10px"><button class="sec" data-act="tog" data-id="' + q.id + '">' + (q.is_active ? "Hide karo" : "Show karo") + '</button>' +
-    '<button class="sec" data-act="edit" data-id="' + q.id + '">Edit</button></div>' +
+    '<button class="sec" data-act="edit" data-id="' + q.id + '">Edit</button>' +
+    '<button class="danger" data-act="del" data-id="' + q.id + '">Delete</button></div>' +
     '<div id="ed_' + q.id + '"></div></div>'
   ).join("") || '<div class="meta">Koi sawal nahi mila.</div>';
-  $("more").textContent = rows.length > SHOW ? ("Pehle " + SHOW + " dikh rahe hain. Khoj se chhota karo.") : "";
+  $("more").innerHTML = rows.length > SHOW ? '<div class="meta" style="margin-bottom:6px">' + SHOW + ' / ' + rows.length + ' dikh rahe hain</div><button class="sec" id="moreBtn">Aur dikhao (+50)</button>' : "";
 }
 
 
@@ -304,6 +350,7 @@ $("list").addEventListener("click", async e => {
   const id = b.dataset.id, q = ALL.find(x => x.id === id);
   if (b.dataset.act === "edit") openEdit(id);
   else if (b.dataset.act === "save") saveEdit(id);
+  else if (b.dataset.act === "del") deleteQ(id, b);
   else if (b.dataset.act === "tog") {
     b.disabled = true;
     try { await patchQ(id, { is_active: !q.is_active, updated_at: new Date().toISOString() }); await loadQuestions(); }
@@ -428,10 +475,13 @@ function renderMats() {
 function matKindUI() {
   const k = $("mKind").value;
   $("mFile").classList.toggle("hide", k !== "file");
+  $("mQ").classList.toggle("hide", k !== "file");
+  $("mTitle").classList.toggle("hide", k === "file");
   $("mUrl").classList.toggle("hide", k === "file");
   $("mUrl").placeholder = k === "youtube" ? "https://youtu.be/... ya https://www.youtube.com/watch?v=..." : "https://... (PDF ka seedha link)";
 }
 async function matSave() {
+  if ($("mKind").value === "file") return matSaveBulk();
   const msg = $("mMsg"); msg.style.color = "var(--bad)"; msg.textContent = "";
   const title = $("mTitle").value.trim(), category = $("mCat").value.trim(), k = $("mKind").value;
   if (!title) { msg.textContent = "Title likho."; return; }
@@ -460,6 +510,59 @@ async function matSave() {
   } catch (e) { msg.style.color = "var(--bad)"; msg.textContent = "Fail: " + e.message; }
   $("mSave").disabled = false;
 }
+let MQ = [], MQ_BUSY = false;
+const matTitleFrom = n => n.replace(/\.pdf$/i, "").trim();
+function renderMQ() {
+  $("mQ").style.pointerEvents = "";
+  $("mQ").innerHTML = MQ.map((q, i) =>
+    '<div class="card" style="margin-bottom:8px"><div class="meta" style="word-break:break-all">' + (i + 1) + '. 📄 ' + esc(q.f.name) + ' · ' + (q.f.size / 1048576).toFixed(1) + ' MB</div>' +
+    '<input data-m="title" data-i="' + i + '" value="' + esc(q.title) + '" placeholder="PDF Title (zaroori)" style="margin-top:6px">' +
+    '<div class="row"><span id="mqs' + i + '" class="meta" style="flex:1;color:var(--bad)">' + esc(q.err) + '</span>' +
+    '<button class="sec" data-m="rm" data-i="' + i + '">✕ Hatao</button></div></div>').join("");
+  $("mSave").textContent = MQ.length > 1 ? "Upload " + MQ.length + " PDFs" : "Save karo";
+}
+function matPick() {
+  const fs = [...$("mFile").files]; $("mFile").value = "";
+  fs.forEach(f => { if (!MQ.some(q => q.f.name === f.name && q.f.size === f.size)) MQ.push({ f, title: matTitleFrom(f.name), err: "" }); });
+  renderMQ();
+}
+async function matSaveBulk() {
+  if (MQ_BUSY) return;
+  const msg = $("mMsg"); msg.style.color = "var(--bad)"; msg.textContent = "";
+  if (!MQ.length) { msg.textContent = "Pehle PDF file(s) chuno."; return; }
+  for (let i = 0; i < MQ.length; i++) {
+    const f = MQ[i].f;
+    if (!MQ[i].title.trim()) { msg.textContent = "PDF " + (i + 1) + ": title likho."; return; }
+    if (!/\.pdf$/i.test(f.name) && f.type !== "application/pdf") { msg.textContent = "PDF " + (i + 1) + ": sirf PDF file chalegi."; return; }
+    if (f.size > 50 * 1024 * 1024) { msg.textContent = "PDF " + (i + 1) + ": file 50 MB se badi hai."; return; }
+  }
+  const category = $("mCat").value.trim(), active = $("mAct").checked;
+  MQ_BUSY = true; $("mSave").disabled = true; $("mQ").style.pointerEvents = "none";
+  let ok = 0; const keep = [];
+  for (let i = 0; i < MQ.length; i++) {
+    const q = MQ[i], st = $("mqs" + i); let path = null; q.err = "";
+    const set = (t, bad) => { if (st) { st.style.color = bad ? "var(--bad)" : "var(--mut)"; st.textContent = t; } };
+    try {
+      set("Upload ho raha hai...");
+      path = "pdfs/" + Date.now() + "_" + Math.random().toString(36).slice(2, 8) + ".pdf";
+      await api("/storage/v1/object/study-material/" + path, { method: "POST", headers: { "Content-Type": "application/pdf", "x-upsert": "false" }, body: q.f });
+      set("Save ho raha hai...");
+      await api("/rest/v1/materials", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ title: q.title.trim(), category, is_active: active, kind: "pdf", file_path: path }) });
+      path = null; ok++; set("✓ Ho gaya");
+    } catch (e) {
+      if (path) api("/storage/v1/object/study-material/" + path, { method: "DELETE" }).catch(() => {});
+      q.err = "Fail: " + e.message; keep.push(q); set(q.err, true);
+    }
+  }
+  MQ = keep; MQ_BUSY = false; $("mSave").disabled = false;
+  await loadMaterials();
+  msg.style.color = keep.length ? "var(--bad)" : "var(--ok)";
+  msg.textContent = ok + " PDF save ho gayi" + (keep.length ? ", " + keep.length + " fail (neeche dekho, dobara dabao)." : ".");
+  renderMQ();
+}
+$("mFile").onchange = matPick;
+$("mQ").addEventListener("input", e => { const t = e.target, i = +t.dataset.i; if (t.dataset.m === "title" && MQ[i]) MQ[i].title = t.value; });
+$("mQ").addEventListener("click", e => { const b = e.target.closest("button[data-m=rm]"); if (!b || MQ_BUSY) return; MQ.splice(+b.dataset.i, 1); renderMQ(); });
 $("mList").addEventListener("click", async e => {
   const b = e.target.closest("button[data-mact]"); if (!b) return;
   const m = MATS.find(x => x.id === b.dataset.id); if (!m) return;
@@ -481,8 +584,8 @@ $("mKind").onchange = matKindUI; $("mSave").onclick = matSave; matKindUI();
 $("loginBtn").onclick = login;
 $("pw").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
 $("logoutBtn").onclick = logout;
-$("search").oninput = render;
-$("statusF").onchange = render;
+$("search").oninput = () => { SHOWN = 50; render(); };
+$("statusF").onchange = () => { SHOWN = 50; render(); };
 
 /* ================= Lab Assistant Geography DV Documents ================= */
 const DV_T = "/rest/v1/lab_assistant_geography_dv_documents";
@@ -721,6 +824,68 @@ $("dvQ").addEventListener("input", e => { const t = e.target, i = +t.dataset.i; 
 $("dvQ").addEventListener("click", e => { const b = e.target.closest("button[data-q=rm]"); if (!b || DVQ_BUSY) return; DVQ.splice(+b.dataset.i, 1); renderQ(); });
 $("dvMSave").onclick = dvModalSave;
 $("dvMCancel").onclick = () => { $("dvModal").classList.add("hide"); DV_MODAL = null; };
+
+// ---- Step 8 additions: tabs, dashboard, CSV export, delete question ----
+function showTab(n) {
+  document.querySelectorAll(".pane").forEach(p => p.classList.toggle("hide", p.dataset.pane !== n));
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("act", b.dataset.tab === n));
+  if (n === "dash") renderDash();
+}
+$("tabs").addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (b) showTab(b.dataset.tab); });
+$("more").addEventListener("click", e => { if (e.target.id === "moreBtn") { SHOWN += 50; render(); } });
+
+function renderDash() {
+  const act = ALL.filter(q => q.is_active).length, subj = {};
+  ALL.forEach(q => { const s = subj[q.subject] = subj[q.subject] || { t: 0, a: 0 }; s.t++; if (q.is_active) s.a++; });
+  const box = (n, l) => '<div class="stat"><b>' + n + '</b><span>' + l + '</span></div>';
+  $("dashStats").innerHTML = box(ALL.length, "Total sawal") + box(act, "Active") + box(ALL.length - act, "Hidden") +
+    box(MATS.length, "Study material") + box(DVD.length, "DV documents");
+  $("dashSubs").innerHTML = Object.keys(subj).sort().map(s =>
+    '<div class="srow"><span>' + esc(s) + '</span><span><b>' + subj[s].t + '</b> <span class="meta">(' + subj[s].a + ' active)</span></span></div>'
+  ).join("") || '<div class="meta">Abhi koi data nahi.</div>';
+}
+["render", "renderMats", "renderDv"].forEach(n => { const f = window[n]; window[n] = function () { const r = f.apply(this, arguments); renderDash(); return r; }; });
+{ const _op = window.openPanel; window.openPanel = async function () { showTab("dash"); $("logoutBtn").classList.remove("hide"); return _op.apply(this, arguments); }; }
+{ const _lo = window.logout; window.logout = function () { const r = _lo.apply(this, arguments); showTab("dash"); MATS = []; $("logoutBtn").classList.add("hide"); return r; }; $("logoutBtn").onclick = window.logout; }
+
+function filteredRows() {
+  const t = $("search").value.trim().toLowerCase(), f = $("statusF").value;
+  return ALL.filter(q => {
+    if (f === "active" && !q.is_active) return false;
+    if (f === "hidden" && q.is_active) return false;
+    return !t || (q.question + " " + q.subject + " " + q.chapter).toLowerCase().includes(t);
+  });
+}
+function csvCell(v) { return '"' + String(v ?? "").replace(/"/g, '""') + '"'; }
+function exportCSV(rows, label) {
+  const msg = $("expMsg"); msg.style.color = "var(--bad)"; msg.textContent = "";
+  if (!rows.length) { msg.textContent = "Export ke liye koi sawal nahi."; return; }
+  const hdr = ["subject","chapter","question","option1","option2","option3","option4","answer","explanation","exams","status"];
+  const lines = [hdr.join(",")].concat(rows.map(q => [
+    q.subject, q.chapter, q.question, (q.options || [])[0], (q.options || [])[1], (q.options || [])[2], (q.options || [])[3],
+    (q.answer ?? 0) + 1, q.explanation, (q.exams || []).join("; "), q.is_active ? "active" : "hidden"
+  ].map(csvCell).join(",")));
+  const d = new Date().toISOString().slice(0, 10);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\uFEFF" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" }));
+  a.download = "jakhar_questions_" + label + "_" + d + ".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  msg.style.color = "var(--ok)"; msg.textContent = rows.length + " sawal export ho gaye.";
+}
+$("expAll").onclick = () => exportCSV(ALL, "all");
+$("expFiltered").onclick = () => exportCSV(filteredRows(), "filtered");
+
+async function deleteQ(id, btn) {
+  const q = ALL.find(x => x.id === id); if (!q) return;
+  const short = q.question.length > 90 ? q.question.slice(0, 90) + "..." : q.question;
+  if (!confirm('Ye sawal hamesha ke liye hata dein?\n\n"' + short + '"\n\nDhyan: students ka is sawal ka done/saved/wrong progress bhi bekaar ho jayega.\nAgar sirf chhupana hai to "Hide karo" use karo.\n\nPehle Backup le liya hai?')) return;
+  btn.disabled = true;
+  try {
+    const r = await api("/rest/v1/questions?id=eq." + id, { method: "DELETE", headers: { Prefer: "return=representation" } });
+    if (!r || !r.length) throw new Error("Koi row delete nahi hui (admin delete permission check karo).");
+    await loadQuestions();
+  } catch (er) { alert("Delete fail: " + er.message); btn.disabled = false; }
+}
 </script>
 </body>
 </html>
