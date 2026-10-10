@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JAKHAR Admin (test)</title>
+<style>
+  :root{--bg:#eef3fb;--card:#fff;--tx:#14213d;--mut:#5b6b85;--bd:#d7e0f0;--pri:#1457d9;--navy:#0b3a8c;--bad:#c62828;--ok:#2e7d32}
+  @media (prefers-color-scheme:dark){:root{--bg:#0e1522;--card:#17202f;--tx:#e8edf6;--mut:#93a1b8;--bd:#273348;--pri:#5b8cff;--navy:#0b2a63;--bad:#ef6b6b;--ok:#6fcf74}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Noto Sans Devanagari",sans-serif;line-height:1.5}
+  .wrap{max-width:760px;margin:0 auto;padding:12px}
+  .hdr{background:linear-gradient(135deg,var(--navy),var(--pri));color:#fff;border-radius:14px;padding:14px;margin-bottom:12px}
+  .hdr h1{font-size:19px;margin:0 0 8px;color:#fff}
+  .hdr .meta{color:#dbe6ff;word-break:break-all}
+  .hdr button.sec{color:#fff;border-color:rgba(255,255,255,.55)}
+  .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+  h1{font-size:20px;margin:6px 0 12px}
+  input,select,button{font:inherit;padding:10px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
+  input,textarea{margin-bottom:10px}
+  textarea{font:inherit;padding:10px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
+  button{background:var(--pri);color:#fff;border:0;font-weight:600;cursor:pointer}
+  button:disabled{opacity:.55;cursor:default}
+  button.sec{background:transparent;color:var(--tx);border:1px solid var(--bd);width:auto}
+  button.danger{background:transparent;color:var(--bad);border:1px solid var(--bad);width:auto}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .msg{color:var(--bad);font-size:14px;min-height:20px}
+  .stats{display:flex;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--mut);margin:8px 0}
+  .stats b{color:var(--tx)}
+  .q{font-weight:600;margin-bottom:4px}
+  .meta{font-size:12px;color:var(--mut)}
+  .tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:99px;border:1px solid var(--bd);margin-right:4px}
+  .hid{color:var(--bad);border-color:var(--bad)}
+  .on{color:var(--ok);border-color:var(--ok)}
+  .hide{display:none}
+  #tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
+  #tabs button{background:var(--card);color:var(--tx);border:1px solid var(--bd);width:auto;white-space:nowrap;flex:1 0 auto;padding:9px 12px;font-size:14px}
+  #tabs button.act{background:var(--pri);color:#fff;border-color:var(--pri)}
+  .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px}
+  .stat{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;text-align:center}
+  .stat b{display:block;font-size:24px;color:var(--pri)}
+  .stat span{font-size:12px;color:var(--mut)}
+  .srow{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:14px}
+  .srow:last-child{border-bottom:0}
+  @media (max-width:430px){.wrap{padding:8px}.card{padding:12px}button.sec,button.danger{padding:9px 10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr"><h1>JAKHAR Admin Panel</h1><div id="who" class="meta" style="margin-bottom:8px"></div><button class="sec hide" id="logoutBtn">Logout</button></div>
+
+  <!-- LOGIN -->
+  <div id="loginBox" class="card">
+    <input id="em" type="email" placeholder="Admin email" autocomplete="username">
+    <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
+    <button id="loginBtn">Login</button>
+    <div id="loginMsg" class="msg"></div>
+  </div>
+
+  <!-- PANEL -->
+  <div id="panel" class="hide">
+    <div id="adminState" class="card"></div>
+    <div id="tabs">
+      <button data-tab="dash" class="act">📊 Dashboard</button>
+      <button data-tab="q">❓ Sawal</button>
+      <button data-tab="m">📚 Study Material</button>
+      <button data-tab="d">💾 Data</button>
+    </div>
+
+    <div class="pane" data-pane="dash">
+      <div id="dashStats" class="sgrid"></div>
+      <div class="card"><div class="q">Subject ke hisaab se sawal</div><div id="dashSubs"></div></div>
+    </div>
+
+    <div class="pane hide" data-pane="q">
+    <div class="card">
+      <button class="sec" id="toggleAdd" style="width:100%">+ Naya sawal jodo</button>
+      <div id="addBox" class="hide" style="margin-top:12px">
+        <select id="aSub" style="margin-bottom:10px"></select>
+        <select id="aChap" style="margin-bottom:10px"></select>
+        <textarea id="aQ" rows="3" placeholder="Sawal"></textarea>
+        <input id="aO0" placeholder="Option 1"><input id="aO1" placeholder="Option 2">
+        <input id="aO2" placeholder="Option 3"><input id="aO3" placeholder="Option 4">
+        <select id="aAns" style="margin-bottom:10px">
+          <option value="0">Sahi jawab: Option 1</option><option value="1">Sahi jawab: Option 2</option>
+          <option value="2">Sahi jawab: Option 3</option><option value="3">Sahi jawab: Option 4</option>
+        </select>
+        <textarea id="aExp" rows="3" placeholder="Explanation"></textarea>
+        <input id="aEx" placeholder="Exams (comma se alag), jaise: RPSC RAS 2021, Patwari 2021">
+        <label style="display:block;margin-bottom:10px;font-size:14px"><input id="aAct" type="checkbox" style="width:auto;margin:0 6px 0 0"> Turant active karo (live app me dikhe)</label>
+        <button id="saveAdd">Save sawal</button>
+        <div id="addMsg" class="msg"></div>
+      </div>
+    </div>
+    <div class="card">
+      <button class="sec" id="toggleBulk" style="width:100%">📥 Ek saath kai sawal jodo (CSV)</button>
+      <div id="bulkBox" class="hide" style="margin-top:12px">
+        <div class="meta" style="margin-bottom:8px">Sheets/Excel me sawal likho (columns: subject, chapter, question, option1, option2, option3, option4, answer, explanation, exams), "CSV" me save karke yahan chuno. Answer 1-4 ya A-D likho. Pehle template download kar lo.</div>
+        <button class="sec" id="tplBtn" style="margin-bottom:10px">Template download karo</button>
+        <input id="bkFile" type="file" accept=".csv,.txt,text/csv,text/plain">
+        <textarea id="bkText" rows="4" placeholder="Ya yahan CSV text paste karo"></textarea>
+        <label style="display:block;margin-bottom:10px;font-size:14px"><input id="bkAct" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Import ke baad turant active karo (live app me dikhe)</label>
+        <div class="row"><button id="bkCheck" class="sec">1. Jaanch karo</button><button id="bkGo" disabled>2. Import karo</button></div>
+        <div id="bkMsg" class="msg" style="white-space:pre-wrap"></div>
+      </div>
+    </div>
+      <input id="search" type="search" placeholder="Sawal / subject / chapter me khojo...">
+      <select id="statusF" style="margin-bottom:8px">
+        <option value="all">Sab (active + hidden)</option>
+        <option value="active">Sirf active</option>
+        <option value="hidden">Sirf hidden</option>
+      </select>
+      <div id="stats" class="stats"></div>
+      <div id="list"></div>
+      <div id="more" style="text-align:center;padding:8px"></div>
+    </div>
+
+    <div class="pane hide" data-pane="m">
+    <div class="card">
+      <button class="sec" id="toggleMat" style="width:100%">📚 Study Material (PDF / YouTube)</button>
+      <div id="matBox" class="hide" style="margin-top:12px">
+        <input id="mTitle" placeholder="Title (jaise: राजस्थान की जलवायु - Notes)">
+        <input id="mCat" list="mCatList" placeholder="Category / Subject (jaise: राजस्थान का भूगोल)">
+        <datalist id="mCatList"></datalist>
+        <select id="mKind" style="margin-bottom:10px">
+          <option value="file">PDF file upload karo (Supabase)</option>
+          <option value="youtube">YouTube video link</option>
+          <option value="pdflink">PDF ka link (R2 / Drive / aur kahin)</option>
+        </select>
+        <input id="mFile" type="file" accept="application/pdf,.pdf" multiple>
+        <div id="mQ"></div>
+        <input id="mUrl" class="hide" placeholder="https://...">
+        <label style="display:block;margin-bottom:10px;font-size:14px"><input id="mAct" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Turant active karo</label>
+        <button id="mSave">Save karo</button>
+        <div id="mMsg" class="msg"></div>
+        <div id="mList" style="margin-top:12px"></div>
+      </div>
+    </div>
+    <div class="card" id="dvCard">
+      <button class="sec" id="toggleDv" style="width:100%">📑 Lab Assistant Geography DV Documents</button>
+      <div id="dvBox" class="hide" style="margin-top:12px">
+        <div class="meta" style="margin-bottom:8px">Ek ya kai PDF ek saath chuno. Har PDF ka alag title aur (optional) remark likho. Nayi PDF list me sabse last me judengi (baad me ▲ ▼ se order badal sakte ho). Ye YouTube/Study Material PDF se alag list hai.</div>
+        <input id="dvFile" type="file" accept="application/pdf,.pdf" multiple>
+        <div id="dvQ"></div>
+        <button id="dvUpload">Upload PDF</button>
+        <div id="dvProg" class="meta" style="margin-top:6px"></div>
+        <div id="dvMsg" class="msg"></div>
+        <div id="dvList" style="margin-top:12px"></div>
+      </div>
+    </div>
+    </div>
+
+    <div class="pane hide" data-pane="d">
+      <div class="card">
+        <div class="q">Backup (JSON)</div>
+        <div class="meta" style="margin-bottom:10px">Saare sawal (hidden samet) ek JSON file me. Badi change se pehle ek backup le lo.</div>
+        <button id="backupBtn">⬇️ Backup JSON download karo</button>
+      </div>
+      <div class="card">
+        <div class="q">Sawal export (CSV)</div>
+        <div class="meta" style="margin-bottom:10px">Excel / Google Sheets me khulne wali file. Column wahi hain jo import template me hain, to baad me wapas import bhi ho sakti hai.</div>
+        <div class="row"><button id="expAll">⬇️ Saare sawal (CSV)</button></div>
+        <div class="row" style="margin-top:8px"><button class="sec" id="expFiltered">⬇️ Sirf khoj/filter wale (Sawal tab jaisa)</button></div>
+        <div id="expMsg" class="msg"></div>
+      </div>
+    </div>
+    <div id="dvModal" class="hide" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;padding:16px;overflow:auto">
+      <div class="card" style="max-width:520px;margin:8vh auto 0">
+        <div class="meta">PDF</div>
+        <div class="q" id="dvMTitle" style="margin-bottom:8px"></div>
+        <textarea id="dvMText" rows="5" placeholder="Remark likho"></textarea>
+        <div id="dvMMsg" class="msg"></div>
+        <div class="row"><button id="dvMSave">Save Remark</button><button class="sec" id="dvMCancel">Cancel</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL = "https://gpqrkxyypadgvguomfrr.supabase.co";
+const SB_KEY = "sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq"; // publishable key (public hai)
+let TOKEN = null, ALL = [], USER = null, SHOWN = 50;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+async function api(path, opts = {}) {
+  const r = await fetch(SB_URL + path, {
+    ...opts,
+    headers: { apikey: SB_KEY, Authorization: "Bearer " + (TOKEN || SB_KEY), ...(opts.body ? { "Content-Type": "application/json" } : {}), ...(opts.headers || {}) }
+  });
+  const txt = await r.text();
+  let j = null; try { j = txt ? JSON.parse(txt) : null; } catch (e) {}
+  if (!r.ok) throw new Error((j && (j.msg || j.message || j.error_description || j.error)) || ("HTTP " + r.status));
+  return j;
+}
+
+async function login() {
+  $("loginMsg").textContent = "";
+  const email = $("em").value.trim(), password = $("pw").value;
+  if (!email || !password) { $("loginMsg").textContent = "Email aur password dono daalo."; return; }
+  $("loginBtn").disabled = true;
+  try {
+    const j = await api("/auth/v1/token?grant_type=password", { method: "POST", body: JSON.stringify({ email, password }) });
+    TOKEN = j.access_token; USER = j.user;
+    $("pw").value = "";
+    await openPanel();
+  } catch (e) {
+    $("loginMsg").textContent = "Login fail: " + e.message;
+  }
+  $("loginBtn").disabled = false;
+}
+
+function logout() {
+  TOKEN = null; USER = null; ALL = []; DVD = []; DVR = {}; DVQ = [];
+  $("panel").classList.add("hide");
+  $("loginBox").classList.remove("hide");
+}
+
+async function openPanel() {
+  $("loginBox").classList.add("hide");
+  $("panel").classList.remove("hide");
+  $("who").textContent = "Login: " + (USER && USER.email || "");
+  // admin check (is_admin() function)
+  let isAdmin = false;
+  try { isAdmin = await api("/rest/v1/rpc/is_admin", { method: "POST", body: "{}" }); } catch (e) {}
+  $("adminState").innerHTML = isAdmin
+    ? '<span class="tag on">ADMIN OK</span> Aap admin hain.'
+    : '<span class="tag hid">ADMIN NAHI</span> Ye user admins table me nahi hai (sirf active sawal dikhenge).';
+  await loadQuestions();
+  loadMaterials();
+  loadDv();
+}
+
+async function loadQuestions() {
+  $("list").innerHTML = '<div class="meta">Load ho raha hai...</div>';
+  try {
+    ALL = await api("/rest/v1/questions?select=id,subject,chapter,question,options,answer,explanation,exams,is_active,created_at&order=created_at.desc&limit=1000");
+    render(); fillSubjects();
+  } catch (e) {
+    $("list").innerHTML = '<div class="msg">Load error: ' + esc(e.message) + '</div>';
+  }
+}
+
+function render() {
+  const t = $("search").value.trim().toLowerCase(), f = $("statusF").value;
+  const rows = ALL.filter(q => {
+    if (f === "active" && !q.is_active) return false;
+    if (f === "hidden" && q.is_active) return false;
+    if (!t) return true;
+    return (q.question + " " + q.subject + " " + q.chapter).toLowerCase().includes(t);
+  });
+  const act = ALL.filter(q => q.is_active).length;
+  $("stats").innerHTML = '<span>Total: <b>' + ALL.length + '</b></span><span>Active: <b>' + act +
+    '</b></span><span>Hidden: <b>' + (ALL.length - act) + '</b></span><span>Dikh rahe: <b>' + rows.length + '</b></span>';
+  const SHOW = SHOWN;
+  $("list").innerHTML = rows.slice(0, SHOW).map(q =>
+    '<div class="card"><div class="q">' + esc(q.question) + '</div>' +
+    '<div class="meta">' + esc(q.subject) + ' › ' + esc(q.chapter) + '</div>' +
+    '<div style="margin-top:6px"><span class="tag ' + (q.is_active ? "on" : "hid") + '">' + (q.is_active ? "active" : "hidden") + '</span>' +
+    '<span class="meta">Ans: ' + esc((q.options || [])[q.answer]) + '</span></div>' +
+    '<div class="row" style="margin-top:10px"><button class="sec" data-act="tog" data-id="' + q.id + '">' + (q.is_active ? "Hide karo" : "Show karo") + '</button>' +
+    '<button class="sec" data-act="edit" data-id="' + q.id + '">Edit</button>' +
+    '<button class="danger" data-act="del" data-id="' + q.id + '">Delete</button></div>' +
+    '<div id="ed_' + q.id + '"></div></div>'
+  ).join("") || '<div class="meta">Koi sawal nahi mila.</div>';
+  $("more").innerHTML = rows.length > SHOW ? '<div class="meta" style="margin-bottom:6px">' + SHOW + ' / ' + rows.length + ' dikh rahe hain</div><button class="sec" id="moreBtn">Aur dikhao (+50)</button>' : "";
+}
+
+
+function fillSubjects() {
+  const m = {};
+  ALL.forEach(q => { (m[q.subject] = m[q.subject] || new Set()).add(q.chapter); });
+  window.SC = m;
+  $("aSub").innerHTML = Object.keys(m).map(s => '<option>' + esc(s) + '</option>').join("");
+  fillChapters();
+}
+function fillChapters() {
+  const s = $("aSub").value, c = window.SC && window.SC[s] ? [...window.SC[s]] : [];
+  $("aChap").innerHTML = c.map(x => '<option>' + esc(x) + '</option>').join("");
+}
+async function saveNew() {
+  const msg = $("addMsg"); msg.style.color = "var(--bad)"; msg.textContent = "";
+  const question = $("aQ").value.trim(), explanation = $("aExp").value.trim();
+  const options = [0,1,2,3].map(i => $("aO" + i).value.trim());
+  if (!question) { msg.textContent = "Sawal likho."; return; }
+  if (options.some(o => !o)) { msg.textContent = "Chaaron options bharo."; return; }
+  if (new Set(options).size < 4) { msg.textContent = "Options alag-alag hone chahiye."; return; }
+  if (ALL.some(q => q.question === question)) { msg.textContent = "Ye sawal pehle se hai (same text)."; return; }
+  const exams = $("aEx").value.split(",").map(s => s.trim()).filter(Boolean);
+  const body = { subject: $("aSub").value, chapter: $("aChap").value, question, options,
+    answer: parseInt($("aAns").value, 10), explanation, exams, is_active: $("aAct").checked };
+  $("saveAdd").disabled = true;
+  try {
+    await api("/rest/v1/questions", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(body) });
+    msg.style.color = "var(--ok)"; msg.textContent = "Save ho gaya.";
+    ["aQ","aO0","aO1","aO2","aO3","aExp","aEx"].forEach(i => $(i).value = "");
+    await loadQuestions();
+  } catch (e) { msg.textContent = "Save fail: " + e.message; }
+  $("saveAdd").disabled = false;
+}
+$("toggleAdd").onclick = () => $("addBox").classList.toggle("hide");
+$("aSub").onchange = fillChapters;
+$("saveAdd").onclick = saveNew;
+
+async function patchQ(id, body) {
+  const r = await api("/rest/v1/questions?id=eq." + id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(body) });
+  if (!r || !r.length) throw new Error("Koi row update nahi hui (admin permission check karo).");
+  return r[0];
+}
+function optsHtml(arr, cur) {
+  const a = arr.includes(cur) ? arr : [cur].concat(arr);
+  return a.map(x => '<option' + (x === cur ? ' selected' : '') + '>' + esc(x) + '</option>').join("");
+}
+function openEdit(id) {
+  const q = ALL.find(x => x.id === id), box = $("ed_" + id);
+  if (box.innerHTML) { box.innerHTML = ""; return; }
+  const subs = Object.keys(window.SC);
+  const chs = [...(window.SC[q.subject] || [])];
+  box.innerHTML = '<div style="margin-top:10px">' +
+    '<select id="es_' + id + '" style="margin-bottom:10px">' + optsHtml(subs, q.subject) + '</select>' +
+    '<select id="ec_' + id + '" style="margin-bottom:10px">' + optsHtml(chs, q.chapter) + '</select>' +
+    '<textarea id="eq_' + id + '" rows="3">' + esc(q.question) + '</textarea>' +
+    [0,1,2,3].map(i => '<input id="eo' + i + '_' + id + '" value="' + esc((q.options || [])[i]) + '">').join("") +
+    '<select id="ea_' + id + '" style="margin-bottom:10px">' + [0,1,2,3].map(i => '<option value="' + i + '"' + (i === q.answer ? ' selected' : '') + '>Sahi jawab: Option ' + (i + 1) + '</option>').join("") + '</select>' +
+    '<textarea id="ex_' + id + '" rows="3">' + esc(q.explanation) + '</textarea>' +
+    '<input id="ee_' + id + '" value="' + esc((q.exams || []).join(", ")) + '">' +
+    '<div class="meta" style="margin-bottom:8px">Dhyan: sawal ka text badalne par us sawal ka purana progress (done/saved/wrong) jud nahi payega.</div>' +
+    '<button data-act="save" data-id="' + id + '">Save badlaav</button><div id="em_' + id + '" class="msg"></div></div>';
+  $("es_" + id).onchange = () => {
+    const c = [...(window.SC[$("es_" + id).value] || [])];
+    $("ec_" + id).innerHTML = c.map(x => '<option>' + esc(x) + '</option>').join("");
+  };
+}
+async function saveEdit(id) {
+  const msg = $("em_" + id); msg.style.color = "var(--bad)"; msg.textContent = "";
+  const question = $("eq_" + id).value.trim();
+  const options = [0,1,2,3].map(i => $("eo" + i + "_" + id).value.trim());
+  if (!question) { msg.textContent = "Sawal khaali nahi ho sakta."; return; }
+  if (options.some(o => !o) || new Set(options).size < 4) { msg.textContent = "Chaaron options bharo aur alag rakho."; return; }
+  if (ALL.some(q => q.id !== id && q.question === question)) { msg.textContent = "Ye text kisi aur sawal me pehle se hai."; return; }
+  const body = { subject: $("es_" + id).value, chapter: $("ec_" + id).value, question, options,
+    answer: parseInt($("ea_" + id).value, 10), explanation: $("ex_" + id).value.trim(),
+    exams: $("ee_" + id).value.split(",").map(s => s.trim()).filter(Boolean), updated_at: new Date().toISOString() };
+  try { await patchQ(id, body); await loadQuestions(); }
+  catch (e) { msg.textContent = "Save fail: " + e.message; }
+}
+$("list").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-act]"); if (!b) return;
+  const id = b.dataset.id, q = ALL.find(x => x.id === id);
+  if (b.dataset.act === "edit") openEdit(id);
+  else if (b.dataset.act === "save") saveEdit(id);
+  else if (b.dataset.act === "del") deleteQ(id, b);
+  else if (b.dataset.act === "tog") {
+    b.disabled = true;
+    try { await patchQ(id, { is_active: !q.is_active, updated_at: new Date().toISOString() }); await loadQuestions(); }
+    catch (er) { alert("Fail: " + er.message); b.disabled = false; }
+  }
+});
+
+async function backupAll() {
+  const b = $("backupBtn"); b.disabled = true;
+  try {
+    const rows = await api("/rest/v1/questions?select=*&order=created_at.asc&limit=5000");
+    const d = new Date().toISOString().slice(0, 10);
+    const blob = new Blob([JSON.stringify(rows, null, 1)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "jakhar_questions_" + d + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    alert("Backup ban gaya: " + rows.length + " sawal (hidden samet). File Downloads me hai.");
+  } catch (e) { alert("Backup fail: " + e.message); }
+  b.disabled = false;
+}
+$("backupBtn").onclick = backupAll;
+
+let BULK = [];
+function parseCSV(text) {
+  text = text.replace(/^\uFEFF/, "");
+  const first = text.split(/\r?\n/, 1)[0];
+  const d = first.includes("\t") ? "\t" : ",";
+  const rows = []; let row = [], f = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"' && f === "") q = true;
+    else if (c === d) { row.push(f); f = ""; }
+    else if (c === "\n") { row.push(f); rows.push(row); row = []; f = ""; }
+    else if (c !== "\r") f += c;
+  }
+  if (f !== "" || row.length) { row.push(f); rows.push(row); }
+  return rows.filter(r => r.some(x => x.trim() !== ""));
+}
+function bulkCheck() {
+  const msg = $("bkMsg"); msg.style.color = "var(--bad)"; BULK = []; $("bkGo").disabled = true;
+  const rows = parseCSV($("bkText").value);
+  if (rows.length < 2) { msg.textContent = "Pehli line header ki aur uske neeche kam se kam ek sawal chahiye."; return; }
+  const hdr = rows[0].map(x => x.trim().toLowerCase());
+  const need = ["subject","chapter","question","option1","option2","option3","option4","answer"];
+  const miss = need.filter(n => !hdr.includes(n));
+  if (miss.length) { msg.textContent = "Header me ye column nahi mile: " + miss.join(", ") + "\n(Template se naam copy karo)"; return; }
+  const ix = n => hdr.indexOf(n);
+  const seen = new Set(ALL.map(q => q.question)), errs = [];
+  const amap = { A:0, B:1, C:2, D:3, "1":0, "2":1, "3":2, "4":3 };
+  rows.slice(1).forEach((r, k) => {
+    const g = n => ix(n) >= 0 ? (r[ix(n)] || "").trim() : "";
+    const e = [], subject = g("subject"), chapter = g("chapter"), question = g("question");
+    const options = [1,2,3,4].map(i => g("option" + i));
+    const a = amap[g("answer").toUpperCase()];
+    if (!question) e.push("sawal khaali");
+    if (options.some(o => !o)) e.push("option khaali");
+    else if (new Set(options).size < 4) e.push("options alag-alag nahi");
+    if (a === undefined) e.push("answer 1-4 ya A-D hona chahiye");
+    if (!(window.SC && window.SC[subject] && window.SC[subject].has(chapter))) e.push("subject/chapter DB me nahi mila (spelling check karo)");
+    if (question && seen.has(question)) e.push("ye sawal pehle se hai / file me dobara");
+    if (e.length) { errs.push("Line " + (k + 2) + ": " + e.join(", ")); return; }
+    seen.add(question);
+    BULK.push({ subject, chapter, question, options, answer: a, explanation: g("explanation"),
+      exams: g("exams").split(/[,;|]/).map(s => s.trim()).filter(Boolean) });
+  });
+  msg.style.color = errs.length ? "var(--bad)" : "var(--ok)";
+  msg.textContent = "Sahi: " + BULK.length + "   Galat: " + errs.length + (errs.length ? "\n\n" + errs.slice(0, 15).join("\n") + (errs.length > 15 ? "\n...aur " + (errs.length - 15) + " line" : "") : "");
+  $("bkGo").disabled = BULK.length === 0;
+}
+async function bulkGo() {
+  if (!BULK.length) return;
+  if (!confirm(BULK.length + " sawal import karein?")) return;
+  const msg = $("bkMsg"); $("bkGo").disabled = true; $("bkCheck").disabled = true;
+  const active = $("bkAct").checked; let done = 0;
+  try {
+    for (let i = 0; i < BULK.length; i += 50) {
+      const chunk = BULK.slice(i, i + 50).map(q => ({ ...q, is_active: active }));
+      await api("/rest/v1/questions", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify(chunk) });
+      done += chunk.length; msg.style.color = ""; msg.textContent = "Import ho raha hai... " + done + "/" + BULK.length;
+    }
+    msg.style.color = "var(--ok)"; msg.textContent = "Import ho gaya: " + done + " sawal. Ab ek Backup le lo.";
+    BULK = []; $("bkText").value = ""; $("bkFile").value = "";
+    await loadQuestions();
+  } catch (e) {
+    msg.style.color = "var(--bad)"; msg.textContent = "Import beech me ruka (" + done + " ho chuke): " + e.message + "\nList dekho, fir bachhe hue ko dobara Jaanch karke import karo (duplicate apne-aap pakde jayenge).";
+    await loadQuestions();
+  }
+  $("bkCheck").disabled = false;
+}
+function bulkTemplate() {
+  const s = "subject,chapter,question,option1,option2,option3,option4,answer,explanation,exams\n" +
+    '"' + ($("aSub").value || "विषय") + '","' + ($("aChap").value || "चैप्टर") + '","यहाँ सवाल लिखो","विकल्प 1","विकल्प 2","विकल्प 3","विकल्प 4",2,"यहाँ व्याख्या","RPSC RAS 2021; Patwari 2021"\n';
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\uFEFF" + s], { type: "text/csv;charset=utf-8" }));
+  a.download = "jakhar_questions_template.csv"; document.body.appendChild(a); a.click(); a.remove();
+}
+$("toggleBulk").onclick = () => $("bulkBox").classList.toggle("hide");
+$("bkFile").onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $("bkText").value = r.result; bulkCheck(); }; r.readAsText(f, "utf-8"); };
+$("bkCheck").onclick = bulkCheck; $("bkGo").onclick = bulkGo; $("tplBtn").onclick = bulkTemplate;
+
+let MATS = [];
+const PUB = SB_URL + "/storage/v1/object/public/study-material/";
+function matUrl(m) { return m.file_path ? PUB + m.file_path.split("/").map(encodeURIComponent).join("/") : m.url; }
+async function loadMaterials() {
+  try { MATS = await api("/rest/v1/materials?select=*&order=created_at.desc&limit=1000"); renderMats(); }
+  catch (e) { $("mList").innerHTML = '<div class="msg">Study material load error: ' + esc(e.message) + '</div>'; }
+}
+function renderMats() {
+  const cats = [...new Set(MATS.map(m => m.category).filter(Boolean).concat(Object.keys(window.SC || {})))];
+  $("mCatList").innerHTML = cats.map(c => '<option value="' + esc(c) + '">').join("");
+  $("mList").innerHTML = MATS.map(m =>
+    '<div class="card" style="margin-bottom:8px"><div class="q">' + esc(m.title) + '</div>' +
+    '<div class="meta">' + esc(m.category) + '</div>' +
+    '<div style="margin:6px 0"><span class="tag">' + (m.kind === "youtube" ? "YouTube" : "PDF") + '</span>' +
+    '<span class="tag ' + (m.is_active ? "on" : "hid") + '">' + (m.is_active ? "active" : "hidden") + '</span></div>' +
+    '<div class="row"><a href="' + esc(matUrl(m)) + '" target="_blank" rel="noopener" style="padding:10px 12px;border:1px solid var(--bd);border-radius:8px;color:var(--tx);text-decoration:none">Kholo</a>' +
+    '<button class="sec" data-mact="tog" data-id="' + m.id + '">' + (m.is_active ? "Hide" : "Show") + '</button>' +
+    '<button class="sec" data-mact="del" data-id="' + m.id + '" style="color:var(--bad)">Delete</button></div></div>'
+  ).join("") || '<div class="meta">Abhi koi study material nahi.</div>';
+}
+function matKindUI() {
+  const k = $("mKind").value;
+  $("mFile").classList.toggle("hide", k !== "file");
+  $("mQ").classList.toggle("hide", k !== "file");
+  $("mTitle").classList.toggle("hide", k === "file");
+  $("mUrl").classList.toggle("hide", k === "file");
+  $("mUrl").placeholder = k === "youtube" ? "https://youtu.be/... ya https://www.youtube.com/watch?v=..." : "https://... (PDF ka seedha link)";
+}
+async function matSave() {
+  if ($("mKind").value === "file") return matSaveBulk();
+  const msg = $("mMsg"); msg.style.color = "var(--bad)"; msg.textContent = "";
+  const title = $("mTitle").value.trim(), category = $("mCat").value.trim(), k = $("mKind").value;
+  if (!title) { msg.textContent = "Title likho."; return; }
+  let row = { title, category, is_active: $("mAct").checked };
+  $("mSave").disabled = true;
+  try {
+    if (k === "file") {
+      const f = $("mFile").files[0];
+      if (!f) throw new Error("PDF file chuno.");
+      if (!/\.pdf$/i.test(f.name) && f.type !== "application/pdf") throw new Error("Sirf PDF file chalegi.");
+      if (f.size > 50 * 1024 * 1024) throw new Error("File 50 MB se badi hai.");
+      const path = "pdfs/" + Date.now() + "_" + Math.random().toString(36).slice(2, 8) + ".pdf";
+      msg.style.color = ""; msg.textContent = "Upload ho raha hai (" + (f.size / 1048576).toFixed(1) + " MB)...";
+      await api("/storage/v1/object/study-material/" + path, { method: "POST", headers: { "Content-Type": "application/pdf", "x-upsert": "false" }, body: f });
+      row.kind = "pdf"; row.file_path = path;
+    } else {
+      const u = $("mUrl").value.trim();
+      if (!/^https:\/\//i.test(u)) throw new Error("Link https:// se shuru hona chahiye.");
+      if (k === "youtube" && !/(youtube\.com|youtu\.be)/i.test(u)) throw new Error("Ye YouTube ka link nahi lag raha.");
+      row.kind = k === "youtube" ? "youtube" : "pdf"; row.url = u;
+    }
+    await api("/rest/v1/materials", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify(row) });
+    msg.style.color = "var(--ok)"; msg.textContent = "Save ho gaya.";
+    ["mTitle", "mUrl"].forEach(i => $(i).value = ""); $("mFile").value = "";
+    await loadMaterials();
+  } catch (e) { msg.style.color = "var(--bad)"; msg.textContent = "Fail: " + e.message; }
+  $("mSave").disabled = false;
+}
+let MQ = [], MQ_BUSY = false;
+const matTitleFrom = n => n.replace(/\.pdf$/i, "").trim();
+function renderMQ() {
+  $("mQ").style.pointerEvents = "";
+  $("mQ").innerHTML = MQ.map((q, i) =>
+    '<div class="card" style="margin-bottom:8px"><div class="meta" style="word-break:break-all">' + (i + 1) + '. 📄 ' + esc(q.f.name) + ' · ' + (q.f.size / 1048576).toFixed(1) + ' MB</div>' +
+    '<input data-m="title" data-i="' + i + '" value="' + esc(q.title) + '" placeholder="PDF Title (zaroori)" style="margin-top:6px">' +
+    '<div class="row"><span id="mqs' + i + '" class="meta" style="flex:1;color:var(--bad)">' + esc(q.err) + '</span>' +
+    '<button class="sec" data-m="rm" data-i="' + i + '">✕ Hatao</button></div></div>').join("");
+  $("mSave").textContent = MQ.length > 1 ? "Upload " + MQ.length + " PDFs" : "Save karo";
+}
+function matPick() {
+  const fs = [...$("mFile").files]; $("mFile").value = "";
+  fs.forEach(f => { if (!MQ.some(q => q.f.name === f.name && q.f.size === f.size)) MQ.push({ f, title: matTitleFrom(f.name), err: "" }); });
+  renderMQ();
+}
+async function matSaveBulk() {
+  if (MQ_BUSY) return;
+  const msg = $("mMsg"); msg.style.color = "var(--bad)"; msg.textContent = "";
+  if (!MQ.length) { msg.textContent = "Pehle PDF file(s) chuno."; return; }
+  for (let i = 0; i < MQ.length; i++) {
+    const f = MQ[i].f;
+    if (!MQ[i].title.trim()) { msg.textContent = "PDF " + (i + 1) + ": title likho."; return; }
+    if (!/\.pdf$/i.test(f.name) && f.type !== "application/pdf") { msg.textContent = "PDF " + (i + 1) + ": sirf PDF file chalegi."; return; }
+    if (f.size > 50 * 1024 * 1024) { msg.textContent = "PDF " + (i + 1) + ": file 50 MB se badi hai."; return; }
+  }
+  const category = $("mCat").value.trim(), active = $("mAct").checked;
+  MQ_BUSY = true; $("mSave").disabled = true; $("mQ").style.pointerEvents = "none";
+  let ok = 0; const keep = [];
+  for (let i = 0; i < MQ.length; i++) {
+    const q = MQ[i], st = $("mqs" + i); let path = null; q.err = "";
+    const set = (t, bad) => { if (st) { st.style.color = bad ? "var(--bad)" : "var(--mut)"; st.textContent = t; } };
+    try {
+      set("Upload ho raha hai...");
+      path = "pdfs/" + Date.now() + "_" + Math.random().toString(36).slice(2, 8) + ".pdf";
+      await api("/storage/v1/object/study-material/" + path, { method: "POST", headers: { "Content-Type": "application/pdf", "x-upsert": "false" }, body: q.f });
+      set("Save ho raha hai...");
+      await api("/rest/v1/materials", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ title: q.title.trim(), category, is_active: active, kind: "pdf", file_path: path }) });
+      path = null; ok++; set("✓ Ho gaya");
+    } catch (e) {
+      if (path) api("/storage/v1/object/study-material/" + path, { method: "DELETE" }).catch(() => {});
+      q.err = "Fail: " + e.message; keep.push(q); set(q.err, true);
+    }
+  }
+  MQ = keep; MQ_BUSY = false; $("mSave").disabled = false;
+  await loadMaterials();
+  msg.style.color = keep.length ? "var(--bad)" : "var(--ok)";
+  msg.textContent = ok + " PDF save ho gayi" + (keep.length ? ", " + keep.length + " fail (neeche dekho, dobara dabao)." : ".");
+  renderMQ();
+}
+$("mFile").onchange = matPick;
+$("mQ").addEventListener("input", e => { const t = e.target, i = +t.dataset.i; if (t.dataset.m === "title" && MQ[i]) MQ[i].title = t.value; });
+$("mQ").addEventListener("click", e => { const b = e.target.closest("button[data-m=rm]"); if (!b || MQ_BUSY) return; MQ.splice(+b.dataset.i, 1); renderMQ(); });
+$("mList").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-mact]"); if (!b) return;
+  const m = MATS.find(x => x.id === b.dataset.id); if (!m) return;
+  try {
+    if (b.dataset.mact === "tog") {
+      const r = await api("/rest/v1/materials?id=eq." + m.id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ is_active: !m.is_active }) });
+      if (!r || !r.length) throw new Error("Update nahi hua (admin permission check karo).");
+    } else if (b.dataset.mact === "del") {
+      if (!confirm('"' + m.title + '" hamesha ke liye hata dein?')) return;
+      if (m.file_path) await api("/storage/v1/object/study-material/" + m.file_path, { method: "DELETE" });
+      const r = await api("/rest/v1/materials?id=eq." + m.id, { method: "DELETE", headers: { Prefer: "return=representation" } });
+      if (!r || !r.length) throw new Error("Delete nahi hua.");
+    }
+    await loadMaterials();
+  } catch (er) { alert("Fail: " + er.message); }
+});
+$("toggleMat").onclick = () => $("matBox").classList.toggle("hide");
+$("mKind").onchange = matKindUI; $("mSave").onclick = matSave; matKindUI();
+$("loginBtn").onclick = login;
+$("pw").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+$("logoutBtn").onclick = logout;
+$("search").oninput = () => { SHOWN = 50; render(); };
+$("statusF").onchange = () => { SHOWN = 50; render(); };
+
+/* ================= Lab Assistant Geography DV Documents ================= */
+const DV_T = "/rest/v1/lab_assistant_geography_dv_documents";
+const DV_R = "/rest/v1/lab_assistant_geography_dv_remarks";
+const DV_BUCKET = "dv-documents";
+const DV_MAX = 20 * 1024 * 1024;
+const DV_PUB = SB_URL + "/storage/v1/object/public/" + DV_BUCKET + "/";
+let DVD = [], DVR = {}, DV_OPEN = {}, DV_MODAL = null;
+
+const dvUrl = d => DV_PUB + d.file_path.split("/").map(encodeURIComponent).join("/");
+const dvDate = s => new Date(s).toLocaleString("en-IN", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+const dvSafeName = n => (String(n || "document").replace(/\.pdf$/i, "").replace(/[^\w\u0900-\u097F\- ]+/g, "").trim().slice(0, 80) || "document") + ".pdf";
+
+function dvPut(path, file, onProg) {
+  return new Promise((res, rej) => {
+    const x = new XMLHttpRequest();
+    x.open("POST", SB_URL + "/storage/v1/object/" + DV_BUCKET + "/" + path);
+    x.setRequestHeader("apikey", SB_KEY);
+    x.setRequestHeader("Authorization", "Bearer " + (TOKEN || SB_KEY));
+    x.setRequestHeader("Content-Type", "application/pdf");
+    x.setRequestHeader("x-upsert", "false");
+    x.upload.onprogress = e => { if (e.lengthComputable && onProg) onProg(Math.round(e.loaded / e.total * 100)); };
+    x.onload = () => {
+      if (x.status >= 200 && x.status < 300) return res();
+      let m = ""; try { const j = JSON.parse(x.responseText); m = j.message || j.error || ""; } catch (e) {}
+      rej(new Error(m || ("Upload HTTP " + x.status)));
+    };
+    x.onerror = () => rej(new Error("Network error (upload)"));
+    x.send(file);
+  });
+}
+const dvDelFile = p => api("/storage/v1/object/" + DV_BUCKET + "/" + p, { method: "DELETE" }).catch(() => {});
+function dvCheck(f) {
+  if (!f) throw new Error("PDF file chuno.");
+  if (!/\.pdf$/i.test(f.name) && f.type !== "application/pdf") throw new Error("Sirf PDF file chalegi.");
+  if (f.size > DV_MAX) throw new Error("File 20 MB se badi hai (" + (f.size / 1048576).toFixed(1) + " MB).");
+}
+const dvNewPath = () => "docs/" + Date.now() + "_" + Math.random().toString(36).slice(2, 8) + ".pdf";
+
+async function loadDv() {
+  const L = $("dvList");
+  if (!DVD.length) L.innerHTML = '<div class="meta">Load ho raha hai...</div>';
+  try {
+    const [d, r] = await Promise.all([
+      api(DV_T + "?select=*&order=display_order.asc,created_at.asc&limit=1000"),
+      api(DV_R + "?select=*&order=created_at.asc&limit=5000")
+    ]);
+    DVD = d || []; DVR = {};
+    (r || []).forEach(x => (DVR[x.document_id] = DVR[x.document_id] || []).push(x));
+    renderDv();
+  } catch (e) { L.innerHTML = '<div class="msg">DV load error: ' + esc(e.message) + '</div>'; }
+}
+
+function renderDv() {
+  $("dvList").innerHTML = DVD.map((d, i) => {
+    const rs = DVR[d.id] || [], open = DV_OPEN[d.id];
+    const rem = rs.map(r =>
+      '<div style="border:1px solid var(--bd);border-radius:8px;padding:8px;margin-top:6px">' +
+      '<div class="meta"><b>Admin</b> — ' + esc(dvDate(r.created_at)) + '</div>' +
+      '<div style="white-space:pre-wrap;word-break:break-word">' + esc(r.remark_text) + '</div>' +
+      '<div class="row" style="margin-top:6px"><button class="sec" data-dv="remedit" data-id="' + r.id + '" data-d="' + d.id + '">Edit</button>' +
+      '<button class="sec" data-dv="remdel" data-id="' + r.id + '" data-d="' + d.id + '" style="color:var(--bad)">Delete</button></div></div>'
+    ).join("") || '<div class="meta">No updates yet</div>';
+    return '<div class="card" style="margin-bottom:8px">' +
+      '<div class="q">' + (i + 1) + '. ' + esc(d.title) + '</div>' +
+      '<div class="meta">' + esc(d.file_name || "") + ' · Added ' + esc(dvDate(d.created_at)) + '</div>' +
+      '<div style="margin:6px 0"><span class="tag ' + (d.is_active ? "on" : "hid") + '">' + (d.is_active ? "active" : "hidden") + '</span>' +
+      '<span class="tag">' + rs.length + ' remark' + (rs.length === 1 ? "" : "s") + '</span></div>' +
+      '<div class="row" style="flex-wrap:wrap;margin-bottom:6px">' +
+      '<a href="' + esc(dvUrl(d)) + '" target="_blank" rel="noopener" style="padding:10px 12px;border:1px solid var(--bd);border-radius:8px;color:var(--tx);text-decoration:none">View PDF</a>' +
+      '<button class="sec" data-dv="title" data-id="' + d.id + '">Edit Title</button>' +
+      '<button class="sec" data-dv="addrem" data-id="' + d.id + '">Add Remark</button>' +
+      '<button class="sec" data-dv="viewrem" data-id="' + d.id + '">' + (open ? "Hide" : "View") + ' Remarks</button></div>' +
+      '<div class="row" style="flex-wrap:wrap">' +
+      '<button class="sec" data-dv="up" data-id="' + d.id + '"' + (i === 0 ? " disabled" : "") + '>▲</button>' +
+      '<button class="sec" data-dv="down" data-id="' + d.id + '"' + (i === DVD.length - 1 ? " disabled" : "") + '>▼</button>' +
+      '<button class="sec" data-dv="replace" data-id="' + d.id + '">Replace PDF</button>' +
+      '<button class="sec" data-dv="tog" data-id="' + d.id + '">' + (d.is_active ? "Hide" : "Show") + '</button>' +
+      '<button class="sec" data-dv="del" data-id="' + d.id + '" style="color:var(--bad)">Delete</button></div>' +
+      (open ? '<div style="margin-top:8px">' + rem + '</div>' : "") +
+      '</div>';
+  }).join("") || '<div class="meta">Abhi koi DV PDF nahi.</div>';
+}
+
+/* ===== Bulk upload (kai PDF ek saath) ===== */
+let DVQ = [], DVQ_BUSY = false;
+const dvTitleFrom = n => n.replace(/\.pdf$/i, "").replace(/_+/g, " ").replace(/\s+/g, " ").trim();
+function dvPick() {
+  const fs = [...$("dvFile").files]; $("dvFile").value = "";
+  fs.forEach(f => DVQ.push({ f, title: dvTitleFrom(f.name), remark: "", err: "" }));
+  renderQ();
+}
+function renderQ() {
+  $("dvQ").style.pointerEvents = "";
+  $("dvQ").innerHTML = DVQ.map((q, i) =>
+    '<div class="card" style="margin-bottom:8px"><div class="meta">' + (i + 1) + '. ' + esc(q.f.name) + ' · ' + (q.f.size / 1048576).toFixed(1) + ' MB</div>' +
+    '<input data-q="title" data-i="' + i + '" value="' + esc(q.title) + '" placeholder="PDF Title (zaroori)" style="margin-top:6px">' +
+    '<textarea data-q="remark" data-i="' + i + '" rows="2" placeholder="Admin Remark (optional)">' + esc(q.remark) + '</textarea>' +
+    '<div class="row"><span id="dvqs' + i + '" class="meta" style="flex:1;color:var(--bad)">' + esc(q.err) + '</span>' +
+    '<button class="sec" data-q="rm" data-i="' + i + '">✕ Hatao</button></div></div>').join("");
+  $("dvUpload").textContent = DVQ.length > 1 ? "Upload " + DVQ.length + " PDFs" : "Upload PDF";
+}
+async function dvUpload() {
+  if (DVQ_BUSY) return;
+  const msg = $("dvMsg"); msg.style.color = "var(--bad)"; msg.textContent = "";
+  if (!DVQ.length) { msg.textContent = "Pehle PDF file(s) chuno."; return; }
+  for (let i = 0; i < DVQ.length; i++) {
+    try { if (!DVQ[i].title.trim()) throw new Error("title likho."); dvCheck(DVQ[i].f); }
+    catch (e) { msg.textContent = "PDF " + (i + 1) + ": " + e.message; return; }
+  }
+  DVQ_BUSY = true; $("dvUpload").disabled = true; $("dvQ").style.pointerEvents = "none";
+  let ord = DVD.reduce((m, d) => Math.max(m, d.display_order || 0), 0), ok = 0; const keep = [], warn = [];
+  for (let i = 0; i < DVQ.length; i++) {
+    const q = DVQ[i], st = $("dvqs" + i); let path = null; q.err = "";
+    const set = (t, bad) => { if (st) { st.style.color = bad ? "var(--bad)" : "var(--mut)"; st.textContent = t; } };
+    try {
+      set("Upload ho raha hai...");
+      path = dvNewPath();
+      await dvPut(path, q.f, p => set("Upload: " + p + "%"));
+      set("Save ho raha hai...");
+      const row = await api(DV_T, { method: "POST", headers: { Prefer: "return=representation" },
+        body: JSON.stringify({ title: q.title.trim(), file_path: path, file_name: dvSafeName(q.f.name), display_order: ord + 1 }) });
+      if (!row || !row.length) throw new Error("Save nahi hua (admin permission check karo).");
+      path = null; ord++; ok++;
+      const rm = q.remark.trim();
+      if (rm) {
+        try { await api(DV_R, { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ document_id: row[0].id, remark_text: rm }) }); }
+        catch (e) { warn.push('"' + q.title.trim() + '" ka remark save nahi hua (Add Remark se jodo)'); }
+      }
+      set("✓ Ho gaya");
+    } catch (e) {
+      if (path) await dvDelFile(path);
+      q.err = "Fail: " + e.message; keep.push(q); set(q.err, true);
+    }
+  }
+  DVQ = keep; DVQ_BUSY = false; $("dvUpload").disabled = false;
+  await loadDv();
+  const bad = keep.length;
+  msg.style.color = bad ? "var(--bad)" : "var(--ok)";
+  msg.textContent = ok + " PDF upload ho gayi" + (bad ? ", " + bad + " fail (neeche dekho, dobara Upload dabao)" : ".") + (warn.length ? " " + warn.join("; ") + "." : "");
+  if (bad) renderQ(); else { $("dvQ").innerHTML = ""; $("dvUpload").textContent = "Upload PDF"; }
+}
+
+async function dvReorder(id, dir) {
+  const i = DVD.findIndex(d => d.id === id), j = i + dir;
+  if (i < 0 || j < 0 || j >= DVD.length) return;
+  const a = DVD.slice(); [a[i], a[j]] = [a[j], a[i]];
+  await Promise.all(a.map((d, k) => d.display_order === k + 1 ? null :
+    api(DV_T + "?id=eq." + d.id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ display_order: k + 1 }) })
+      .then(r => { if (!r || !r.length) throw new Error("Order update nahi hua."); })));
+}
+
+function dvOpenModal(mode, doc, remark) {
+  DV_MODAL = { mode, id: doc.id, rid: remark && remark.id };
+  $("dvMTitle").textContent = doc.title;
+  $("dvMText").value = remark ? remark.remark_text : "";
+  $("dvMMsg").textContent = "";
+  $("dvModal").classList.remove("hide");
+  $("dvMText").focus();
+}
+async function dvModalSave() {
+  const t = $("dvMText").value.trim(); if (!DV_MODAL) return;
+  if (!t) { $("dvMMsg").textContent = "Remark likho."; return; }
+  $("dvMSave").disabled = true;
+  try {
+    if (DV_MODAL.mode === "add") {
+      await api(DV_R, { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ document_id: DV_MODAL.id, remark_text: t }) });
+      DV_OPEN[DV_MODAL.id] = true;
+    } else {
+      const r = await api(DV_R + "?id=eq." + DV_MODAL.rid, { method: "PATCH", headers: { Prefer: "return=representation" },
+        body: JSON.stringify({ remark_text: t, updated_at: new Date().toISOString() }) });
+      if (!r || !r.length) throw new Error("Update nahi hua.");
+    }
+    $("dvModal").classList.add("hide"); DV_MODAL = null;
+    await loadDv();
+  } catch (e) { $("dvMMsg").textContent = "Fail: " + e.message; }
+  $("dvMSave").disabled = false;
+}
+
+$("dvList").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-dv]"); if (!b) return;
+  const act = b.dataset.dv;
+  const doc = DVD.find(x => x.id === (b.dataset.d || b.dataset.id));
+  if (!doc) return;
+  try {
+    if (act === "title") {
+      const t = prompt("Naya title:", doc.title); if (t === null) return;
+      if (!t.trim()) throw new Error("Title khali nahi ho sakta.");
+      const r = await api(DV_T + "?id=eq." + doc.id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ title: t.trim(), updated_at: new Date().toISOString() }) });
+      if (!r || !r.length) throw new Error("Update nahi hua.");
+    } else if (act === "addrem") { dvOpenModal("add", doc); return; }
+    else if (act === "viewrem") { DV_OPEN[doc.id] = !DV_OPEN[doc.id]; renderDv(); return; }
+    else if (act === "remedit") { const r = (DVR[doc.id] || []).find(x => x.id === b.dataset.id); if (r) dvOpenModal("edit", doc, r); return; }
+    else if (act === "remdel") {
+      if (!confirm("Ye remark hamesha ke liye hata dein?")) return;
+      const r = await api(DV_R + "?id=eq." + b.dataset.id, { method: "DELETE", headers: { Prefer: "return=representation" } });
+      if (!r || !r.length) throw new Error("Delete nahi hua.");
+    } else if (act === "up" || act === "down") { await dvReorder(doc.id, act === "up" ? -1 : 1); }
+    else if (act === "tog") {
+      const r = await api(DV_T + "?id=eq." + doc.id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ is_active: !doc.is_active, updated_at: new Date().toISOString() }) });
+      if (!r || !r.length) throw new Error("Update nahi hua.");
+    } else if (act === "replace") {
+      const inp = document.createElement("input"); inp.type = "file"; inp.accept = "application/pdf,.pdf";
+      inp.onchange = async () => {
+        const f = inp.files[0]; let np = null;
+        try {
+          dvCheck(f);
+          if (!confirm('"' + doc.title + '" ki PDF is nayi file se badal dein? Remarks safe rahenge.')) return;
+          np = dvNewPath(); b.disabled = true; b.textContent = "Uploading...";
+          await dvPut(np, f);
+          const r = await api(DV_T + "?id=eq." + doc.id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ file_path: np, file_name: dvSafeName(f.name), updated_at: new Date().toISOString() }) });
+          if (!r || !r.length) throw new Error("Update nahi hua.");
+          dvDelFile(doc.file_path); np = null;
+        } catch (er) { if (np) await dvDelFile(np); alert("Fail: " + er.message); }
+        await loadDv();
+      };
+      inp.click(); return;
+    } else if (act === "del") {
+      const n = (DVR[doc.id] || []).length;
+      if (!confirm('"' + doc.title + '" hamesha ke liye hata dein?\nIske ' + n + ' remark(s) bhi hat jayenge. Dusre PDF par asar nahi padega.')) return;
+      const r = await api(DV_T + "?id=eq." + doc.id, { method: "DELETE", headers: { Prefer: "return=representation" } });
+      if (!r || !r.length) throw new Error("Delete nahi hua.");
+      await dvDelFile(doc.file_path);
+      // baaki PDF ka serial 1..n ek-saath kar do
+      DVD = DVD.filter(x => x.id !== doc.id);
+      await Promise.all(DVD.map((d, k) => d.display_order === k + 1 ? null :
+        api(DV_T + "?id=eq." + d.id, { method: "PATCH", body: JSON.stringify({ display_order: k + 1 }) }).catch(() => {})));
+    }
+    await loadDv();
+  } catch (er) { alert("Fail: " + er.message); }
+});
+$("toggleDv").onclick = () => $("dvBox").classList.toggle("hide");
+$("dvUpload").onclick = dvUpload;
+$("dvFile").onchange = dvPick;
+$("dvQ").addEventListener("input", e => { const t = e.target, i = +t.dataset.i; if (!DVQ[i]) return; if (t.dataset.q === "title") DVQ[i].title = t.value; else if (t.dataset.q === "remark") DVQ[i].remark = t.value; });
+$("dvQ").addEventListener("click", e => { const b = e.target.closest("button[data-q=rm]"); if (!b || DVQ_BUSY) return; DVQ.splice(+b.dataset.i, 1); renderQ(); });
+$("dvMSave").onclick = dvModalSave;
+$("dvMCancel").onclick = () => { $("dvModal").classList.add("hide"); DV_MODAL = null; };
+
+// ---- Step 8 additions: tabs, dashboard, CSV export, delete question ----
+function showTab(n) {
+  document.querySelectorAll(".pane").forEach(p => p.classList.toggle("hide", p.dataset.pane !== n));
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("act", b.dataset.tab === n));
+  if (n === "dash") renderDash();
+}
+$("tabs").addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (b) showTab(b.dataset.tab); });
+$("more").addEventListener("click", e => { if (e.target.id === "moreBtn") { SHOWN += 50; render(); } });
+
+function renderDash() {
+  const act = ALL.filter(q => q.is_active).length, subj = {};
+  ALL.forEach(q => { const s = subj[q.subject] = subj[q.subject] || { t: 0, a: 0 }; s.t++; if (q.is_active) s.a++; });
+  const box = (n, l) => '<div class="stat"><b>' + n + '</b><span>' + l + '</span></div>';
+  $("dashStats").innerHTML = box(ALL.length, "Total sawal") + box(act, "Active") + box(ALL.length - act, "Hidden") +
+    box(MATS.length, "Study material") + box(DVD.length, "DV documents");
+  $("dashSubs").innerHTML = Object.keys(subj).sort().map(s =>
+    '<div class="srow"><span>' + esc(s) + '</span><span><b>' + subj[s].t + '</b> <span class="meta">(' + subj[s].a + ' active)</span></span></div>'
+  ).join("") || '<div class="meta">Abhi koi data nahi.</div>';
+}
+["render", "renderMats", "renderDv"].forEach(n => { const f = window[n]; window[n] = function () { const r = f.apply(this, arguments); renderDash(); return r; }; });
+{ const _op = window.openPanel; window.openPanel = async function () { showTab("dash"); $("logoutBtn").classList.remove("hide"); return _op.apply(this, arguments); }; }
+{ const _lo = window.logout; window.logout = function () { const r = _lo.apply(this, arguments); showTab("dash"); MATS = []; $("logoutBtn").classList.add("hide"); return r; }; $("logoutBtn").onclick = window.logout; }
+
+function filteredRows() {
+  const t = $("search").value.trim().toLowerCase(), f = $("statusF").value;
+  return ALL.filter(q => {
+    if (f === "active" && !q.is_active) return false;
+    if (f === "hidden" && q.is_active) return false;
+    return !t || (q.question + " " + q.subject + " " + q.chapter).toLowerCase().includes(t);
+  });
+}
+function csvCell(v) { return '"' + String(v ?? "").replace(/"/g, '""') + '"'; }
+function exportCSV(rows, label) {
+  const msg = $("expMsg"); msg.style.color = "var(--bad)"; msg.textContent = "";
+  if (!rows.length) { msg.textContent = "Export ke liye koi sawal nahi."; return; }
+  const hdr = ["subject","chapter","question","option1","option2","option3","option4","answer","explanation","exams","status"];
+  const lines = [hdr.join(",")].concat(rows.map(q => [
+    q.subject, q.chapter, q.question, (q.options || [])[0], (q.options || [])[1], (q.options || [])[2], (q.options || [])[3],
+    (q.answer ?? 0) + 1, q.explanation, (q.exams || []).join("; "), q.is_active ? "active" : "hidden"
+  ].map(csvCell).join(",")));
+  const d = new Date().toISOString().slice(0, 10);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\uFEFF" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" }));
+  a.download = "jakhar_questions_" + label + "_" + d + ".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  msg.style.color = "var(--ok)"; msg.textContent = rows.length + " sawal export ho gaye.";
+}
+$("expAll").onclick = () => exportCSV(ALL, "all");
+$("expFiltered").onclick = () => exportCSV(filteredRows(), "filtered");
+
+async function deleteQ(id, btn) {
+  const q = ALL.find(x => x.id === id); if (!q) return;
+  const short = q.question.length > 90 ? q.question.slice(0, 90) + "..." : q.question;
+  if (!confirm('Ye sawal hamesha ke liye hata dein?\n\n"' + short + '"\n\nDhyan: students ka is sawal ka done/saved/wrong progress bhi bekaar ho jayega.\nAgar sirf chhupana hai to "Hide karo" use karo.\n\nPehle Backup le liya hai?')) return;
+  btn.disabled = true;
+  try {
+    const r = await api("/rest/v1/questions?id=eq." + id, { method: "DELETE", headers: { Prefer: "return=representation" } });
+    if (!r || !r.length) throw new Error("Koi row delete nahi hui (admin delete permission check karo).");
+    await loadQuestions();
+  } catch (er) { alert("Delete fail: " + er.message); btn.disabled = false; }
+}
+</script>
+</body>
+</html>
