@@ -1210,14 +1210,10 @@ function profile(){
   <p style="margin:12px 0 0;font-size:13px;color:var(--mute)">टेस्ट दिए: ${H.length} · सेव: ${cnt("pyq_saved")} · गलत: ${cnt("pyq_wrong")}</p></div>
   <div class="card" id="acct"></div>
   <div class="card"><b>🌐 ${lang==="en"?"Language":"भाषा · Language"}</b><div class="lgs"><button class="${lang==="en"?"":"on"}" onclick="setLang('hi')">हिंदी</button><button class="${lang==="en"?"on":""}" onclick="setLang('en')">English</button></div></div>
-  <button class="btn ghost" style="width:100%;margin-bottom:14px" id="rst">🗑 सारा डेटा रीसेट करें</button>
   <div class="list">${R({c:"#334155",i:"🌙",t:"Dark Theme",s:"आँखों को आराम — डार्क मोड",b:document.documentElement.classList.contains("dark")?"चालू":"बंद",on:"toggleDark()"})}
   ${R({c:"#64748b",i:"🔒",t:"Privacy Policy",s:"आपका डेटा कैसे सुरक्षित रहता है",on:"privacy()"})}
   ${R({c:"#1457d9",i:"📞",t:"Contact Us",s:"YouTube · Telegram · Email",on:"contact()"})}</div></main>`,"prof",false,home);
   if(window.acctRender)acctRender();
-  const b=document.getElementById("rst");
-  b.onclick=()=>{if(!b.dataset.s){b.dataset.s=1;b.textContent="पक्का? सारा डेटा मिट जाएगा — फिर से दबाएँ";return}
-    ["pyq_saved","pyq_wrong","jk_done","jk_hist","jk_days","jk_review","jk_prog"].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});toast("डेटा रीसेट हो गया");home()};
 }
 function toggleDark(){const on=!document.documentElement.classList.contains("dark");document.documentElement.classList.toggle("dark",on);store.set("jk_theme",[on?"dark":"light"]);profile()}
 function privacy(){
@@ -1495,7 +1491,14 @@ splash();
   function load(){try{return JSON.parse(localStorage.getItem("jkx_auth")||"null")}catch(e){return null}}
   function save(s){try{if(s)localStorage.setItem("jkx_auth",JSON.stringify(s));else localStorage.removeItem("jkx_auth")}catch(e){}}
   async function call(path,body){
-    const r=await fetch(BASE+path,{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});
+    /* Fix: 12 sec me jawab na aaye to rok do aur ek baar naye connection se dobara try karo (adhoora purana connection 45 sec latka deta tha) */
+    let r;
+    for(let t=0;t<2;t++){
+      const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),12000);
+      try{r=await fetch(BASE+path,{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify(body),signal:ac.signal});break}
+      catch(e){if(t===1)throw new Error("Failed to fetch")}
+      finally{clearTimeout(tm)}
+    }
     const j=await r.json().catch(()=>null);
     if(!r.ok)throw new Error((j&&(j.msg||j.message||j.error_description||j.error))||("HTTP "+r.status));
     return j;
@@ -1661,15 +1664,10 @@ splash();
     const s=load();
     if(s){
       el.innerHTML='<b>👤 अकाउंट</b><p style="margin:8px 0;font-size:13px;color:var(--mute)">लॉगिन: '+esc(s.email)+'</p>'+
-        '<button class="btn" id="acSync" style="width:100%;margin-bottom:8px">☁️ प्रोग्रेस सर्वर पर सेव करें</button>'+
-        '<button class="btn ghost" id="acDown" style="width:100%;margin-bottom:8px">⬇️ सर्वर से प्रोग्रेस वापस लाएँ</button>'+
         '<div id="syncChip" style="margin:0 0 8px;padding:8px 10px;border:1px solid rgba(128,128,128,.35);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer"></div>'+
-        '<div id="acS" style="font-size:13px;margin-bottom:8px;min-height:18px"></div>'+
         '<button class="btn ghost" id="acOut" style="width:100%">लॉगआउट</button>';
       document.getElementById("acOut").onclick=()=>{signOut();loginScreen()};
       if(window.JKSync)JKSync.paint();
-      document.getElementById("acSync").onclick=uploadProgress;
-      document.getElementById("acDown").onclick=downloadProgress;
       return;
     }
     const inp='display:block;width:100%;box-sizing:border-box;padding:10px 12px;margin:8px 0;border-radius:8px;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;font:inherit';
