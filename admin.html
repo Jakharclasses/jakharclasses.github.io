@@ -74,6 +74,8 @@
     <div class="pane" data-pane="dash">
       <div class="tiles">
         <button data-go="q" style="background:linear-gradient(135deg,#0b3a8c,#1457d9)"><span>📘</span><b>Sawal Jodo / Import</b><small id="cQ"></small></button>
+        <button data-go="fst" style="background:#16a34a"><span>📚</span><b>Full Subject Test</b><small id="cFst">CSV upload · subject wise</small></button>
+        <button data-go="fmk" style="background:#7c3aed"><span>🎯</span><b>Full Mock Test</b><small id="cFmk">CSV upload · exam wise</small></button>
         <button data-go="pdf" style="background:#16a34a"><span>📄</span><b>PDFs</b><small id="cP"></small></button>
         <button data-go="mat" style="background:#7c3aed"><span>📚</span><b>Study Material</b><small id="cM"></small></button>
         <button data-go="yt" style="background:#e11d1d"><span>▶️</span><b>YouTube Video Links</b><small id="cY"></small></button>
@@ -144,6 +146,9 @@
     </div>
       
     </div>
+
+    <div class="pane hide" data-pane="fst"></div>
+    <div class="pane hide" data-pane="fmk"></div>
 
     <div class="pane hide" data-pane="pdf">
       <button class="sec bk" data-go="dash">← Dashboard</button>
@@ -1083,12 +1088,176 @@ function mountMatForm(n) {
   ytReset();
   matKindUI();
 }
+
+/* =====================================================================
+   Full Subject Test / Full Mock Test  (Supabase table: tests — SQL: tests_setup.sql)
+   Ek hi code dono ke liye: Subject Test => Subject dropdown, Mock Test => Exam dropdown.
+   ===================================================================== */
+// Subject names app (index.html SUBJECTS) se bilkul same hone chahiye
+const T_SUBJECTS = ["राजस्थान का इतिहास","राजस्थान का भूगोल","राजस्थान की कला एवं संस्कृति","राजस्थान की राजव्यवस्था एवं प्रशासन","राजस्थान का बजट एवं आर्थिक समीक्षा","राजस्थान की समसामयिक घटनाएँ","भारत का इतिहास","भारत का भूगोल","भारत की राजव्यवस्था एवं संविधान","भारत और विश्व के समसामयिक घटनाक्रम","विश्व का इतिहास","विश्व का भूगोल","सामान्य विज्ञान","हिंदी","इंग्लिश","गणित","रीजनिंग","कंप्यूटर"];
+// Exam names app ke "Prepare According to Your Exam" (index.html EXAMS) se; pehle Rajasthan (importance order), phir Central Level
+const T_EXAMS = [
+  { group: "Rajasthan Level", list: ["Rajasthan CET (Graduation Level)","Rajasthan CET (Senior Secondary Level)","RPSC 1st Grade Teacher","RPSC 2nd Grade Teacher","REET","Rajasthan Patwari","Rajasthan VDO","Rajasthan LDC / Clerk","Rajasthan Lab Assistant","Rajasthan Junior Accountant","Rajasthan Police","Rajasthan Forest Guard","अन्य प्रमुख Rajasthan परीक्षाएँ"] },
+  { group: "Central Level", list: [] }   // app ki exam list me abhi koi Central exam nahi hai; jab EXAMS me judega yahan bhi naam daalo
+];
+const T_NEG = [["", "Negative marking nahi (0)"], ["0.25", "1/4"], ["0.333333", "1/3"], ["0.5", "1/2"]];
+const TP = {};   // pane state: { kind, rows, tests }
+
+function mountTestPane(kind) {
+  const pane = document.querySelector('[data-pane="' + kind + '"]');
+  const S = TP[kind] = TP[kind] || { kind, rows: [], tests: [] };
+  const isSub = kind === "fst";
+  const dbKind = isSub ? "subject" : "mock";
+  if (!pane.dataset.ready) {
+    pane.dataset.ready = 1;
+    const opts = isSub
+      ? '<option value="">— Subject chuno —</option>' + T_SUBJECTS.map(s => '<option>' + esc(s) + '</option>').join("")
+      : '<option value="">— Exam chuno —</option>' + T_EXAMS.filter(g => g.list.length).map(g => '<optgroup label="' + esc(g.group) + '">' + g.list.map(s => '<option>' + esc(s) + '</option>').join("") + '</optgroup>').join("");
+    pane.innerHTML = `
+      <button class="sec bk" data-go="dash">← Dashboard</button>
+      <div class="card">
+        <div class="q">${isSub ? "📚 Full Subject Test — CSV upload" : "🎯 Full Mock Test — CSV upload"}</div>
+        <div class="meta" style="margin:4px 0 10px">${isSub ? "Jis subject ko chunoge, upload hue sawal usi subject ke test me jayenge." : "Jis exam ko chunoge, test usi exam ke liye banega aur app me 'For &lt;exam&gt;' label dikhega."}</div>
+        <select id="${kind}Sel">${opts}</select>
+        <input id="${kind}Title" placeholder="Test ka naam (title) — jaise: Full Test 1" style="margin-top:10px">
+        <div class="row" style="margin-bottom:10px">
+          <div style="flex:1;min-width:120px"><div class="meta">Time limit (minute, khali = koi limit nahi)</div><input id="${kind}Dur" type="number" min="1" step="1" placeholder="jaise 60" style="margin:0"></div>
+          <div style="flex:1;min-width:120px"><div class="meta">Har sawal ke marks</div><input id="${kind}Mk" type="number" min="0.25" step="0.25" value="1" style="margin:0"></div>
+          <div style="flex:1;min-width:140px"><div class="meta">Negative marking</div><select id="${kind}Neg">${T_NEG.map(o => '<option value="' + o[0] + '">' + esc(o[1]) + '</option>').join("")}</select></div>
+        </div>
+        <div class="meta" style="margin-bottom:8px">CSV columns: question, option1, option2, option3, option4, answer, explanation (+ optional: chapter, ${isSub ? "exams" : "subject, exams"}). Answer 1-4 ya A-D. Pehle template download kar lo.</div>
+        <button class="sec" id="${kind}Tpl" style="margin-bottom:10px">Template download karo</button>
+        <input id="${kind}File" type="file" accept=".csv,.txt,text/csv,text/plain">
+        <textarea id="${kind}Text" rows="4" placeholder="Ya yahan CSV text paste karo"></textarea>
+        <label style="display:block;margin-bottom:10px;font-size:14px"><input id="${kind}Act" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Upload ke baad turant active karo (app me dikhe)</label>
+        <div class="row"><button id="${kind}Chk" class="sec">1. Jaanch karo</button><button id="${kind}Go" disabled>2. Upload karo</button></div>
+        <div id="${kind}Msg" class="msg" style="white-space:pre-wrap"></div>
+      </div>
+      <div class="card"><div class="q">Upload hue tests</div><div id="${kind}List" class="meta">Load ho raha hai...</div></div>`;
+    $(kind + "Tpl").onclick = () => testTemplate(kind);
+    $(kind + "File").onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $(kind + "Text").value = r.result; testCheck(kind); }; r.readAsText(f, "utf-8"); };
+    $(kind + "Chk").onclick = () => testCheck(kind);
+    $(kind + "Go").onclick = () => testUpload(kind);
+    ["Sel", "Title", "Dur", "Mk", "Neg"].forEach(x => $(kind + x).addEventListener("change", () => { S.rows = []; $(kind + "Go").disabled = true; }));
+  }
+  testList(kind);
+}
+
+async function testList(kind) {
+  const S = TP[kind], box = $(kind + "List"), dbKind = kind === "fst" ? "subject" : "mock";
+  try {
+    S.tests = await api("/rest/v1/tests?select=id,kind,title,subject,exam,duration_min,marks_per_q,neg_marking,q_count,is_active,created_at&kind=eq." + dbKind + "&order=created_at.desc&limit=500") || [];
+  } catch (e) {
+    box.innerHTML = '<span style="color:var(--bad)">Tests load nahi hue: ' + esc(e.message) + '<br>Agar "tests" table nahi bani to tests_setup.sql ek baar Supabase SQL Editor me chalao.</span>';
+    return;
+  }
+  const c = $(kind === "fst" ? "cFst" : "cFmk"); if (c) c.textContent = S.tests.length + " test";
+  if (!S.tests.length) { box.textContent = "Abhi koi test upload nahi hua."; return; }
+  box.innerHTML = S.tests.map(t => `<div class="srow" style="align-items:center">
+    <div style="min-width:0"><div class="q" style="margin:0">${esc(t.title)} ${t.is_active ? '<span class="tag on">LIVE</span>' : '<span class="tag hid">HIDDEN</span>'}</div>
+    <div class="meta">${esc(kind === "fst" ? t.subject : "For " + t.exam)} · ${t.q_count} sawal · ${t.q_count * t.marks_per_q} marks${t.duration_min ? " · " + t.duration_min + " min" : ""}${t.neg_marking == null ? "" : (t.neg_marking > 0 ? " · neg " + t.neg_marking : " · neg nahi")}</div></div>
+    <div class="row" style="flex:none;flex-wrap:nowrap"><button class="sec" onclick="testToggle('${kind}','${esc(t.id)}',${t.is_active ? "false" : "true"})">${t.is_active ? "Hide" : "Show"}</button><button class="danger" onclick="testDelete('${kind}','${esc(t.id)}')">Delete</button></div></div>`).join("");
+}
+
+async function testToggle(kind, id, on) {
+  try {
+    const r = await api("/rest/v1/tests?id=eq." + encodeURIComponent(id), { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ is_active: on }) });
+    if (!r || !r.length) throw new Error("Update nahi hua (admin permission check karo).");
+  } catch (e) { alert("Fail: " + e.message); }
+  testList(kind);
+}
+async function testDelete(kind, id) {
+  const t = (TP[kind].tests || []).find(x => String(x.id) === String(id));
+  if (!confirm('"' + (t ? t.title : "ye test") + '" delete karein? Ye wapas nahi aayega.')) return;
+  try {
+    const r = await api("/rest/v1/tests?id=eq." + encodeURIComponent(id), { method: "DELETE", headers: { Prefer: "return=representation" } });
+    if (!r || !r.length) throw new Error("Koi row delete nahi hui (admin delete permission check karo).");
+  } catch (e) { alert("Delete fail: " + e.message); }
+  testList(kind);   // DB se dobara padh kar verify
+}
+
+function testCheck(kind) {
+  const S = TP[kind], isSub = kind === "fst", dbKind = isSub ? "subject" : "mock";
+  const msg = $(kind + "Msg"); msg.style.color = "var(--bad)"; S.rows = []; $(kind + "Go").disabled = true;
+  const sel = $(kind + "Sel").value, title = $(kind + "Title").value.trim();
+  const mk = parseFloat($(kind + "Mk").value), durRaw = $(kind + "Dur").value.trim();
+  if (!sel) { msg.textContent = isSub ? "Pehle Subject chuno." : "Pehle Exam chuno."; return; }
+  if (!title) { msg.textContent = "Test ka naam (title) likho."; return; }
+  if (!(mk > 0)) { msg.textContent = "Har sawal ke marks 0 se zyada hone chahiye."; return; }
+  if (durRaw && !(parseInt(durRaw, 10) > 0)) { msg.textContent = "Time limit sahi number ho ya khali chhodo."; return; }
+  if ((TP[kind].tests || []).some(t => t.title.trim().toLowerCase() === title.toLowerCase() && (isSub ? t.subject === sel : t.exam === sel))) { msg.textContent = "Is " + (isSub ? "subject" : "exam") + " me is naam ka test pehle se hai. Doosra naam rakho."; return; }
+  const rows = parseCSV($(kind + "Text").value);
+  if (rows.length < 2) { msg.textContent = "Pehli line header ki aur uske neeche kam se kam ek sawal chahiye."; return; }
+  const hdr = rows[0].map(x => x.trim().toLowerCase());
+  const need = ["question", "option1", "option2", "option3", "option4", "answer"];
+  const miss = need.filter(n => !hdr.includes(n));
+  if (miss.length) { msg.textContent = "Header me ye column nahi mile: " + miss.join(", ") + "\n(Template se naam copy karo)"; return; }
+  const ix = n => hdr.indexOf(n), seen = new Set(), errs = [], out = [];
+  const amap = { A: 0, B: 1, C: 2, D: 3, "1": 0, "2": 1, "3": 2, "4": 3 };
+  rows.slice(1).forEach((r, k) => {
+    const g = n => ix(n) >= 0 ? (r[ix(n)] || "").trim() : "";
+    const e = [], question = g("question"), options = [1, 2, 3, 4].map(i => g("option" + i)), a = amap[g("answer").toUpperCase()];
+    if (!question) e.push("sawal khaali");
+    if (options.some(o => !o)) e.push("option khaali"); else if (new Set(options).size < 4) e.push("options alag-alag nahi");
+    if (a === undefined) e.push("answer 1-4 ya A-D hona chahiye");
+    if (question && seen.has(question)) e.push("ye sawal file me dobara hai");
+    if (e.length) { errs.push("Line " + (k + 2) + ": " + e.join(", ")); return; }
+    seen.add(question);
+    out.push({ subject: isSub ? sel : (g("subject") || ""), chapter: g("chapter"), question, options, answer: a, explanation: g("explanation"),
+      exams: g("exams").split(/[,;|]/).map(s => s.trim()).filter(Boolean) });
+  });
+  S.rows = out;
+  msg.style.color = errs.length ? "var(--bad)" : "var(--ok)";
+  msg.textContent = (isSub ? "Subject: " : "Exam: ") + sel + "\nSahi: " + out.length + "   Galat: " + errs.length + "   Total marks: " + +(out.length * mk).toFixed(2) +
+    (errs.length ? "\n\n" + errs.slice(0, 15).join("\n") + (errs.length > 15 ? "\n...aur " + (errs.length - 15) + " line" : "") + "\n\nGalat lines sahi karke dobara Jaanch karo (galat lines upload nahi hongi)." : "");
+  $(kind + "Go").disabled = out.length === 0;
+}
+
+async function testUpload(kind) {
+  const S = TP[kind], isSub = kind === "fst";
+  if (!S.rows.length) return;
+  const sel = $(kind + "Sel").value, title = $(kind + "Title").value.trim(), msg = $(kind + "Msg");
+  const durRaw = $(kind + "Dur").value.trim(), neg = $(kind + "Neg").value;
+  if (!confirm('"' + title + '" — ' + S.rows.length + " sawal upload karein?")) return;
+  $(kind + "Go").disabled = true; $(kind + "Chk").disabled = true;
+  const body = {
+    kind: isSub ? "subject" : "mock", title,
+    subject: isSub ? sel : null, exam: isSub ? null : sel,
+    duration_min: durRaw ? parseInt(durRaw, 10) : null,
+    marks_per_q: parseFloat($(kind + "Mk").value),
+    neg_marking: neg === "" ? 0 : parseFloat(neg),
+    questions: S.rows, q_count: S.rows.length, is_active: $(kind + "Act").checked
+  };
+  try {
+    const r = await api("/rest/v1/tests", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(body) });
+    if (!r || !r.length) throw new Error("Test save nahi hua (admin permission / tests table check karo).");
+    msg.style.color = "var(--ok)"; msg.textContent = "Upload ho gaya: " + title + " (" + S.rows.length + " sawal).";
+    S.rows = []; $(kind + "Text").value = ""; $(kind + "File").value = ""; $(kind + "Title").value = "";
+  } catch (e) {
+    msg.style.color = "var(--bad)"; msg.textContent = "Upload fail: " + e.message + "\nAgar 'tests' table nahi hai to tests_setup.sql Supabase SQL Editor me ek baar chalao.";
+  }
+  $(kind + "Chk").disabled = false;
+  testList(kind);
+}
+
+function testTemplate(kind) {
+  const isSub = kind === "fst";
+  const s = isSub
+    ? "question,option1,option2,option3,option4,answer,explanation,chapter,exams\n" + '"यहाँ सवाल लिखो","विकल्प 1","विकल्प 2","विकल्प 3","विकल्प 4",2,"यहाँ व्याख्या","चैप्टर का नाम (optional)","RPSC RAS 2021 (optional)"\n'
+    : "question,option1,option2,option3,option4,answer,explanation,subject,chapter,exams\n" + '"यहाँ सवाल लिखो","विकल्प 1","विकल्प 2","विकल्प 3","विकल्प 4",2,"यहाँ व्याख्या","विषय (optional)","चैप्टर (optional)","RPSC RAS 2021 (optional)"\n';
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\uFEFF" + s], { type: "text/csv;charset=utf-8" }));
+  a.download = isSub ? "jakhar_full_subject_test_template.csv" : "jakhar_full_mock_test_template.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
 function showTab(n) {
   CURTAB = n;
   document.querySelectorAll(".pane").forEach(p => p.classList.toggle("hide", p.dataset.pane !== n));
   if (n === "dash") renderDash();
   if (n === "chap") render();
   if (n === "pdf" || n === "yt") mountMatForm(n);
+  if (n === "fst" || n === "fmk") mountTestPane(n);
   if (n === "ntf") loadNotifs();
   if (n === "rem") enterRemarks();
   if (n === "usr") loadUsers();

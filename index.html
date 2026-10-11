@@ -267,6 +267,8 @@ a.row{text-decoration:none;color:inherit}
 @keyframes vphld{0%,60%{background:#4a3b10;border-color:#f59e0b}100%{background:#19243a;border-color:transparent}}
 .dark .vpb.hl{animation-name:vphld}
 @media (prefers-reduced-motion:reduce){.vpb.hl{animation:none;background:#fff4c2;border-color:#f59e0b}}
+.exl{display:inline-block;background:#7c3aed;color:#fff;border-radius:6px;padding:1px 9px;font-weight:700;font-size:11.5px;margin:3px 0 2px;line-height:1.5}
+.vpa .pvw{background:#fff;color:var(--main)}.dark .vpa .pvw{background:#19243a;color:#7fb0ff;border-color:#7fb0ff}
 </style>
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#1457d9">
@@ -774,7 +776,7 @@ const SUBJECTS=[
  {name:"कंप्यूटर",icon:"💻",color:"#0891b2",chapters:[]}
 ];
 const CONTACT={yt:"https://youtube.com/@vinodkumarnath007",tg:"https://t.me/vinodkumarnath007",mail:"nvinu2259@gmail.com"};
-const NEG=1/3;   // टेस्ट मोड में नेगेटिव मार्किंग
+const NEG=1/3;const CFG0=()=>({mark:1,neg:NEG,dur:0,kind:""});let CFG=CFG0(),TESTQ={};const qFind=t=>QS.find(x=>x.question===t)||TESTQ[t];const doIntro=()=>CFG.kind?tintro():intro();   // टेस्ट मोड में नेगेटिव मार्किंग
 const YT='<svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="5" fill="#f00"/><path d="M10 8.6v6.8l6-3.4z" fill="#fff"/></svg>';
 const QS=QUESTIONS.filter(q=>SUBJECTS.some(s=>s.name===q.subject&&s.chapters.includes(q.chapter)));
 if(QS.length!==QUESTIONS.length)console.warn((QUESTIONS.length-QS.length)+" प्रश्न नहीं दिख रहे: subject/chapter का नाम SUBJECTS से मेल नहीं खाता");
@@ -796,13 +798,13 @@ const actRow=(h,i)=>`<div onclick="openHist(${i})"><b>${h.n}${h.m==="test"?" · 
 function openHist(i){
   const h=store.get("jk_hist")[i];
   if(!h||!h.qs)return toast("इस टेस्ट का विस्तृत रिज़ल्ट उपलब्ध नहीं है");
-  const it=h.qs.map((t,k)=>({q:QS.find(x=>x.question===t),p:h.p[k],t:h.t[k],rv:h.rv[k]})).filter(x=>x.q);
+  const it=h.qs.map((t,k)=>({q:qFind(t)||(h.qo||[]).find(o=>o.question===t),p:h.p[k],t:h.t[k],rv:h.rv[k]})).filter(x=>x.q);
   if(!it.length)return toast("इस टेस्ट के प्रश्न अब उपलब्ध नहीं हैं");
-  Q=it.map(x=>x.q);state=it.map(x=>({picked:x.p,time:x.t,review:!!x.rv}));mode=h.m;label=h.n;finished=true;cur=0;ret=home;
+  Q=it.map(x=>x.q);state=it.map(x=>({picked:x.p,time:x.t,review:!!x.rv}));CFG=h.k?{mark:h.mk||1,neg:h.ng==null?NEG:h.ng,dur:0,kind:h.k}:CFG0();mode=h.m;label=h.n;finished=true;cur=0;ret=home;
   let r=0,w=0,s=0,t=0;state.forEach((x,k)=>{t+=x.time;if(x.picked===null)s++;else if(x.picked===Q[k].answer)r++;else w++});
   window.__w=Q.filter((q,k)=>state[k].picked!==null&&state[k].picked!==q.answer).map(q=>q.question);
   window.__r=Q.filter((q,k)=>state[k].review).map(q=>q.question);
-  RS={r:r,w:w,s:s,t:t,sc:mode==="test"?+(r-w*NEG).toFixed(2):r};result();
+  RS={r:r,w:w,s:s,t:t,sc:mode==="test"?+(r*CFG.mark-w*CFG.mark*CFG.neg).toFixed(2):r};result();
 }
 const TABS=[["home","🏠","Home"],["subj","📚","Subjects"],["tests","📝","Tests"],["mist","🔍","Mistake Analysis"],["prof","👤","Profile"]];
 const BM=on=>`<svg viewBox="0 0 24 24" fill="${on?"#ffd21f":"none"}" stroke="${on?"#ffd21f":"#fff"}" stroke-width="2.4" stroke-linejoin="round"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg>`;
@@ -864,7 +866,7 @@ function home(){
   <div class="tiles2">
    <button style="background:linear-gradient(135deg,#0b3a8c,#1457d9)" onclick="pyqSubjects('home')"><span>📘</span><b>Chapter Wise PYQ Test</b><small>विषय → चैप्टर → Test / Practice</small></button>
    <button style="background:#16a34a" onclick="fstSubjects()"><span>📚</span><b>Full Subject Test</b><small>विषय के सभी चैप्टर मिलाकर</small></button>
-   <button style="background:#7c3aed" onclick="mockSoon()"><span>🎯</span><b>Full Mock Test</b><small>All Subjects Combined</small></button>
+   <button style="background:#7c3aed" onclick="mockList('home')"><span>🎯</span><b>Full Mock Test</b><small>All Subjects Combined</small></button>
    <button style="background:#f59e0b" onclick="mistakes()"><span>🔍</span><b>Mistake Analysis</b><small>गलतियाँ सुधारें</small></button>
    <button style="background:#e11d1d" onclick="youtube()"><span class="yti">${YT}</span><b>YouTube</b><small>Videos &amp; PDF</small></button>
    <button class="dvt" style="background:linear-gradient(135deg,#0f766e,#14b8a6)" onclick="dvDocs()"><span>📑</span><b>Lab Assistant Geography DV Documents</b><small>PDF · Forms · Updates</small></button></div>
@@ -873,7 +875,6 @@ function home(){
   <div class="card act">${H.length?H.slice(0,3).map(actRow).join(""):"<small>अभी कोई टेस्ट नहीं दिया — ऊपर से शुरू करें।</small>"}</div></main>`,"home");
 }
 const studySoon=()=>comingSoon("Study Material",()=>goTab("home"),"home","स्टडी मटेरियल और PDF");
-const mockSoon=f=>f==="tests"?modesSoon("Full Mock Test","All Subjects Combined",()=>tests(),"tests"):modesSoon("Full Mock Test","All Subjects Combined",()=>home(),"home");
 
 /* ---------- 1. Chapter Wise PYQ Test: विषय → चैप्टर → Test/Practice ---------- */
 let pyqFrom="home";
@@ -918,24 +919,89 @@ function subOptions(si,ci){
 }
 
 /* ---------- 2. Full Subject Test, 3. Full Mock Test ---------- */
+/* Admin Panel (tests table) से आए Full Subject Test / Full Mock Test. डिफ़ॉल्ट: Test Mode, पहले निर्देश स्क्रीन. */
+const EXAM_ORDER=["Rajasthan CET (Graduation Level)","Rajasthan CET (Senior Secondary Level)","RPSC 1st Grade Teacher","RPSC 2nd Grade Teacher","REET","Rajasthan Patwari","Rajasthan VDO","Rajasthan LDC / Clerk","Rajasthan Lab Assistant","Rajasthan Junior Accountant","Rajasthan Police","Rajasthan Forest Guard","अन्य प्रमुख Rajasthan परीक्षाएँ"];
+const exRank=e=>{const i=EXAM_ORDER.indexOf(e);return i<0?999:i};
+let TL=[],TLOK=false,mockFrom="home";
+try{const o=JSON.parse(localStorage.getItem("jkx_tests_v1")||"null");if(o&&Array.isArray(o.l))TL=o.l}catch(e){}
+function tstLoad(){
+  return fetch(SM_BASE+"/rest/v1/tests?select=id,kind,title,subject,exam,duration_min,marks_per_q,neg_marking,q_count,created_at&is_active=eq.true&order=created_at.desc&limit=1000",{cache:"no-store",headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}})
+  .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
+  .then(d=>{TL=(d||[]).filter(x=>x&&x.id&&x.title&&(x.kind==="subject"||x.kind==="mock"));TLOK=true;try{localStorage.setItem("jkx_tests_v1",JSON.stringify({ts:Date.now(),l:TL}))}catch(e){}return TL});
+}
+const tmeta=x=>[x.q_count?x.q_count+" प्रश्न":"",x.q_count&&x.marks_per_q?+(x.q_count*x.marks_per_q).toFixed(2)+" अंक":"",x.duration_min?x.duration_min+" मिनट":""].filter(Boolean).join(" · ");
 function fstSubjects(){
   clearInterval(tick);
-  view(hdr(BACK,"","Full Subject Test")+`<main class="pg"><div class="sub">हर विषय का पूरा टेस्ट, उसके सभी चैप्टर मिलाकर</div><div class="list">
-  ${SUBJECTS.map((S,i)=>R({c:S.color,i:S.icon,t:S.name,s:"सभी चैप्टर मिलाकर पूर्ण टेस्ट",b:"Coming Soon",soon:1,on:`fstSoon(${i})`})).join("")}</div></main>`,"tests",false,()=>goTab("tests"));
+  const draw=keep=>view(hdr(BACK,"","Full Subject Test")+`<main class="pg" id="fstroot"><div class="sub">हर विषय का पूरा टेस्ट, उसके सभी चैप्टर मिलाकर</div><div class="list">
+  ${SUBJECTS.map((S,i)=>{const n=TL.filter(x=>x.kind==="subject"&&x.subject===S.name).length;return R({c:S.color,i:S.icon,t:S.name,s:n?n+" टेस्ट उपलब्ध":"सभी चैप्टर मिलाकर पूर्ण टेस्ट",b:n?n+" टेस्ट":"Coming Soon",soon:!n,on:`fstTests(${i})`})}).join("")}</div></main>`,"tests",keep,()=>goTab("tests"));
+  draw();tstLoad().then(()=>{if(document.getElementById("fstroot"))draw(true)}).catch(()=>{});
 }
-function modesSoon(title,sub,bf,tab){
-  clearInterval(tick);const go=m=>comingSoon(m+" · "+title,()=>modesSoon(title,sub,bf,tab),tab,sub);window.msGo=go;
-  view(hdr(BACK,"",title)+`<main class="pg"><div class="sub">${sub}</div><div class="list">
-  ${R({c:"#7c3aed",i:"📝",t:"Test Mode",s:"सबमिट के बाद ही उत्तर",b:"Coming Soon",soon:1,on:"msGo('Test Mode')"})}
-  ${R({c:"#1457d9",i:"📘",t:"Practice Mode",s:"उत्तर चुनते ही सही/गलत और व्याख्या",b:"Coming Soon",soon:1,on:"msGo('Practice Mode')"})}</div></main>`,tab,false,bf);
+function fstTests(si){
+  clearInterval(tick);const S=SUBJECTS[si],L=TL.filter(x=>x.kind==="subject"&&x.subject===S.name);
+  if(!L.length)return comingSoon(S.name,fstSubjects,"tests","इस विषय का Full Subject Test जल्द जोड़ा जाएगा");
+  view(hdr(BACK,"","Full Subject Test")+`<main class="pg"><div class="card hello" style="margin-bottom:14px"><span class="av" style="background:${S.color}">${S.icon}</span><div><b>${S.name}</b><br><small>${L.length} टेस्ट · Test Mode</small></div></div><div class="list">
+  ${L.map(x=>R({c:S.color,i:"📝",t:smE(x.title),s:smE(tmeta(x)),b:"Test",on:`tstOpen('${smE(x.id)}')`})).join("")}</div></main>`,"tests",false,fstSubjects);
 }
-function fstSoon(si){modesSoon("Full Subject Test",SUBJECTS[si].name,fstSubjects,"tests")}
+function mockList(f){
+  clearInterval(tick);if(f==="home"||f==="tests")mockFrom=f;
+  const draw=keep=>{const L=TL.filter(x=>x.kind==="mock").sort((a,b)=>exRank(a.exam)-exRank(b.exam));
+    view(hdr(BACK,"","Full Mock Test")+`<main class="pg" id="mockroot"><div class="sub">परीक्षा के अनुसार Full Mock Test · Test Mode</div>${L.length?`<div class="list">
+    ${L.map(x=>R({c:"#7c3aed",i:"🎯",t:smE(x.title),s:`<span class="exl">For ${smE(x.exam)}</span><br>${smE(tmeta(x))}`,b:"Test",on:`tstOpen('${smE(x.id)}')`})).join("")}</div>`:`<div class="card cs"><div class="csi">🎯</div><p>${TLOK?"अभी कोई Full Mock Test नहीं है।<br>जल्द ही जोड़े जाएँगे।":"लोड हो रहा है…"}</p></div>`}</main>`,mockFrom,keep,mockFrom==="tests"?()=>tests():()=>home())};
+  draw();tstLoad().then(()=>{if(document.getElementById("mockroot"))draw(true)}).catch(()=>{});
+}
+function tstBack(x){return x.kind==="subject"?(()=>{const i=SUBJECTS.findIndex(s=>s.name===x.subject);i<0?fstSubjects():fstTests(i)}):(()=>mockList())}
+async function tstOpen(id){
+  const x=TL.find(y=>String(y.id)===String(id));if(!x)return;
+  clearInterval(tick);const back=tstBack(x);ret=back;
+  view(hdr(BACK,"","टेस्ट")+'<main class="pg"><div class="card cs"><small>टेस्ट लोड हो रहा है…</small></div></main>',"",false,back);
+  let qs=null,gone=false;
+  try{
+    const r=await fetch(SM_BASE+"/rest/v1/tests?select=questions&is_active=eq.true&id=eq."+encodeURIComponent(x.id),{cache:"no-store",headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}});
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    const d=await r.json();
+    if(Array.isArray(d)&&d.length&&Array.isArray(d[0].questions)){qs=d[0].questions;try{localStorage.setItem("jkx_tq_"+x.id,JSON.stringify(qs))}catch(e){}}
+    else if(Array.isArray(d)&&!d.length)gone=true;
+  }catch(e){try{qs=JSON.parse(localStorage.getItem("jkx_tq_"+x.id)||"null")}catch(z){}}
+  if(gone){try{localStorage.removeItem("jkx_tq_"+x.id)}catch(e){}TL=TL.filter(y=>y!==x);toast("यह टेस्ट अब उपलब्ध नहीं है");return back()}
+  const ok=r=>r&&typeof r.question==="string"&&Array.isArray(r.options)&&r.options.length===4&&Number.isInteger(r.answer)&&r.answer>=0&&r.answer<4;
+  const list=(Array.isArray(qs)?qs:[]).filter(ok).map(r=>({id:r.id,subject:r.subject||(x.kind==="mock"?x.exam:x.subject)||"",chapter:r.chapter||(x.kind==="mock"?"Full Mock Test":"Full Subject Test"),question:r.question,exams:Array.isArray(r.exams)?r.exams:[],options:r.options,answer:r.answer,explanation:r.explanation||""}));
+  if(!list.length){
+    view(hdr(BACK,"","टेस्ट")+'<main class="pg"><div class="card cs"><div class="csi">📡</div><p>टेस्ट के प्रश्न लोड नहीं हो पाए।<br>इंटरनेट जाँचकर दोबारा कोशिश करें।</p><button class="btn" id="tsr">दोबारा कोशिश करें</button></div></main>',"",false,back);
+    document.getElementById("tsr").onclick=()=>tstOpen(id);return;
+  }
+  list.forEach(q=>{TESTQ[q.question]=q});
+  Q=list;mode="test";sortDir="new";label=x.title;
+  CFG={mark:+x.marks_per_q>0?+x.marks_per_q:1,neg:+x.neg_marking>0?+x.neg_marking:0,dur:+x.duration_min>0?+x.duration_min:0,kind:x.kind,t:x};
+  const sp=progAll()[progKey()];
+  if(sp&&Array.isArray(sp.qs))return resumeAsk(sp);
+  tintro();
+}
+function tintro(){
+  const x=CFG.t,n=Q.length,mk=CFG.mark,ng=CFG.neg,tot=+(n*mk).toFixed(2);
+  const nt=Math.abs(ng-1/3)<1e-3?"1/3":Math.abs(ng-.25)<1e-9?"1/4":Math.abs(ng-.5)<1e-9?"1/2":String(ng);
+  view(hdr(BACK,"","टेस्ट निर्देश")+`<main class="pg"><div class="card"><h2 style="margin:0;font-size:19px">${smE(x.title)}</h2>
+  ${x.kind==="mock"&&x.exam?`<div><span class="exl">For ${smE(x.exam)}</span></div>`:""}
+  ${x.kind==="subject"&&x.subject?`<div style="margin:6px 0 0;font-size:14px">विषय: <b>${smE(x.subject)}</b></div>`:""}
+  <div class="sub" style="margin:6px 0 12px">Test Mode</div>
+  <ul class="ins"><li>कुल प्रश्न: <b>${n}</b></li><li>कुल अंक: <b>${tot}</b></li>
+  ${CFG.dur?`<li>समय सीमा: <b>${CFG.dur} मिनट</b> — समय पूरा होते ही टेस्ट अपने-आप सबमिट हो जाएगा।</li>`:""}
+  <li>हर सही उत्तर: <b style="color:var(--ok)">+${mk} अंक</b></li>
+  ${x.neg_marking==null?"":ng>0?`<li>हर गलत उत्तर: <b style="color:var(--bad)">−${+(mk*ng).toFixed(2)} अंक</b> (${nt} नेगेटिव मार्किंग)</li>`:`<li>नेगेटिव मार्किंग: <b>नहीं है</b></li>`}
+  <li>उत्तर न देने पर: <b>0 अंक</b></li>
+  <li>टेस्ट के दौरान सही उत्तर नहीं दिखेगा। सबमिट के बाद ही रिज़ल्ट, सही उत्तर और व्याख्या दिखेंगे।</li>
+  <li>सबमिट से पहले आप उत्तर बदल या हटा सकते हैं और प्रश्नों को 🚩 रिव्यू में रख सकते हैं। नीचे के नंबरों से किसी भी प्रश्न पर जा सकते हैं।</li>
+  <li>सबमिट आखिरी प्रश्न पर दिखेगा। सबमिट के बाद उत्तर बदले नहीं जा सकेंगे।</li></ul>
+  <label class="chk"><input type="checkbox" id="agree"> मैंने सभी निर्देश पढ़ लिए हैं</label>
+  <button class="btn" style="width:100%;margin-top:12px" id="go" disabled>Proceed to Test →</button></div></main>`,"",false,ret||home);
+  const cb=document.getElementById("agree"),g=document.getElementById("go");
+  cb.onchange=()=>{g.disabled=!cb.checked};g.onclick=begin;
+}
 function tests(){
   clearInterval(tick);const H=store.get("jk_hist");
   view(hdr(BACK,"","टेस्ट")+`<main class="pg"><div class="list">
   ${R({c:"#1457d9",i:"📘",t:"Chapter Wise Test",s:"विषय → चैप्टर → Practice / Test Mode",b:"विषय चुनें",on:"pyqSubjects('tests')"})}
   ${R({c:"#16a34a",i:"📚",t:"Full Subject Test",s:"विषय के सभी चैप्टर मिलाकर",b:"विषय चुनें",on:"fstSubjects()"})}
-  ${R({c:"#7c3aed",i:"🎯",t:"Full Mock Test",s:"All Subjects Combined",b:"Coming Soon",soon:1,on:"mockSoon('tests')"})}</div>
+  ${R({c:"#7c3aed",i:"🎯",t:"Full Mock Test",s:"परीक्षा के अनुसार पूरे Mock Test",b:"टेस्ट देखें",on:"mockList('tests')"})}</div>
   <h3>पिछले टेस्ट</h3><div class="card act">${H.length?H.slice(0,10).map(actRow).join(""):"<small>अभी कोई टेस्ट नहीं दिया।</small>"}</div></main>`,"tests",false,home);
 }
 
@@ -1025,11 +1091,12 @@ function vpGroups(){
 function vpBlock(g){
   return '<div class="vpb" id="vp-'+smE(g.id)+'"><div class="vpv"><span>VIDEO:</span> <b>'+smE(g.title)+'</b></div>'+g.items.map(m=>{
     const u=smUrl(m);if(!/^https:\/\//i.test(u||""))return"";const k=VPF.push(m)-1;
-    return '<div class="vpr"><span class="vpn">📄 '+smE(m.title||"PDF")+'</span><span class="vpa"><a href="'+smE(u)+'" target="_blank" rel="noopener">View</a><button onclick="vpDl('+k+',this)">Download</button></span></div>';
+    return '<div class="vpr"><span class="vpn">📄 '+smE(m.title||"PDF")+'</span><span class="vpa"><button class="pvw" onclick="pdfView('+k+')">View</button><button onclick="vpDl('+k+',this)">Download</button></span></div>';
   }).join("")+'</div>';
 }
-async function vpDl(k,b){
-  const m=VPF[k];if(!m)return;const u=smUrl(m),t=b.textContent;
+async function vpDl(k,b){const m=VPF[k];if(m)return pdfSave(m,b)}
+async function pdfSave(m,b){
+  const u=smUrl(m),t=b.textContent;
   b.disabled=true;b.textContent="…";
   try{
     const r=await fetch(u);if(!r.ok)throw new Error("HTTP "+r.status);
@@ -1053,11 +1120,37 @@ function smHome(fid){
     +(vg.length?'<div class="vpsh" style="margin-top:'+(SMC.length?16:0)+'px">📺 वीडियो के साथ जुड़ी PDF</div>'+vg.map(vpBlock).join(""):''));
   if(fid)vpFocus(fid);
 }
+/* PDF ऐप के अंदर खुलती है (Supabase का सीधा PDF लिंक नए टैब में sandbox की वजह से काली/खाली स्क्रीन देता था) */
+let PDFM=null;
+const pdfView=k=>{if(VPF[k])pdfOpen(VPF[k],()=>smHome())};
+const smPdf=(i,j)=>{const c=SMC[i];if(c&&c.items[j])pdfOpen(c.items[j],()=>smCat(i))};
+function pdfOpen(m,bf){
+  const u=smUrl(m);if(!/^https:\/\//i.test(u||""))return toast("PDF का लिंक सही नहीं है");
+  clearInterval(tick);PDFM={m:m,u:u};
+  view(hdr(BACK,"","PDF")+`<main class="pg"><div class="card"><div class="dvt2" style="cursor:default">${smE(m.title||"PDF")}</div><div><button class="btn dvd" onclick="pdfDl(this)">⬇ Download PDF</button></div></div><div id="pdfpages"><div class="card cs"><small>PDF लोड हो रही है…</small></div></div></main>`,"",false,bf);
+  pdfPages(u,"pdfpages",()=>{const bx=document.getElementById("pdfpages");if(bx)bx.innerHTML='<div class="card cs"><p>PDF यहाँ नहीं दिख पाई।</p><button class="btn" onclick="pdfDl(this)">⬇ Download करके खोलें</button></div>'});
+}
+const pdfDl=b=>{if(PDFM)return pdfSave(PDFM.m,b)};
+async function pdfPages(url,boxId,fail){
+  try{
+    const lib=await dvLib(),pdf=await lib.getDocument({url}).promise,box=document.getElementById(boxId);if(!box)return;
+    if(!pdf.numPages)throw new Error("empty");
+    box.innerHTML="";
+    const w=box.clientWidth||340,dpr=Math.min(2,window.devicePixelRatio||1);
+    const p1=await pdf.getPage(1),v1=p1.getViewport({scale:1}),ratio=v1.height/v1.width;
+    const io=new IntersectionObserver(es=>es.forEach(async e=>{
+      if(!e.isIntersecting)return;io.unobserve(e.target);
+      try{const c=e.target,pg=await pdf.getPage(+c.dataset.n),v0=pg.getViewport({scale:1}),vp=pg.getViewport({scale:w/v0.width*dpr});
+        c.width=vp.width;c.height=vp.height;await pg.render({canvasContext:c.getContext("2d"),viewport:vp}).promise}catch(x){}
+    }),{rootMargin:"700px"});
+    for(let n=1;n<=pdf.numPages;n++){const c=document.createElement("canvas");c.className="dvpg";c.dataset.n=n;c.width=Math.round(w*dpr);c.height=Math.round(w*dpr*ratio);box.appendChild(c);io.observe(c)}
+  }catch(e){fail()}
+}
 function smCat(i){
   const c=SMC[i];if(!c)return smHome();
-  view(hdr(BACK,"",smE(c.k))+'<main class="pg"><div class="list">'+c.items.map(m=>{
+  view(hdr(BACK,"",smE(c.k))+'<main class="pg"><div class="list">'+c.items.map((m,j)=>{
     const u=smUrl(m);if(!/^https:\/\//i.test(u||""))return"";
-    return R({c:"#1457d9",i:"📄",t:smE(m.title),s:"PDF खोलें",href:smE(u),ext:1});
+    return R({c:"#1457d9",i:"📄",t:smE(m.title),s:"PDF खोलें",on:"smPdf("+i+","+j+")"});
   }).join("")+'</div></main>',"",false,smHome);
 }
 
@@ -1306,18 +1399,7 @@ async function dvView(i){
   const url=dvFileUrl(d);
   view(hdr(BACK,"","DV Documents")+`<main class="pg"><div class="card"><div class="dvt2" style="cursor:default">${i+1}. ${dvE(d.title)}</div><div><button class="btn dvd" onclick="dvDl(${i},this)">⬇ Download PDF</button><div class="dve"></div></div></div><div id="dvpages"><div class="card cs"><small>PDF लोड हो रही है…</small></div></div></main>`,"",false,()=>dvDocs(true));
   const fail=()=>{const bx=document.getElementById("dvpages");if(bx)bx.innerHTML=`<div class="card cs"><p>PDF यहाँ नहीं दिख पाई।</p><a class="btn" style="display:block;text-decoration:none;text-align:center" href="${dvE(url)}" target="_blank" rel="noopener">नए टैब में खोलें ↗</a></div>`};
-  try{
-    const lib=await dvLib(),pdf=await lib.getDocument({url}).promise,box=document.getElementById("dvpages");if(!box)return;
-    box.innerHTML="";
-    const w=box.clientWidth||340,dpr=Math.min(2,window.devicePixelRatio||1);
-    const p1=await pdf.getPage(1),v1=p1.getViewport({scale:1}),ratio=v1.height/v1.width;
-    const io=new IntersectionObserver(es=>es.forEach(async e=>{
-      if(!e.isIntersecting)return;io.unobserve(e.target);
-      try{const c=e.target,pg=await pdf.getPage(+c.dataset.n),v0=pg.getViewport({scale:1}),vp=pg.getViewport({scale:w/v0.width*dpr});
-        c.width=vp.width;c.height=vp.height;await pg.render({canvasContext:c.getContext("2d"),viewport:vp}).promise}catch(x){}
-    }),{rootMargin:"700px"});
-    for(let n=1;n<=pdf.numPages;n++){const c=document.createElement("canvas");c.className="dvpg";c.dataset.n=n;c.width=Math.round(w*dpr);c.height=Math.round(w*dpr*ratio);box.appendChild(c);io.observe(c)}
-  }catch(e){fail()}
+  return pdfPages(url,"dvpages",fail);
 }
 
 /* ---------- See More (अलग मेन्यू) ---------- */
@@ -1373,15 +1455,15 @@ function contact(){
 }
 
 /* ---------- शुरू करना: Practice सीधा, Test पहले निर्देश ---------- */
-function startSet(keys,l){ret=mistakes;const s=new Set(keys||[]);start(q=>s.has(q.question),l,0,"practice")}
-function start(f,l,n,m){
-  mode=m||"practice";Q=QS.filter(f);if(n)Q=Q.sort(()=>Math.random()-.5).slice(0,n);
+function startSet(keys,l){ret=mistakes;const s=new Set(keys||[]),seen=new Set();const src=QS.concat(Object.values(TESTQ)).filter(q=>{if(!s.has(q.question)||seen.has(q.question))return false;seen.add(q.question);return true});start(()=>true,l,0,"practice",src)}
+function start(f,l,n,m,src){
+  mode=m||"practice";CFG=CFG0();Q=(src||QS).filter(f);if(n)Q=Q.sort(()=>Math.random()-.5).slice(0,n);
   sortDir="new";Q=sortList(Q,"new"); // हर नए सेशन में डिफ़ॉल्ट: Newest to Oldest
   if(!Q.length)return toast("अभी इसमें कोई प्रश्न नहीं है");
   label=l||"PYQ अभ्यास";
   const sp=progAll()[progKey()];
   if(sp&&Array.isArray(sp.qs))return resumeAsk(sp);
-  if(mode==="test")intro();else begin();
+  if(mode==="test")doIntro();else begin();
 }
 /* ---------- अधूरे टेस्ट की प्रगति (localStorage: jk_prog) — रीसेट या सबमिट तक सेव ---------- */
 const progAll=()=>{const o=store.get("jk_prog");return o&&!Array.isArray(o)?o:{}};
@@ -1398,8 +1480,8 @@ function saveProg(live){
   store.set("jk_prog",o);
 }
 function resumeAsk(sp){
-  const it=sp.qs.map((t,i)=>({q:QS.find(x=>x.question===t),p:sp.p[i]==null?null:sp.p[i],t:sp.t[i]||0})).filter(x=>x.q);
-  if(!it.length){clearProg();return mode==="test"?intro():begin()}
+  const it=sp.qs.map((t,i)=>({q:qFind(t),p:sp.p[i]==null?null:sp.p[i],t:sp.t[i]||0})).filter(x=>x.q);
+  if(!it.length){clearProg();return mode==="test"?doIntro():begin()}
   const ans=it.filter(x=>x.p!==null).length,tot=it.reduce((a,x)=>a+x.t,0),c0=Math.min(Math.max(0,sp.c|0),it.length-1);
   view(hdr(BACK,"","टेस्ट जारी रखें")+`<main class="pg"><div class="card"><h2 style="margin:0;font-size:19px">${label}</h2><div class="sub" style="margin:0 0 12px">${mode==="test"?"Test Mode":"Practice Mode"}</div>
   <p style="margin:0 0 6px">आपने यह टेस्ट बीच में छोड़ा था। आप जहाँ छोड़ा था वहीं से जारी रख सकते हैं।</p>
@@ -1412,7 +1494,7 @@ function resumeAsk(sp){
     sortDir=sortList(Q,"new").every((q,i)=>q===Q[i])?"new":(sortList(Q,"old").every((q,i)=>q===Q[i])?"old":"new");
     cur=c0;finished=false;render();
   };
-  document.getElementById("rsn").onclick=()=>{clearProg();if(mode==="test")intro();else begin()};
+  document.getElementById("rsn").onclick=()=>{clearProg();if(mode==="test")doIntro();else begin()};
 }
 document.addEventListener("visibilitychange",()=>{if(document.hidden)saveProg(true)});
 window.addEventListener("pagehide",()=>saveProg(true));
@@ -1430,7 +1512,12 @@ function intro(){
   cb.onchange=()=>{g.disabled=!cb.checked};g.onclick=begin;
 }
 function startTimer(){clearInterval(tick);startTime=Date.now();const base=state[cur].time;
-  tick=setInterval(()=>{const el=document.getElementById("timer");if(el)el.textContent=fmt(base+Math.floor((Date.now()-startTime)/1000))},500)}
+  const upd=()=>{const el=document.getElementById("timer");if(el)el.textContent=fmt(base+Math.floor((Date.now()-startTime)/1000));
+    if(CFG.dur&&!finished){ /* time limit वाला टेस्ट: कुल बचा समय, 0 होते ही अपने-आप सबमिट */
+      const left=CFG.dur*60-(state.reduce((a,x,i)=>a+(i===cur?0:x.time),0)+base+Math.floor((Date.now()-startTime)/1000)),tl=document.getElementById("tlim");
+      if(tl){tl.textContent=fmt(Math.max(0,left));tl.style.color=left<=60?"var(--bad)":""}
+      if(left<=0){clearInterval(tick);toast("समय समाप्त! टेस्ट सबमिट हो रहा है");finish();return}}};
+  upd();tick=setInterval(upd,500)}
 function stopTimer(){clearInterval(tick);state[cur].time+=Math.round((Date.now()-startTime)/1000)}
 const stopped=()=>finished||(mode==="practice"&&state[cur].picked!==null);
 
@@ -1508,7 +1595,7 @@ function render(keep){
   const q=Q[cur],st=state[cur],test=mode==="test",done=st.picked!==null,show=finished||(!test&&done),last=cur===Q.length-1;
   const answered=state.filter(s=>s.picked!==null).length,sv=new Set(store.get("pyq_saved")).has(q.question),hide=test&&!finished;
   view(hdr(BACK,`<button class="ib" id="sv">${BM(sv)}</button>`,`${label}<br><small style="font-weight:400;font-size:11px;opacity:.85">${test?"Test Mode":"Practice Mode"}</small>`)+`<main class="pg">
-  <div class="prog"><span>⏱ <b id="timer">${fmt(st.time)}</b></span><div class="bar"><div style="width:${answered/Q.length*100}%"></div></div><span><b>${cur+1}</b> / ${Q.length}</span></div>
+  <div class="prog"><span>⏱ <b id="timer">${fmt(st.time)}</b></span>${CFG.dur&&!finished?'<span>⏳ <b id="tlim"></b></span>':""}<div class="bar"><div style="width:${answered/Q.length*100}%"></div></div><span><b>${cur+1}</b> / ${Q.length}</span></div>
   <div class="pal" id="pal">${Q.map((qq,i)=>{const s=state[i];let c=(i===cur?"cur ":"")+(s.review?"rv ":"");if(s.picked!==null)c+=hide?"an":(s.picked===qq.answer?"ok":"no");return `<button class="pb ${c}" data-n="${i}">${i+1}</button>`}).join("")}</div>
   <div class="legend">${hide?"🟦 उत्तर दिया &nbsp; ⬜ बाकी &nbsp; 🟧 रिव्यू":"🟩 सही &nbsp; 🟥 गलत &nbsp; ⬜ बाकी &nbsp; 🟧 रिव्यू"}</div>
   <div class="card"><div class="tools"><div class="crumb" style="flex:1;min-width:0;align-self:center">${q.subject} › ${q.chapter}</div>${hide&&done?'<button class="tool" id="clr">✖ हटाएँ</button>':""}</div>
@@ -1571,19 +1658,23 @@ function finish(){
   const ws=new Set(store.get("pyq_wrong")),ds=new Set(store.get("jk_done"));
   state.forEach((x,i)=>{if(x.picked===null)return;ds.add(Q[i].question);if(x.picked!==Q[i].answer)ws.add(Q[i].question)});
   store.set("pyq_wrong",[...ws]);store.set("jk_done",[...ds]);
-  const sc=mode==="test"?+(r-w*NEG).toFixed(2):r;
-  const H=store.get("jk_hist");H.unshift({n:label,r:r,w:w,s:s,m:mode,sc:sc,ts:Date.now(),qs:Q.map(q=>q.question),p:state.map(x=>x.picked),t:state.map(x=>x.time),rv:state.map(x=>x.review?1:0)});store.set("jk_hist",H);
+  const sc=mode==="test"?+(r*CFG.mark-w*CFG.mark*CFG.neg).toFixed(2):r;
+  const H=store.get("jk_hist");H.unshift({n:label,r:r,w:w,s:s,m:mode,sc:sc,ts:Date.now(),qs:Q.map(q=>q.question),p:state.map(x=>x.picked),t:state.map(x=>x.time),rv:state.map(x=>x.review?1:0),...(CFG.kind?{k:CFG.kind,mk:CFG.mark,ng:CFG.neg,qo:Q.map(q=>({subject:q.subject,chapter:q.chapter,question:q.question,exams:q.exams,options:q.options,answer:q.answer,explanation:q.explanation}))}:{})});store.set("jk_hist",H);
   const D=new Set(store.get("jk_days"));D.add(day(new Date()));store.set("jk_days",[...D].slice(-400));
   window.__w=Q.filter((q,i)=>state[i].picked!==null&&state[i].picked!==q.answer).map(q=>q.question);
   window.__r=Q.filter((q,i)=>state[i].review).map(q=>q.question);
   RS={r:r,w:w,s:s,t:t,sc:sc};result();
 }
+function scoreLegend(r,w,sc){
+  const mk=CFG.mark,ng=CFG.neg,nt=Math.abs(ng-1/3)<1e-3?"1/3":Math.abs(ng-.25)<1e-9?"1/4":Math.abs(ng-.5)<1e-9?"1/2":String(ng);
+  const f=ng>0?(mk===1?`${r} − (${w} × ${nt})`:`${r}×${mk} − (${w}×${mk}×${nt})`):(mk===1?`${r}`:`${r} × ${mk}`);
+  return `<p class="legend" style="margin:-4px 0 10px">अंक = ${f} = ${sc}</p>`}
 function result(){
-  const r=RS.r,w=RS.w,s=RS.s,t=RS.t,sc=RS.sc,n=Q.length,test=mode==="test",pc=Math.max(0,Math.round(sc/n*100));
-  view(hdr("","","आपका रिज़ल्ट")+`<main class="pg"><div class="card"><div class="score"><span class="ring" style="--p:${pc}"><b>${pc}%</b></span><div><b>${test?sc+" / "+n+" अंक":r+" / "+n+" सही"}</b><br><small style="color:var(--mute)">${label} · ${test?"Test Mode":"Practice Mode"}</small></div></div>
+  const r=RS.r,w=RS.w,s=RS.s,t=RS.t,sc=RS.sc,n=Q.length,test=mode==="test",tot=test?+(n*CFG.mark).toFixed(2):n,acc=(r+w)?Math.round(r/(r+w)*100):0,pc=Math.max(0,Math.round(sc/tot*100));
+  view(hdr("","","आपका रिज़ल्ट")+`<main class="pg"><div class="card"><div class="score"><span class="ring" style="--p:${pc}"><b>${pc}%</b></span><div><b>${test?sc+" / "+tot+" अंक":r+" / "+n+" सही"}</b><br><small style="color:var(--mute)">${label} · ${test?"Test Mode":"Practice Mode"}</small></div></div>
   <div class="stat"><div><b style="color:var(--ok)">${r}</b>सही</div><div><b style="color:var(--bad)">${w}</b>गलत</div><div><b>${s}</b>छोड़े</div></div>
-  ${test?`<p class="legend" style="margin:-4px 0 10px">अंक = ${r} − (${w} × 1/3) = ${sc}</p>`:""}
-  <p style="margin:0 0 10px">कुल समय: <b>${fmt(t)}</b> | औसत प्रति प्रश्न: <b>${fmt(Math.round(t/n))}</b></p>
+  ${test?scoreLegend(r,w,sc):""}
+  <p style="margin:0 0 6px">सटीकता (Accuracy): <b>${acc}%</b> <small style="color:var(--mute)">(दिए गए उत्तरों में सही)</small></p><p style="margin:0 0 10px">कुल समय: <b>${fmt(t)}</b> | औसत प्रति प्रश्न: <b>${fmt(Math.round(t/n))}</b></p>
   <table><tr><th>प्रश्न</th><th>नतीजा</th><th>समय</th></tr>${state.map((x,i)=>`<tr onclick="cur=${i};render()" style="cursor:pointer"><td>${i+1}</td><td>${x.picked===null?"छोड़ा":x.picked===Q[i].answer?"✅ सही":"❌ गलत"}</td><td>${fmt(x.time)}</td></tr>`).join("")}</table>
   <p class="legend" style="margin-top:8px">किसी भी पंक्ति पर टैप करें — वही प्रश्न सही उत्तर और व्याख्या के साथ खुलेगा।</p>
   <div class="nav res"><button class="btn ghost" onclick="cur=0;render()">📖 सारे उत्तर देखें</button>
