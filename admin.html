@@ -259,6 +259,7 @@
         <input id="mFile" type="file" accept="application/pdf,.pdf" multiple>
         <div id="mQ"></div>
         <input id="mUrl" class="hide" placeholder="https://...">
+        <div id="mYtInfo" class="meta hide" style="margin:-4px 0 10px;word-break:break-word"></div>
         <select id="mVid" style="margin-bottom:10px"><option value="">📎 Kisi video se attach nahi (optional)</option></select>
         <label style="display:block;margin-bottom:10px;font-size:14px"><input id="mAct" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Turant active karo</label>
         <button id="mSave">Save karo</button>
@@ -582,7 +583,7 @@ function matCard(m, o) {
       free.map(p => '<option value="' + p.id + '">' + esc(p.title) + '</option>').join("") + '</select></div>';
   }
   return '<div class="card" style="margin-bottom:8px"><div class="q">' + esc(m.title) + '</div>' +
-    '<div class="meta" style="word-break:break-all">' + esc(m.category || "—") + (isYt(m) ? ' · ' + esc(m.url) : '') + '</div>' +
+    '<div class="meta" style="word-break:break-all">' + (isYt(m) ? esc(m.url) : esc(m.category || "—")) + '</div>' +
     '<div style="margin:6px 0"><span class="tag">' + (isYt(m) ? "YouTube" : "PDF") + '</span>' +
     '<span class="tag ' + (m.is_active ? "on" : "hid") + '">' + (m.is_active ? "active" : "hidden") + '</span></div>' +
     (isYt(m) || o.noAttach ? '' : '<select data-mvid="' + m.id + '" style="margin-bottom:8px">' + vidOpts(m.video_id || "") + '</select>') +
@@ -615,12 +616,70 @@ function matKindUI() {
   $("mVid").classList.toggle("hide", k === "youtube");
   $("mFile").classList.toggle("hide", k !== "file");
   $("mQ").classList.toggle("hide", k !== "file");
-  $("mTitle").classList.toggle("hide", k === "file");
+  $("mTitle").classList.toggle("hide", k === "file" || (k === "youtube" && !YT_MANUAL));
+  $("mTitle").placeholder = k === "youtube" ? "Title (optional — sirf tab likho jab auto fetch na ho)" : "Title (jaise: राजस्थान की जलवायु - Notes)";
+  $("mCat").classList.toggle("hide", k === "youtube");
+  $("mYtInfo").classList.toggle("hide", k !== "youtube" || !$("mYtInfo").textContent);
   $("mUrl").classList.toggle("hide", k === "file");
   $("mUrl").placeholder = k === "youtube" ? "https://youtu.be/... ya https://www.youtube.com/watch?v=..." : "https://... (PDF ka seedha link)";
 }
+let YT_T = { id: "", title: "" }, YT_MANUAL = false, YT_TOK = 0, YT_TMR = null;
+async function ytFetchTitle(id) {
+  const wu = encodeURIComponent("https://www.youtube.com/watch?v=" + id);
+  const eps = ["https://www.youtube.com/oembed?format=json&url=" + wu, "https://noembed.com/embed?url=" + wu];
+  for (const ep of eps) {
+    const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 8000);
+    try {
+      const r = await fetch(ep, { signal: ac.signal });
+      if (!r.ok) continue;
+      const d = await r.json();
+      if (d && typeof d.title === "string" && d.title.trim()) return d.title.trim();
+    } catch (e) { /* next endpoint */ } finally { clearTimeout(tm); }
+  }
+  return "";
+}
+function ytInfo(t, bad) { const i = $("mYtInfo"); i.textContent = t; i.style.color = bad ? "var(--bad)" : ""; i.classList.toggle("hide", !t); }
+function ytReset() { clearTimeout(YT_TMR); YT_TOK++; YT_T = { id: "", title: "" }; YT_MANUAL = false; ytInfo(""); }
+async function ytPreview() {
+  if ($("mKind").value !== "youtube") return;
+  const u = $("mUrl").value.trim(), tok = ++YT_TOK;
+  if (!u) { YT_T = { id: "", title: "" }; YT_MANUAL = false; ytInfo(""); matKindUI(); return; }
+  const id = ytIdA(u);
+  if (!/^https:\/\//i.test(u) || !/(youtube\.com|youtu\.be)/i.test(u) || !id) { YT_T = { id: "", title: "" }; ytInfo("Ye valid YouTube link nahi lag raha.", true); return; }
+  if (YT_T.id === id && YT_T.title) { ytInfo("✓ " + YT_T.title); return; }
+  ytInfo("Title fetch ho raha hai...");
+  const t = await ytFetchTitle(id);
+  if (tok !== YT_TOK) return;
+  if (t) { YT_T = { id, title: t }; YT_MANUAL = false; ytInfo("✓ " + t); }
+  else { YT_T = { id: "", title: "" }; YT_MANUAL = true; ytInfo("YouTube se title fetch nahi ho paya. Neeche title khud likh sakte ho (optional), ya link dobara paste karke try karo.", true); }
+  matKindUI();
+}
+function ytPreviewSoon(ms) { clearTimeout(YT_TMR); YT_TMR = setTimeout(ytPreview, ms); }
+async function ytSave() {
+  const msg = $("mMsg"); msg.style.color = "var(--bad)"; msg.textContent = "";
+  const u = $("mUrl").value.trim(), id = ytIdA(u);
+  if (!/^https:\/\//i.test(u) || !/(youtube\.com|youtu\.be)/i.test(u) || !id) { msg.textContent = "Valid YouTube link daalo (https://youtu.be/... ya https://www.youtube.com/watch?v=...)."; return; }
+  $("mSave").disabled = true;
+  try {
+    let title = YT_T.id === id ? YT_T.title : "";
+    if (!title) { msg.style.color = ""; msg.textContent = "Title fetch ho raha hai..."; title = await ytFetchTitle(id); }
+    if (!title) title = $("mTitle").value.trim();
+    if (!title) {
+      YT_MANUAL = true; matKindUI();
+      ytInfo("YouTube se title fetch nahi ho paya. Neeche title khud likh sakte ho (optional).", true);
+      msg.style.color = "var(--bad)"; msg.textContent = "Title auto fetch nahi hua. Dobara Save karo ya title manually likho.";
+      return;
+    }
+    await api("/rest/v1/materials", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ title, category: "", is_active: $("mAct").checked, kind: "youtube", url: u }) });
+    msg.style.color = "var(--ok)"; msg.textContent = "Save ho gaya: " + title;
+    $("mTitle").value = ""; $("mUrl").value = ""; ytReset(); matKindUI();
+    await loadMaterials();
+  } catch (e) { msg.style.color = "var(--bad)"; msg.textContent = "Fail: " + e.message; }
+  finally { $("mSave").disabled = false; }
+}
 async function matSave() {
   if ($("mKind").value === "file") return matSaveBulk();
+  if ($("mKind").value === "youtube") return ytSave();
   const msg = $("mMsg"); msg.style.color = "var(--bad)"; msg.textContent = "";
   const title = $("mTitle").value.trim(), category = $("mCat").value.trim(), k = $("mKind").value;
   if (!title) { msg.textContent = "Title likho."; return; }
@@ -744,6 +803,8 @@ async function mChange(e) {
 $("mListAll").addEventListener("toggle", e => { const d = e.target; if (d.dataset && d.dataset.c !== undefined) { d.open ? OPENC.add(d.dataset.c) : OPENC.delete(d.dataset.c); } }, true);
 $("pSearch").oninput = $("ySearch").oninput = $("cSearch").oninput = () => renderMats();
 $("mKind").onchange = matKindUI; $("mSave").onclick = matSave; matKindUI();
+$("mUrl").addEventListener("input", () => ytPreviewSoon(500));
+$("mUrl").addEventListener("paste", () => ytPreviewSoon(50));
 $("loginBtn").onclick = login;
 $("pw").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
 $("logoutBtn").onclick = logout;
@@ -1009,6 +1070,7 @@ function mountMatForm(n) {
   k.classList.toggle("hide", n === "yt");
   $("mFormT").textContent = n === "yt" ? "+ Naya YouTube link jodo" : "+ Nayi PDF jodo";
   $("mMsg").textContent = "";
+  ytReset();
   matKindUI();
 }
 function showTab(n) {
