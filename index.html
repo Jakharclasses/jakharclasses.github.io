@@ -840,7 +840,10 @@ function notifs(from){
   const N=from==="yt"
     ?[{i:"🎬",t:"Jakhar TV में आपका स्वागत है!",p:"यहाँ विनोद कुमार नाथ के वीडियो लेक्चर देखें। नए वीडियो यहीं जुड़ते रहेंगे। 😊"}]
     :[{i:"🙏",t:"स्वागत है!",p:"JAKHAR Classes में आपका स्वागत है। यहाँ राजस्थान की प्रतियोगी परीक्षाओं की तैयारी के लिए PYQ प्रैक्टिस, टेस्ट और विश्लेषण सब फ्री है।<br><br>आपका सहयोग और सपोर्ट हमें और बेहतर बनाएगा। 😊<br><b>— विनोद कुमार नाथ</b>"}];
-  view(hdr(BACK,"","सूचनाएँ")+`<main class="pg">${N.map(n=>`<div class="card nt"><span class="nti">${n.i}</span><div><h3>${n.t}</h3><p>${n.p}</p></div></div>`).join("")}</main>`,"",false,from==="yt"?ytVideos:home);
+  const nh=L=>L.map(n=>`<div class="card nt"><span class="nti">${n.i}</span><div><h3>${n.t}</h3><p>${n.p}</p></div></div>`).join("");
+  view(hdr(BACK,"","सूचनाएँ")+`<main class="pg" id="ntl">${nh(N)}</main>`,"",false,from==="yt"?ytVideos:home);
+  /* Admin Panel se jodi notifications (app_notifications) - sabse upar; built-in swagat sandesh neeche */
+  if(from!=="yt")fetch(SM_BASE+"/rest/v1/app_notifications?select=id,icon,title,body,created_at&is_active=eq.true&order=created_at.desc&limit=100",{headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}}).then(r=>r.ok?r.json():[]).then(rows=>{const el=document.getElementById("ntl");if(!el||!rows||!rows.length)return;el.innerHTML=nh(rows.map(r=>({i:smE(r.icon||"🔔"),t:smE(r.title),p:smE(r.body).replace(/\n/g,"<br>")})).concat(N))}).catch(()=>{});
 }
 function welcome(){
   const d=document.createElement("div");d.className="mdl";
@@ -944,9 +947,26 @@ function mistakes(){
   ${R({c:"#16a34a",i:"📒",t:"Notes",s:"आपके नोट्स",b:"Coming Soon",soon:1,on:"mistSoon('Notes')"})}
   ${R({c:"#f59e0b",i:"🚩",t:"Review Questions",s:"टेस्ट में रिव्यू के लिए मार्क किए प्रश्न",b:cnt("jk_review"),on:"startSet(store.get('jk_review'),'Review Questions')"})}
   ${R({c:"#2563eb",i:BM(1).replace('fill="#ffd21f"','fill="#2563eb"').replace(/#ffd21f/g,"#2563eb"),raw:1,t:"Saved Questions",s:"जो आपने सेव किए",b:cnt("pyq_saved"),on:"startSet(store.get('pyq_saved'),'Saved Questions')"})}
-  ${R({c:"#7c3aed",i:"💬",t:"Remark by Admin",s:"आपकी परफॉर्मेंस पर पर्सनल गाइडेंस",b:"Coming Soon",soon:1,on:"mistSoon('Remark by Admin')"})}</div></main>`,"mist",false,home);
+  ${R({c:"#7c3aed",i:"💬",t:"Remark by Admin",s:"आपकी परफॉर्मेंस पर पर्सनल गाइडेंस",on:"adminRemarks()"})}</div></main>`,"mist",false,home);
 }
 const mistSoon=t=>comingSoon(t,mistakes,"mist");
+/* ---------- Remark by Admin (admin_remarks table; user sirf apne remarks padh sakta hai) ---------- */
+async function adminRemarks(){
+  clearInterval(tick);
+  view(hdr(BACK,"","Remark by Admin")+`<main class="pg" id="arl"><div class="card cs"><small>लोड हो रहा है…</small></div></main>`,"mist",false,mistakes);
+  try{
+    if(!(window.JKAuth&&JKAuth.isLoggedIn()))throw new Error("login");
+    await JKAuth.refresh();const s=JKAuth.getSession();if(!s||!s.access_token)throw new Error("login");
+    const r=await fetch(SM_BASE+"/rest/v1/admin_remarks?select=id,remark_text,created_at&order=created_at.desc&limit=200",{headers:{apikey:SM_KEY,Authorization:"Bearer "+s.access_token}});
+    if(!r.ok&&r.status!==404)throw new Error("HTTP "+r.status);
+    const rows=r.ok?await r.json():[],b=document.getElementById("arl");if(!b)return;
+    b.innerHTML=rows.length?rows.map(x=>`<div class="card nt"><span class="nti">💬</span><div><h3>Admin — ${smE(dvDate(x.created_at))}</h3><p>${smE(x.remark_text).replace(/\n/g,"<br>")}</p></div></div>`).join(""):`<div class="card cs"><div class="csi">💬</div><p>अभी आपके लिए कोई रिमार्क नहीं है।<br>जब एडमिन आपकी परफॉर्मेंस पर रिमार्क लिखेंगे, वे यहीं दिखेंगे।</p></div>`;
+  }catch(e){
+    const b=document.getElementById("arl");if(!b)return;
+    b.innerHTML=`<div class="card cs"><div class="csi">📡</div><p>रिमार्क लोड नहीं हो पाए। इंटरनेट जाँचकर दोबारा कोशिश करें।</p><button class="btn" id="arr">फिर कोशिश करें</button></div>`;
+    const rb=document.getElementById("arr");if(rb)rb.onclick=adminRemarks;
+  }
+}
 
 /* ---------- 5. YouTube ---------- */
 function youtube(nf){
