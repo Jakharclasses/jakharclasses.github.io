@@ -1603,7 +1603,7 @@ splash();
   async function fetchAll(){
     let all=[],from=0,step=500;
     while(true){
-      const r=await fetch(URL_BASE+"?select=id,subject,chapter,question,options,answer,explanation,exams&is_active=eq.true&order=created_at.asc,id.asc",{headers:{apikey:KEY,Authorization:"Bearer "+KEY,Range:from+"-"+(from+step-1)}});
+      const r=await fetch(URL_BASE+"?select=id,subject,chapter,question,options,answer,explanation,exams&is_active=eq.true&order=created_at.asc,id.asc",{cache:"no-store",headers:{apikey:KEY,Authorization:"Bearer "+KEY,Range:from+"-"+(from+step-1)}});
       if(!r.ok&&r.status!==206)throw new Error("HTTP "+r.status);
       const d=await r.json();all=all.concat(d);if(d.length<step)break;from+=step;
     }
@@ -1615,7 +1615,16 @@ splash();
     setTimeout(async function(){
       try{
         const qs=await fetchAll();
-        if(qs.length>0&&qs.every(valid))localStorage.setItem("jkx_qcache_v1",JSON.stringify({ts:Date.now(),qs:qs}));
+        /* Fix: pehle ek bhi invalid row hone par cache kabhi update nahi hota tha => admin se delete kiye sawal ghoom-phir kar dikhte rahte the.
+           Ab invalid rows chhod kar baaki se cache hamesha update hota hai, aur delete hue sawal chalu session se bhi hat jate hain. */
+        const good=qs.filter(valid);
+        if(good.length>0){
+          localStorage.setItem("jkx_qcache_v1",JSON.stringify({ts:Date.now(),qs:good}));
+          const live=new Set(good.map(q=>q.id));
+          if(Array.isArray(QUESTIONS)&&QUESTIONS.some(q=>q.id)){
+            for(let i=QUESTIONS.length-1;i>=0;i--){if(QUESTIONS[i].id&&!live.has(QUESTIONS[i].id))QUESTIONS.splice(i,1)}
+          }
+        }
       }catch(e){}
     },1500);
   });

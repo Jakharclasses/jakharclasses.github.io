@@ -286,10 +286,17 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 async function api(path, opts = {}) {
-  const r = await fetch(SB_URL + path, {
-    ...opts,
-    headers: { apikey: SB_KEY, Authorization: "Bearer " + (TOKEN || SB_KEY), ...(opts.body ? { "Content-Type": "application/json" } : {}), ...(opts.headers || {}) }
-  });
+  // Fix: timeout + no-store => stale/hung cache ya service-worker se request atakti nahi
+  const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 25000);
+  let r;
+  try {
+    r = await fetch(SB_URL + path, {
+      cache: "no-store", signal: ac.signal,
+      ...opts,
+      headers: { apikey: SB_KEY, Authorization: "Bearer " + (TOKEN || SB_KEY), ...(opts.body ? { "Content-Type": "application/json" } : {}), ...(opts.headers || {}) }
+    });
+  } catch (e) { throw new Error(e.name === "AbortError" ? "Server ne jawab nahi diya (timeout)" : e.message); }
+  finally { clearTimeout(tm); }
   const txt = await r.text();
   let j = null; try { j = txt ? JSON.parse(txt) : null; } catch (e) {}
   if (!r.ok) throw new Error((j && (j.msg || j.message || j.error_description || j.error)) || ("HTTP " + r.status));
@@ -305,10 +312,13 @@ async function login() {
     const j = await api("/auth/v1/token?grant_type=password", { method: "POST", body: JSON.stringify({ email, password }) });
     TOKEN = j.access_token; USER = j.user;
     $("pw").value = "";
-    await openPanel();
   } catch (e) {
     $("loginMsg").textContent = "Login fail: " + e.message;
+    $("loginBtn").disabled = false;
+    return;
   }
+  try { await openPanel(); }
+  catch (e) { $("loginMsg").textContent = "Panel load error: " + e.message; }
   $("loginBtn").disabled = false;
 }
 
@@ -328,9 +338,9 @@ async function openPanel() {
   $("adminState").innerHTML = isAdmin
     ? '<span class="tag on">ADMIN OK</span> Aap admin hain.'
     : '<span class="tag hid">ADMIN NAHI</span> Ye user admins table me nahi hai (sirf active sawal dikhenge).';
-  await loadQuestions();
-  loadMaterials();
-  loadDv();
+  try { await loadQuestions(); } catch (e) { console.error(e); }
+  try { loadMaterials(); } catch (e) { console.error(e); }
+  try { loadDv(); } catch (e) { console.error(e); }
 }
 
 async function loadQuestions() {
@@ -1172,7 +1182,8 @@ async function deleteQ(id, btn) {
   try {
     const r = await api("/rest/v1/questions?id=eq." + id, { method: "DELETE", headers: { Prefer: "return=representation" } });
     if (!r || !r.length) throw new Error("Koi row delete nahi hui (admin delete permission check karo).");
-    await loadQuestions();
+    ALL = ALL.filter(x => x.id !== id);   // turant list se hatao
+    await loadQuestions();                // phir DB se dobara verify
   } catch (er) { alert("Delete fail: " + er.message); btn.disabled = false; }
 }
 /* ================= Update 2: Notifications, Admin Remarks, Login Data ================= */
