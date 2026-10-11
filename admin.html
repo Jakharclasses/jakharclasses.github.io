@@ -130,6 +130,7 @@
         <input id="mFile" type="file" accept="application/pdf,.pdf" multiple>
         <div id="mQ"></div>
         <input id="mUrl" class="hide" placeholder="https://...">
+        <select id="mVid" style="margin-bottom:10px"><option value="">📎 Kisi video se attach nahi (optional)</option></select>
         <label style="display:block;margin-bottom:10px;font-size:14px"><input id="mAct" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Turant active karo</label>
         <button id="mSave">Save karo</button>
         <div id="mMsg" class="msg"></div>
@@ -461,19 +462,27 @@ async function loadMaterials() {
 }
 function renderMats() {
   const cats = [...new Set(MATS.map(m => m.category).filter(Boolean).concat(Object.keys(window.SC || {})))];
+  { const cur = $("mVid").value; $("mVid").innerHTML = vidOpts(cur); }
   $("mCatList").innerHTML = cats.map(c => '<option value="' + esc(c) + '">').join("");
   $("mList").innerHTML = MATS.map(m =>
     '<div class="card" style="margin-bottom:8px"><div class="q">' + esc(m.title) + '</div>' +
     '<div class="meta">' + esc(m.category) + '</div>' +
     '<div style="margin:6px 0"><span class="tag">' + (m.kind === "youtube" ? "YouTube" : "PDF") + '</span>' +
     '<span class="tag ' + (m.is_active ? "on" : "hid") + '">' + (m.is_active ? "active" : "hidden") + '</span></div>' +
+    (m.kind === "youtube" ? '' : '<select data-mvid="' + m.id + '" style="margin-bottom:8px">' + vidOpts(m.video_id || "") + '</select>') +
     '<div class="row"><a href="' + esc(matUrl(m)) + '" target="_blank" rel="noopener" style="padding:10px 12px;border:1px solid var(--bd);border-radius:8px;color:var(--tx);text-decoration:none">Kholo</a>' +
     '<button class="sec" data-mact="tog" data-id="' + m.id + '">' + (m.is_active ? "Hide" : "Show") + '</button>' +
     '<button class="sec" data-mact="del" data-id="' + m.id + '" style="color:var(--bad)">Delete</button></div></div>'
   ).join("") || '<div class="meta">Abhi koi study material nahi.</div>';
 }
+const ytIdA = u => { const m = String(u || "").match(/(?:youtu\.be\/|v=|embed\/|shorts\/|live\/)([A-Za-z0-9_-]{11})/); return m ? m[1] : ""; };
+function vidOpts(sel) {
+  return '<option value="">📎 Kisi video se attach nahi</option>' + MATS.filter(m => m.kind === "youtube" && ytIdA(m.url)).map(m =>
+    '<option value="' + ytIdA(m.url) + '"' + (sel === ytIdA(m.url) ? " selected" : "") + '>🎬 ' + esc(m.title) + '</option>').join("");
+}
 function matKindUI() {
   const k = $("mKind").value;
+  $("mVid").classList.toggle("hide", k === "youtube");
   $("mFile").classList.toggle("hide", k !== "file");
   $("mQ").classList.toggle("hide", k !== "file");
   $("mTitle").classList.toggle("hide", k === "file");
@@ -497,11 +506,13 @@ async function matSave() {
       msg.style.color = ""; msg.textContent = "Upload ho raha hai (" + (f.size / 1048576).toFixed(1) + " MB)...";
       await api("/storage/v1/object/study-material/" + path, { method: "POST", headers: { "Content-Type": "application/pdf", "x-upsert": "false" }, body: f });
       row.kind = "pdf"; row.file_path = path;
+      if ($("mVid").value) row.video_id = $("mVid").value;
     } else {
       const u = $("mUrl").value.trim();
       if (!/^https:\/\//i.test(u)) throw new Error("Link https:// se shuru hona chahiye.");
       if (k === "youtube" && !/(youtube\.com|youtu\.be)/i.test(u)) throw new Error("Ye YouTube ka link nahi lag raha.");
       row.kind = k === "youtube" ? "youtube" : "pdf"; row.url = u;
+      if (k !== "youtube" && $("mVid").value) row.video_id = $("mVid").value;
     }
     await api("/rest/v1/materials", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify(row) });
     msg.style.color = "var(--ok)"; msg.textContent = "Save ho gaya.";
@@ -547,7 +558,7 @@ async function matSaveBulk() {
       path = "pdfs/" + Date.now() + "_" + Math.random().toString(36).slice(2, 8) + ".pdf";
       await api("/storage/v1/object/study-material/" + path, { method: "POST", headers: { "Content-Type": "application/pdf", "x-upsert": "false" }, body: q.f });
       set("Save ho raha hai...");
-      await api("/rest/v1/materials", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ title: q.title.trim(), category, is_active: active, kind: "pdf", file_path: path }) });
+      await api("/rest/v1/materials", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify(Object.assign({ title: q.title.trim(), category, is_active: active, kind: "pdf", file_path: path }, $("mVid").value ? { video_id: $("mVid").value } : {})) });
       path = null; ok++; set("✓ Ho gaya");
     } catch (e) {
       if (path) api("/storage/v1/object/study-material/" + path, { method: "DELETE" }).catch(() => {});
@@ -578,6 +589,14 @@ $("mList").addEventListener("click", async e => {
     }
     await loadMaterials();
   } catch (er) { alert("Fail: " + er.message); }
+});
+$("mList").addEventListener("change", async e => {
+  const t = e.target.closest("select[data-mvid]"); if (!t) return;
+  try {
+    const r = await api("/rest/v1/materials?id=eq." + t.dataset.mvid, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ video_id: t.value || null }) });
+    if (!r || !r.length) throw new Error("Update nahi hua (SQL/permission check karo).");
+    const m = MATS.find(x => x.id === t.dataset.mvid); if (m) m.video_id = t.value || null;
+  } catch (er) { alert("Fail: " + er.message); await loadMaterials(); }
 });
 $("toggleMat").onclick = () => $("matBox").classList.toggle("hide");
 $("mKind").onchange = matKindUI; $("mSave").onclick = matSave; matKindUI();

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b3a8c">
 <link rel="preconnect" href="https://gpqrkxyypadgvguomfrr.supabase.co" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 <title>JAKHAR</title>
 <style>
 :root{--navy:#0b3a8c;--main:#1457d9;--bg:#eef3fb;--ink:#16202e;--mute:#64748b;--line:#d9e1ee;--ok:#16a34a;--okbg:#dcfce7;--bad:#dc2626;--badbg:#fee2e2}
@@ -196,16 +197,29 @@ a.row{text-decoration:none;color:inherit}
 .dark .smenu,.dark .trb{background:#19243a}.dark .smenu button:active,.dark .trb.on{background:#26324e}
 .dark .vb{background:#2b2410;color:#ffe7a3;border-color:#8a6a14;box-shadow:none}
 .sqg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-.sq{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:150px;padding:14px;border:0;border-top:4px solid var(--c);border-radius:18px;background:#fff;box-shadow:0 2px 10px rgba(20,40,80,.08);text-align:left;color:var(--ink);text-decoration:none;font:inherit}
-.sqi{width:48px;height:48px;border-radius:14px;background:var(--c);color:#fff;display:grid;place-items:center;font-size:26px;margin-bottom:6px}
-.sq b{font-size:14.5px;line-height:1.25;overflow-wrap:anywhere}.sq small{font-size:11.5px;color:var(--mute);line-height:1.3}
-.sqb{margin-top:auto;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;background:#e8f0ff;color:var(--main)}.sqb.soon{background:#fff7e0;color:#92400e}
+.sq{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:150px;padding:14px;border:0;border-radius:22px;background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(0,0,0,.2)),var(--c);box-shadow:0 6px 16px rgba(20,40,80,.18);text-align:left;color:#fff;text-decoration:none;font:inherit}
+.sq::after{content:"";position:absolute;right:-28px;top:-28px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.13);pointer-events:none}
+.sq:active{transform:scale(.98)}
+.sqi{position:relative;width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.24);color:#fff;display:grid;place-items:center;font-size:26px;margin-bottom:6px}
+.sq b{font-size:14.5px;line-height:1.25;overflow-wrap:anywhere}.sq small{font-size:11.5px;color:rgba(255,255,255,.92);line-height:1.3}
+.sqb{margin-top:auto;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;background:#fff;color:var(--c)}.sqb.soon{background:rgba(255,255,255,.28);color:#fff}
 .tiles2 .dvt b{font-size:13.5px;line-height:1.25;overflow-wrap:anywhere}
 .dvh{margin:2px 2px 12px}.dvh h2{margin:0 0 4px;font-size:18px;line-height:1.25}.dvh p{margin:0;color:var(--mute);font-size:13px}
 .dvc{background:#fff;border-radius:16px;box-shadow:0 2px 10px rgba(20,40,80,.08);margin-bottom:14px;overflow:hidden}
-.dvp{position:relative;height:300px;background:#e9eef7;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.dvp canvas{width:100%;height:100%;object-fit:contain;background:#fff}
-.dvf{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--mute)}.dvf span{font-size:56px}
+.dvp{position:relative;aspect-ratio:4/3;max-height:300px;overflow:hidden;background:#eef2fa;cursor:pointer}
+.dvp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 0;background:#fff;display:block}
+.dvf{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:12px;color:#475569;background:linear-gradient(110deg,#eef2fa 30%,#f9fbff 50%,#eef2fa 70%);background-size:220% 100%;animation:dvsh 1.7s linear infinite}
+.dvpi{width:82px;height:100px;filter:drop-shadow(0 6px 10px rgba(200,30,30,.28));animation:dvfl 1.8s ease-in-out infinite}
+.dvf b{font-size:14px}
+.dvf small{font-size:12px;color:var(--mute)}
+.dvdt{display:flex;gap:5px}.dvdt i{width:7px;height:7px;border-radius:50%;background:#e11d1d;opacity:.25;animation:dvdt 1.1s ease-in-out infinite}.dvdt i:nth-child(2){animation-delay:.18s}.dvdt i:nth-child(3){animation-delay:.36s}
+.dvf.st{animation:none;background:#eef2fa}.dvf.st .dvpi{animation:none}
+.dvrt{border:0;border-radius:20px;background:#e11d1d;color:#fff;font-weight:700;font-size:12.5px;padding:7px 16px}
+@keyframes dvsh{to{background-position:-220% 0}}
+@keyframes dvfl{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(1.05)}}
+@keyframes dvdt{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+@media (prefers-reduced-motion:reduce){.dvf,.dvpi,.dvdt i{animation:none}}
+.dark .dvf{color:#cbd5e1;background:linear-gradient(110deg,#101a2e 30%,#17243d 50%,#101a2e 70%);background-size:220% 100%}.dark .dvf.st{background:#101a2e}
 .dvn{position:absolute;top:10px;left:10px;z-index:1;min-width:30px;height:30px;padding:0 9px;border-radius:15px;background:rgba(11,58,140,.92);color:#fff;font-weight:700;font-size:14px;display:grid;place-items:center}
 .dvb{padding:14px}.dvt2{margin:0 0 10px;font-size:16px;line-height:1.35;overflow-wrap:anywhere;cursor:pointer}
 .dvd{width:100%;min-height:46px}.dve{color:var(--bad);font-size:13px;margin-top:6px}
@@ -215,7 +229,7 @@ a.row{text-decoration:none;color:inherit}
 .dvkm{font-size:12px;color:var(--mute);margin-bottom:2px}.dvkt{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
 .dvno{font-size:13px;color:var(--mute)}
 .dvpg{display:block;width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:6px;margin-bottom:10px}
-.dark .sq,.dark .dvc{background:#19243a}.dark .dvr{background:#142038;border-color:#2b3956}.dark .dvk{background:#19243a;border-color:#2b3956}.dark .dvr h4{color:#9db8ff}.dark .dvp{background:#101a2e}
+.dark .dvc{background:#19243a}.dark .dvr{background:#142038;border-color:#2b3956}.dark .dvk{background:#19243a;border-color:#2b3956}.dark .dvr h4{color:#9db8ff}.dark .dvp{background:#101a2e}
 
 /* ===== Step 4: login screens ===== */
 .lg{max-width:520px;margin:0 auto;min-height:100vh;position:relative;background-color:#12306b;background-image:var(--lgbg),linear-gradient(180deg,#f3c77a 0%,#e9a85a 38%,#2a4f9a 75%,#0b2a63 100%);background-repeat:no-repeat;background-position:top center;background-size:100% auto,cover;padding:var(--lgtop) 14px 28px;font-family:"Noto Sans Devanagari","Segoe UI",Arial,sans-serif;color:#2a1a08}
@@ -231,6 +245,28 @@ a.row{text-decoration:none;color:inherit}
 .lgr{display:flex;justify-content:space-between;align-items:center;margin-top:4px;flex-wrap:wrap}
 .lgw{margin-top:10px;padding:8px 10px;border-radius:10px;background:#fdecec;border:1px solid #e57373;color:#c62828;font-size:13px;font-weight:700;line-height:1.4}
 .lgm{min-height:20px;margin-top:10px;font-size:13px;font-weight:600}.lgm.e{color:#c62828}.lgm.o{color:#16803a}
+
+/* ===== Update 2: Jakhar TV player PDF button + YouTube > PDF video lists ===== */
+.ytbr{display:flex;align-items:stretch;justify-content:flex-end;gap:8px;margin-top:10px}
+.ytwo{display:inline-flex;align-items:center;padding:6px 11px;font-size:12px}
+.ytpb{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:0;border:1.5px solid #e11d1d;background:#fff1f1;color:#b91c1c;border-radius:12px;padding:5px 11px;font-weight:700;font-size:12.5px;line-height:1.25;text-align:left}
+.ytpb small{font-size:10.5px;font-weight:600;color:#dc2626;opacity:.9}
+.ytpb:active{background:#ffe0e0}
+.dark .ytpb{background:#2a1618;color:#fecaca;border-color:#b91c1c}.dark .ytpb small{color:#fca5a5}
+.vpsh{margin:6px 2px 10px;font-size:15px;font-weight:700}
+.vpb{scroll-margin-top:12px;background:#fff;border-radius:16px;box-shadow:0 2px 10px rgba(20,40,80,.08);padding:12px;margin-bottom:12px;border:2px solid transparent}
+.vpv{font-size:13.5px;line-height:1.35;margin-bottom:8px;color:var(--ink);overflow-wrap:anywhere}.vpv span{color:#e11d1d;font-weight:800;letter-spacing:.3px}
+.vpr{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)}
+.vpn{flex:1;min-width:0;font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.vpa{flex:none;display:flex;gap:6px}
+.vpa a,.vpa button{border:2px solid var(--main);background:#fff;color:var(--main);border-radius:10px;padding:5px 10px;font-weight:700;font-size:12.5px;text-decoration:none;font-family:inherit;line-height:1.3}
+.vpa button{background:var(--main);color:#fff}.vpa button:disabled{opacity:.5}
+.vpb.hl{animation:vphl 2.6s ease-out}
+@keyframes vphl{0%,60%{background:#fff4c2;border-color:#f59e0b;box-shadow:0 0 0 4px rgba(245,158,11,.35)}100%{background:#fff;border-color:transparent;box-shadow:0 2px 10px rgba(20,40,80,.08)}}
+.dark .vpb{background:#19243a}.dark .vpa a{background:#19243a;color:#7fb0ff;border-color:#7fb0ff}.dark .vpa button{background:#1457d9;border-color:#1457d9}
+@keyframes vphld{0%,60%{background:#4a3b10;border-color:#f59e0b}100%{background:#19243a;border-color:transparent}}
+.dark .vpb.hl{animation-name:vphld}
+@media (prefers-reduced-motion:reduce){.vpb.hl{animation:none;background:#fff4c2;border-color:#f59e0b}}
 </style>
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#1457d9">
@@ -933,26 +969,69 @@ function smMerge(){
     if(!YT_VIDEOS.some(v=>ytId(v.url)===ytId(m.url)))YT_VIDEOS.push({url:m.url,title:m.title,db:1});
   });
 }
+/* Video ke saath attach PDFs: materials.video_id (YouTube video id). Column na ho to chup-chaap khali rehta hai */
+let VPX=[];
+const vpVid=m=>{const v=String(m.video_id||"").trim();return /^[A-Za-z0-9_-]{11}$/.test(v)?v:ytId(v)};
+function vpLoad(){
+  return fetch(SM_BASE+"/rest/v1/materials?select=id,title,category,kind,url,file_path,video_id&is_active=eq.true&video_id=not.is.null&order=created_at.asc&limit=1000",{headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}})
+  .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
+  .then(d=>{VPX=(d||[]).filter(m=>m.kind!=="youtube"&&vpVid(m));return VPX})
+  .catch(()=>{VPX=[];return VPX});
+}
+const vpFor=id=>VPX.filter(m=>vpVid(m)===id);
 function smLoad(){
+  const vp=vpLoad();
   return fetch(SM_BASE+"/rest/v1/materials?select=id,title,category,kind,url,file_path&is_active=eq.true&order=created_at.desc&limit=1000",{headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}})
   .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
-  .then(d=>{SMX=d;SMOK=true;smMerge();return d});
+  .then(d=>{SMX=d;SMOK=true;smMerge();return vp.then(()=>{if(document.getElementById("ytv"))ytWatchFill();return d})});
 }
 function smShell(body){view(hdr(BACK,"","PDF")+'<main class="pg">'+body+'</main>',"",false,youtube)}
-async function studyMat(){
-  clearInterval(tick);
+async function studyMat(f){
+  clearInterval(tick);const fid=typeof f==="string"?f:"";
+  if(fid&&SMOK){smHome(fid);return}
   smShell('<div class="card cs"><small>लोड हो रहा है...</small></div>');
   try{await smLoad()}catch(e){
     smShell('<div class="card cs"><div class="csi">📡</div><p>PDF अभी लोड नहीं हो पाईं।<br>इंटरनेट जाँचकर दोबारा कोशिश करें।</p><button class="btn" id="smr">दोबारा कोशिश करें</button></div>');
-    document.getElementById("smr").onclick=studyMat;return;
+    document.getElementById("smr").onclick=()=>studyMat(fid);return;
   }
-  smHome();
+  smHome(fid);
 }
-function smHome(){
-  const g={};SMX.filter(m=>m.kind!=="youtube").forEach(m=>{const c=(m.category||"").trim()||"अन्य";(g[c]=g[c]||[]).push(m)});
+let VPF=[];
+function vpGroups(){
+  const ids=[];ytList().forEach(x=>{if(vpFor(x.id).length)ids.push(x.id)});
+  VPX.forEach(m=>{const v=vpVid(m);if(ids.indexOf(v)<0)ids.push(v)});
+  return ids.map(id=>{const x=ytList().find(y=>y.id===id);return{id:id,title:x?ytTitle(x):"Video",items:vpFor(id)}});
+}
+function vpBlock(g){
+  return '<div class="vpb" id="vp-'+smE(g.id)+'"><div class="vpv"><span>VIDEO:</span> <b>'+smE(g.title)+'</b></div>'+g.items.map(m=>{
+    const u=smUrl(m);if(!/^https:\/\//i.test(u||""))return"";const k=VPF.push(m)-1;
+    return '<div class="vpr"><span class="vpn">📄 '+smE(m.title||"PDF")+'</span><span class="vpa"><a href="'+smE(u)+'" target="_blank" rel="noopener">View</a><button onclick="vpDl('+k+',this)">Download</button></span></div>';
+  }).join("")+'</div>';
+}
+async function vpDl(k,b){
+  const m=VPF[k];if(!m)return;const u=smUrl(m),t=b.textContent;
+  b.disabled=true;b.textContent="…";
+  try{
+    const r=await fetch(u);if(!r.ok)throw new Error("HTTP "+r.status);
+    const bl=await r.blob(),o=URL.createObjectURL(new Blob([bl],{type:"application/pdf"}));
+    const a=document.createElement("a");a.href=o;a.download=((String(m.title||"").replace(/[\\\/:*?"<>|]+/g,"").replace(/\s+/g," ").trim().slice(0,80))||"document")+".pdf";
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(o),30000);
+  }catch(e){toast("Download नहीं हो पाया। इंटरनेट जाँचकर दोबारा कोशिश करें।")}
+  b.disabled=false;b.textContent=t;
+}
+function vpFocus(id){
+  const el=document.getElementById("vp-"+id);if(!el)return;
+  setTimeout(()=>{el.scrollIntoView({behavior:"smooth",block:"start"});el.classList.remove("hl");void el.offsetWidth;el.classList.add("hl");setTimeout(()=>el.classList.remove("hl"),2700)},150);
+}
+function smHome(fid){
+  const att=new Set(VPX.map(m=>m.id));VPF=[];
+  const g={};SMX.filter(m=>m.kind!=="youtube"&&!att.has(m.id)).forEach(m=>{const c=(m.category||"").trim()||"अन्य";(g[c]=g[c]||[]).push(m)});
   SMC=Object.keys(g).map(k=>({k,items:g[k]}));
-  if(!SMC.length){smShell('<div class="card cs"><div class="csi">📄</div><p>अभी कोई PDF नहीं है।<br>जल्द ही जोड़ी जाएँगी।</p></div>');return}
-  smShell('<div class="list">'+SMC.map((c,i)=>R({c:"#e11d1d",i:"📁",t:smE(c.k),s:c.items.length+" PDF",on:"smCat("+i+")"})).join("")+'</div>');
+  const vg=vpGroups();
+  if(!SMC.length&&!vg.length){smShell('<div class="card cs"><div class="csi">📄</div><p>अभी कोई PDF नहीं है।<br>जल्द ही जोड़ी जाएँगी।</p></div>');return}
+  smShell((SMC.length?'<div class="list">'+SMC.map((c,i)=>R({c:"#e11d1d",i:"📁",t:smE(c.k),s:c.items.length+" PDF",on:"smCat("+i+")"})).join("")+'</div>':'')
+    +(vg.length?'<div class="vpsh" style="margin-top:'+(SMC.length?16:0)+'px">📺 वीडियो के साथ जुड़ी PDF</div>'+vg.map(vpBlock).join(""):''));
+  if(fid)vpFocus(fid);
 }
 function smCat(i){
   const c=SMC[i];if(!c)return smHome();
@@ -1049,7 +1128,10 @@ function ytWatchFill(){
   const m=document.getElementById("ytvm"),ml=[ytViews(x),ytAgo(x)].filter(Boolean).join(" · ");m.textContent=ml;m.style.display=ml?"":"none";
   const o=all.filter(y=>y.i!==ytCur);
   document.getElementById("ytvr").innerHTML=o.length?`<div class="ytrh">अगले वीडियो</div>`+o.map(ytCard).join(""):"";
+  const pw=document.getElementById("ytpbw");
+  if(pw){const a=vpFor(x.id);pw.innerHTML=a.length?`<button class="ytpb" onclick="ytPdfGo()"><span>📄 ${a.length} PDF${a.length>1?"s":""} Attached</span><small>View PDFs ›</small></button>`:""}
 }
+function ytPdfGo(){const x=ytList().find(y=>y.i===ytCur);if(!x)return;const id=x.id;ytClose();studyMat(id)}
 function ytPlay(i){
   const x=ytList().find(y=>y.i===i);if(!x)return;
   let d=document.getElementById("ytv");const fresh=!d;
@@ -1058,7 +1140,8 @@ function ytPlay(i){
   d.innerHTML=`<div class="ytvh"><button class="ib" id="ytvx" aria-label="वापस"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H5M11.5 5.5L5 12l6.5 6.5"/></svg></button><span class="ytvlg">${YT}<b>Jakhar TV</b></span></div>
   <div class="ytpl"><iframe class="ytvf" src="https://www.youtube-nocookie.com/embed/${x.id}?autoplay=1&playsinline=1&rel=0&modestbranding=1&fs=1&iv_load_policy=3" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
   <div class="ytvs"><div class="ytvi"><h2 class="ytvt" id="ytvt"></h2><div class="ytvm" id="ytvm"></div>
-  <div class="ytvc"><span class="yav">${ytEsc(YT_CHANNEL.charAt(0))}</span><span class="ytvcn">${ytEsc(YT_CHANNEL)}</span><a class="ytwo" href="https://www.youtube.com/watch?v=${x.id}" target="_blank" rel="noopener">Watch on YouTube ↗</a></div></div>
+  <div class="ytvc"><span class="yav">${ytEsc(YT_CHANNEL.charAt(0))}</span><span class="ytvcn">${ytEsc(YT_CHANNEL)}</span></div>
+  <div class="ytbr"><span id="ytpbw" style="display:contents"></span><a class="ytwo" href="https://www.youtube.com/watch?v=${x.id}" target="_blank" rel="noopener">Watch on YouTube ↗</a></div></div>
   <div id="ytvr"></div></div>`;
   ytWatchFill();
   document.getElementById("ytvx").onclick=()=>ytClose();
@@ -1098,22 +1181,57 @@ function dvLib(){
   });
   return DV_LIB;
 }
-async function dvThumb(el){
-  const d=DVS.docs[+el.dataset.i];if(!d||el.dataset.t)return;el.dataset.t=1;
+/* ---- Preview: thumbnail-based, card-fit, WhatsApp-style zoom. Pura PDF load nahi hota ---- */
+const DV_PDFI='<svg class="dvpi" viewBox="0 0 64 80" aria-hidden="true"><path d="M6 6a6 6 0 0 1 6-6h28l18 18v56a6 6 0 0 1-6 6H12a6 6 0 0 1-6-6z" fill="#fff" stroke="#d6dbe6" stroke-width="2"/><path d="M40 0l18 18H46a6 6 0 0 1-6-6z" fill="#e3e8f2"/><rect x="2" y="40" width="46" height="22" rx="5" fill="#e11d1d"/><text x="25" y="56.5" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="15" fill="#fff">PDF</text><rect x="14" y="66" width="30" height="3" rx="1.5" fill="#cfd6e4"/><rect x="14" y="21" width="26" height="3" rx="1.5" fill="#dfe5f0"/><rect x="14" y="28" width="18" height="3" rx="1.5" fill="#dfe5f0"/></svg>';
+const DV_PH='<div class="dvf">'+DV_PDFI+'<b>PDF Preview Loading…</b><span class="dvdt"><i></i><i></i><i></i></span></div>';
+const DV_TC="jk-dv-thumb-v1",DV_TW=520,DV_ZOOM=1.16,DV_TTL=3*864e5;
+const dvTKey=d=>"https://jk-thumb.invalid/"+encodeURIComponent((d.file_path||"")+"|"+(d.created_at||""))+".jpg";
+async function dvTGet(d){
+  try{if(!window.caches)return null;const c=await caches.open(DV_TC),r=await c.match(dvTKey(d));if(!r)return null;
+    const t=+r.headers.get("x-ts")||0;if(Date.now()-t>DV_TTL){c.delete(dvTKey(d));return null}return await r.blob()}catch(e){return null}
+}
+async function dvTPut(d,b){
+  try{if(!window.caches)return;const c=await caches.open(DV_TC);
+    await c.put(dvTKey(d),new Response(b,{headers:{"Content-Type":"image/jpeg","x-ts":String(Date.now())}}))}catch(e){}
+}
+function dvShowImg(el,blob){
+  const im=new Image();im.alt="";im.decoding="async";
+  im.onload=()=>{const f=el.querySelector(".dvf");if(f)f.remove();if(!el.querySelector("img"))el.appendChild(im)};
+  im.src=URL.createObjectURL(blob);
+}
+function dvState(el,html){const f=el.querySelector(".dvf");if(!f)return;f.className="dvf st";f.innerHTML=DV_PDFI+html}
+async function dvRenderThumb(d){
+  const lib=await dvLib();
+  /* disableAutoFetch + disableStream: sirf zaroori chunks (page 1) aate hain, poori file nahi */
+  const pdf=await lib.getDocument({url:dvFileUrl(d),disableAutoFetch:true,disableStream:true,rangeChunkSize:131072}).promise;
   try{
-    const lib=await dvLib();
-    const pdf=await lib.getDocument({url:dvFileUrl(d)}).promise;
-    const pg=await pdf.getPage(1),v0=pg.getViewport({scale:1}),vp=pg.getViewport({scale:Math.min(2,520/v0.width)});
-    const c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;
-    await pg.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
-    const f=el.querySelector(".dvf");if(f)f.replaceWith(c);
-    pdf.destroy();
-  }catch(e){/* fallback PDF icon rehta hai */}
+    const pg=await pdf.getPage(1),v0=pg.getViewport({scale:1}),k=Math.min(1.5,Math.max(1,window.devicePixelRatio||1));
+    const vp=pg.getViewport({scale:DV_TW*DV_ZOOM/v0.width*k}),cw=Math.round(DV_TW*k),ch=Math.round(cw*.75);
+    const c=document.createElement("canvas");c.width=cw;c.height=ch;
+    const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,cw,ch);
+    await pg.render({canvasContext:x,viewport:vp,transform:[1,0,0,1,-Math.round((vp.width-cw)/2),-Math.round(vp.height*.05)]}).promise;
+    return await new Promise((ok,no)=>c.toBlob(b=>b?ok(b):no(new Error("blob")),"image/jpeg",.82));
+  }finally{try{pdf.destroy()}catch(e){}}
+}
+async function dvThumb(el,manual){
+  const d=DVS.docs[+el.dataset.i];if(!d||el.dataset.t)return;
+  const hit=await dvTGet(d);                       /* pehle cache: net/library ki zaroorat nahi */
+  if(hit){el.dataset.t=1;dvShowImg(el,hit);return}
+  const sd=navigator.connection&&navigator.connection.saveData;
+  if(sd&&!manual){dvState(el,'<b>Preview बंद है</b><small>डेटा बचाने के लिए</small><button class="dvrt" onclick="dvTap(event,'+el.dataset.i+')">Preview देखें</button>');return}
+  el.dataset.t=1;
+  try{const b=await dvRenderThumb(d);dvShowImg(el,b);dvTPut(d,b)}
+  catch(e){el.dataset.t="";dvState(el,'<b>Preview लोड नहीं हुआ</b><small>PDF पर टैप करके खोलें या दोबारा कोशिश करें</small><button class="dvrt" onclick="dvTap(event,'+el.dataset.i+')">Retry</button>')}
+}
+function dvTap(ev,i){
+  ev.stopPropagation();const el=document.querySelector('.dvp[data-i="'+i+'"]');if(!el)return;
+  const f=el.querySelector(".dvf");if(f){f.className="dvf";f.innerHTML=DV_PDFI+'<b>PDF Preview Loading…</b><span class="dvdt"><i></i><i></i><i></i></span>'}
+  el.dataset.t="";DV_Q=DV_Q.then(()=>dvThumb(el,true));
 }
 function dvCard(d,i){
   const rs=DVS.rem[d.id]||[];
   const rem=rs.length?rs.map(r=>`<div class="dvk"><div class="dvkm"><b>Admin</b> — ${dvE(dvDate(r.created_at))}</div><div class="dvkt">${dvE(r.remark_text)}</div></div>`).join(""):`<div class="dvno">No updates yet</div>`;
-  return `<div class="dvc"><div class="dvp" data-i="${i}" onclick="dvView(${i})"><span class="dvn">${i+1}</span><div class="dvf"><span>📄</span><small>PDF</small></div></div>
+  return `<div class="dvc"><div class="dvp" data-i="${i}" onclick="dvView(${i})"><span class="dvn">${i+1}</span>${DV_PH}</div>
   <div class="dvb"><h3 class="dvt2" onclick="dvView(${i})">${dvE(d.title)}</h3>
   <div><button class="btn dvd" onclick="dvDl(${i},this)">⬇ Download PDF</button><div class="dve"></div></div>
   <div class="dvr"><h4>Admin Remarks</h4>${rem}</div></div></div>`;
