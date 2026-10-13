@@ -54,6 +54,9 @@
   details.sub>summary{cursor:pointer;font-weight:600}
   details.cat>summary{cursor:pointer;font-weight:600}
   @media (max-width:430px){.wrap{padding:8px}.card{padding:12px}button.sec,button.danger{padding:9px 10px}}
+
+.exbox{display:flex;flex-direction:column;gap:2px;max-height:260px;overflow:auto;border:1px solid var(--line,#d9e1ee);border-radius:10px;padding:6px 10px;margin-bottom:8px}
+.exopt{display:flex;align-items:center;gap:8px;font-size:14px;padding:5px 0;cursor:pointer}.exopt input{width:auto;margin:0}.exopt small{color:#64748b}
 </style>
 </head>
 <body>
@@ -1103,6 +1106,43 @@ const T_EXAMS = [
 const T_NEG = [["", "Negative marking nahi (0)"], ["0.25", "1/4"], ["0.333333", "1/3"], ["0.5", "1/2"]];
 const TP = {};   // pane state: { kind, rows, tests }
 
+
+/* ---- Multi-exam helpers (Full Mock Test) ---- */
+function exShortA(e) {
+  e = String(e == null ? "" : e).trim();
+  const m = e.match(/^(?:Rajasthan\s+)?CET\b\s*[-–:]?\s*\(?\s*([^)]*?)\s*\)?\s*$/i);
+  if (m) { const r = m[1] || ""; if (/graduat/i.test(r)) return "CET Graduation Level"; if (/(senior|secondary|12|sr\b|\+2)/i.test(r)) return "CET 12th Level"; }
+  return e.replace(/^Rajasthan\s+/i, "");
+}
+function examsOfA(t) { const a = []; (t.exams || []).forEach(e => { if (e && !a.includes(e)) a.push(e); }); if (t.exam && !a.includes(t.exam)) a.unshift(t.exam); return a; }
+function exBoxHtml(kind) {
+  const all = T_EXAMS.flatMap(g => g.list);
+  return '<div class="meta" style="margin-bottom:6px">Exams chuno (ek ya zyada):</div><div id="' + kind + 'Ex" class="exbox">' +
+    all.map(e => '<label class="exopt"><input type="checkbox" value="' + esc(e) + '"> ' + esc(exShortA(e)) + (exShortA(e) !== e ? ' <small>(' + esc(e) + ')</small>' : '') + '</label>').join("") +
+    '</div><div id="' + kind + 'ExN" class="meta" style="margin:6px 0 0">Koi exam chuna nahi</div>';
+}
+function selExams(kind) { return [...document.querySelectorAll("#" + kind + "Ex input:checked")].map(c => c.value); }
+function exCount(kind) { const a = selExams(kind), n = $(kind + "ExN"); if (n) n.textContent = a.length ? a.length + " exam chune: " + a.map(exShortA).join(", ") : "Koi exam chuna nahi"; }
+function testEditExams(kind, id) {
+  const t = (TP[kind].tests || []).find(x => String(x.id) === String(id)); if (!t) return;
+  const cur = examsOfA(t), all = T_EXAMS.flatMap(g => g.list);
+  const ov = document.createElement("div"); ov.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;padding:16px;overflow:auto";
+  ov.innerHTML = '<div class="card" style="max-width:520px;margin:5vh auto 0"><div class="q">' + esc(t.title) + ' — exams badlo</div><div id="edEx" class="exbox">' +
+    all.map(e => '<label class="exopt"><input type="checkbox" value="' + esc(e) + '"' + (cur.includes(e) ? " checked" : "") + '> ' + esc(exShortA(e)) + '</label>').join("") +
+    '</div><div id="edMsg" class="msg"></div><div class="row"><button id="edSave">Save</button><button class="sec" id="edCancel">Cancel</button></div></div>';
+  document.body.appendChild(ov);
+  $("edCancel").onclick = () => ov.remove();
+  $("edSave").onclick = async () => {
+    const list = [...ov.querySelectorAll("#edEx input:checked")].map(c => c.value), m = $("edMsg");
+    if (!list.length) { m.style.color = "var(--bad)"; m.textContent = "Kam se kam ek exam chuno."; return; }
+    try {
+      const r = await api("/rest/v1/tests?id=eq." + encodeURIComponent(id), { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ exam: list[0], exams: list }) });
+      if (!r || !r.length) throw new Error("Update nahi hua (admin permission check karo).");
+      ov.remove(); testList(kind);
+    } catch (e) { m.style.color = "var(--bad)"; m.textContent = "Fail: " + e.message + (/exams/i.test(e.message) ? "\nupdate_setup.sql ek baar Supabase SQL Editor me chalao." : ""); }
+  };
+}
+
 function mountTestPane(kind) {
   const pane = document.querySelector('[data-pane="' + kind + '"]');
   const S = TP[kind] = TP[kind] || { kind, rows: [], tests: [] };
@@ -1117,8 +1157,8 @@ function mountTestPane(kind) {
       <button class="sec bk" data-go="dash">← Dashboard</button>
       <div class="card">
         <div class="q">${isSub ? "📚 Full Subject Test — CSV upload" : "🎯 Full Mock Test — CSV upload"}</div>
-        <div class="meta" style="margin:4px 0 10px">${isSub ? "Jis subject ko chunoge, upload hue sawal usi subject ke test me jayenge." : "Jis exam ko chunoge, test usi exam ke liye banega aur app me 'For &lt;exam&gt;' label dikhega."}</div>
-        <select id="${kind}Sel">${opts}</select>
+        <div class="meta" style="margin:4px 0 10px">${isSub ? "Jis subject ko chunoge, upload hue sawal usi subject ke test me jayenge." : "Ek ya zyada exams chuno (3-4 bhi ho sakte hain) — ek hi test sabhi chune hue exams me dikhega, duplicate test nahi banega."}</div>
+        ${isSub ? `<select id="${kind}Sel">${opts}</select>` : exBoxHtml(kind)}
         <input id="${kind}Title" placeholder="Test ka naam (title) — jaise: Full Test 1" style="margin-top:10px">
         <div class="row" style="margin-bottom:10px">
           <div style="flex:1;min-width:120px"><div class="meta">Time limit (minute, khali = koi limit nahi)</div><input id="${kind}Dur" type="number" min="1" step="1" placeholder="jaise 60" style="margin:0"></div>
@@ -1138,7 +1178,7 @@ function mountTestPane(kind) {
     $(kind + "File").onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $(kind + "Text").value = r.result; testCheck(kind); }; r.readAsText(f, "utf-8"); };
     $(kind + "Chk").onclick = () => testCheck(kind);
     $(kind + "Go").onclick = () => testUpload(kind);
-    ["Sel", "Title", "Dur", "Mk", "Neg"].forEach(x => $(kind + x).addEventListener("change", () => { S.rows = []; $(kind + "Go").disabled = true; }));
+    ["Sel", "Title", "Dur", "Mk", "Neg", "Ex"].forEach(x => { const el = $(kind + x); if (el) el.addEventListener("change", () => { S.rows = []; $(kind + "Go").disabled = true; if (x === "Ex") exCount(kind); }); });
   }
   testList(kind);
 }
@@ -1146,7 +1186,9 @@ function mountTestPane(kind) {
 async function testList(kind) {
   const S = TP[kind], box = $(kind + "List"), dbKind = kind === "fst" ? "subject" : "mock";
   try {
-    S.tests = await api("/rest/v1/tests?select=id,kind,title,subject,exam,duration_min,marks_per_q,neg_marking,q_count,is_active,created_at&kind=eq." + dbKind + "&order=created_at.desc&limit=500") || [];
+    const cols = "id,kind,title,subject,exam,duration_min,marks_per_q,neg_marking,q_count,is_active,created_at";
+    try { S.tests = await api("/rest/v1/tests?select=" + cols + ",exams&kind=eq." + dbKind + "&order=created_at.desc&limit=500") || []; S.hasExams = true; }
+    catch (e0) { S.hasExams = false; S.tests = await api("/rest/v1/tests?select=" + cols + "&kind=eq." + dbKind + "&order=created_at.desc&limit=500") || []; }
   } catch (e) {
     box.innerHTML = '<span style="color:var(--bad)">Tests load nahi hue: ' + esc(e.message) + '<br>Agar "tests" table nahi bani to tests_setup.sql ek baar Supabase SQL Editor me chalao.</span>';
     return;
@@ -1155,8 +1197,8 @@ async function testList(kind) {
   if (!S.tests.length) { box.textContent = "Abhi koi test upload nahi hua."; return; }
   box.innerHTML = S.tests.map(t => `<div class="srow" style="align-items:center">
     <div style="min-width:0"><div class="q" style="margin:0">${esc(t.title)} ${t.is_active ? '<span class="tag on">LIVE</span>' : '<span class="tag hid">HIDDEN</span>'}</div>
-    <div class="meta">${esc(kind === "fst" ? t.subject : "For " + t.exam)} · ${t.q_count} sawal · ${t.q_count * t.marks_per_q} marks${t.duration_min ? " · " + t.duration_min + " min" : ""}${t.neg_marking == null ? "" : (t.neg_marking > 0 ? " · neg " + t.neg_marking : " · neg nahi")}</div></div>
-    <div class="row" style="flex:none;flex-wrap:nowrap"><button class="sec" onclick="testToggle('${kind}','${esc(t.id)}',${t.is_active ? "false" : "true"})">${t.is_active ? "Hide" : "Show"}</button><button class="danger" onclick="testDelete('${kind}','${esc(t.id)}')">Delete</button></div></div>`).join("");
+    <div class="meta">${kind === "fst" ? esc(t.subject) : examsOfA(t).map(e => '<span class="tag on" title="' + esc(e) + '">' + esc(exShortA(e)) + '</span>').join(" ")} · ${t.q_count} sawal · ${t.q_count * t.marks_per_q} marks${t.duration_min ? " · " + t.duration_min + " min" : ""}${t.neg_marking == null ? "" : (t.neg_marking > 0 ? " · neg " + t.neg_marking : " · neg nahi")}</div></div>
+    <div class="row" style="flex:none;flex-wrap:nowrap">${kind === "fmk" ? `<button class="sec" onclick="testEditExams('${kind}','${esc(t.id)}')">Exams</button>` : ""}<button class="sec" onclick="testToggle('${kind}','${esc(t.id)}',${t.is_active ? "false" : "true"})">${t.is_active ? "Hide" : "Show"}</button><button class="danger" onclick="testDelete('${kind}','${esc(t.id)}')">Delete</button></div></div>`).join("");
 }
 
 async function testToggle(kind, id, on) {
@@ -1179,13 +1221,13 @@ async function testDelete(kind, id) {
 function testCheck(kind) {
   const S = TP[kind], isSub = kind === "fst", dbKind = isSub ? "subject" : "mock";
   const msg = $(kind + "Msg"); msg.style.color = "var(--bad)"; S.rows = []; $(kind + "Go").disabled = true;
-  const sel = $(kind + "Sel").value, title = $(kind + "Title").value.trim();
+  const exams = isSub ? [] : selExams(kind), sel = isSub ? $(kind + "Sel").value : (exams[0] || ""), title = $(kind + "Title").value.trim();
   const mk = parseFloat($(kind + "Mk").value), durRaw = $(kind + "Dur").value.trim();
   if (!sel) { msg.textContent = isSub ? "Pehle Subject chuno." : "Pehle Exam chuno."; return; }
   if (!title) { msg.textContent = "Test ka naam (title) likho."; return; }
   if (!(mk > 0)) { msg.textContent = "Har sawal ke marks 0 se zyada hone chahiye."; return; }
   if (durRaw && !(parseInt(durRaw, 10) > 0)) { msg.textContent = "Time limit sahi number ho ya khali chhodo."; return; }
-  if ((TP[kind].tests || []).some(t => t.title.trim().toLowerCase() === title.toLowerCase() && (isSub ? t.subject === sel : t.exam === sel))) { msg.textContent = "Is " + (isSub ? "subject" : "exam") + " me is naam ka test pehle se hai. Doosra naam rakho."; return; }
+  if ((TP[kind].tests || []).some(t => t.title.trim().toLowerCase() === title.toLowerCase() && (isSub ? t.subject === sel : examsOfA(t).some(e => exams.includes(e))))) { msg.textContent = "Is " + (isSub ? "subject" : "exam") + " me is naam ka test pehle se hai. Doosra naam rakho."; return; }
   const rows = parseCSV($(kind + "Text").value);
   if (rows.length < 2) { msg.textContent = "Pehli line header ki aur uske neeche kam se kam ek sawal chahiye."; return; }
   const hdr = rows[0].map(x => x.trim().toLowerCase());
@@ -1208,7 +1250,7 @@ function testCheck(kind) {
   });
   S.rows = out;
   msg.style.color = errs.length ? "var(--bad)" : "var(--ok)";
-  msg.textContent = (isSub ? "Subject: " : "Exam: ") + sel + "\nSahi: " + out.length + "   Galat: " + errs.length + "   Total marks: " + +(out.length * mk).toFixed(2) +
+  msg.textContent = (isSub ? "Subject: " + sel : "Exams (" + exams.length + "): " + exams.map(exShortA).join(", ")) + "\nSahi: " + out.length + "   Galat: " + errs.length + "   Total marks: " + +(out.length * mk).toFixed(2) +
     (errs.length ? "\n\n" + errs.slice(0, 15).join("\n") + (errs.length > 15 ? "\n...aur " + (errs.length - 15) + " line" : "") + "\n\nGalat lines sahi karke dobara Jaanch karo (galat lines upload nahi hongi)." : "");
   $(kind + "Go").disabled = out.length === 0;
 }
@@ -1216,23 +1258,30 @@ function testCheck(kind) {
 async function testUpload(kind) {
   const S = TP[kind], isSub = kind === "fst";
   if (!S.rows.length) return;
-  const sel = $(kind + "Sel").value, title = $(kind + "Title").value.trim(), msg = $(kind + "Msg");
+  const exams = isSub ? [] : selExams(kind), sel = isSub ? $(kind + "Sel").value : (exams[0] || ""), title = $(kind + "Title").value.trim(), msg = $(kind + "Msg");
   const durRaw = $(kind + "Dur").value.trim(), neg = $(kind + "Neg").value;
   if (!confirm('"' + title + '" — ' + S.rows.length + " sawal upload karein?")) return;
   $(kind + "Go").disabled = true; $(kind + "Chk").disabled = true;
   const body = {
     kind: isSub ? "subject" : "mock", title,
-    subject: isSub ? sel : null, exam: isSub ? null : sel,
+    subject: isSub ? sel : null, exam: isSub ? null : sel, ...(isSub ? {} : { exams }),
     duration_min: durRaw ? parseInt(durRaw, 10) : null,
     marks_per_q: parseFloat($(kind + "Mk").value),
     neg_marking: neg === "" ? 0 : parseFloat(neg),
     questions: S.rows, q_count: S.rows.length, is_active: $(kind + "Act").checked
   };
   try {
-    const r = await api("/rest/v1/tests", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(body) });
+    let r, note = "";
+    try { r = await api("/rest/v1/tests", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(body) }); }
+    catch (e1) {
+      if (!isSub && /exams/i.test(e1.message)) {   // "exams" column abhi DB me nahi bana -> purane tareeke se save (sirf pehla exam)
+        delete body.exams; r = await api("/rest/v1/tests", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(body) });
+        if (exams.length > 1) note = "\n⚠ DB me 'exams' column nahi hai, isliye sirf pehla exam save hua. update_setup.sql chalao, phir 'Exams' button se baaki exams jodo.";
+      } else throw e1;
+    }
     if (!r || !r.length) throw new Error("Test save nahi hua (admin permission / tests table check karo).");
-    msg.style.color = "var(--ok)"; msg.textContent = "Upload ho gaya: " + title + " (" + S.rows.length + " sawal).";
-    S.rows = []; $(kind + "Text").value = ""; $(kind + "File").value = ""; $(kind + "Title").value = "";
+    msg.style.color = "var(--ok)"; msg.textContent = "Upload ho gaya: " + title + " (" + S.rows.length + " sawal)." + note;
+    S.rows = []; $(kind + "Text").value = ""; $(kind + "File").value = ""; $(kind + "Title").value = ""; if (!isSub) document.querySelectorAll("#" + kind + "Ex input").forEach(c => c.checked = false), exCount(kind);
   } catch (e) {
     msg.style.color = "var(--bad)"; msg.textContent = "Upload fail: " + e.message + "\nAgar 'tests' table nahi hai to tests_setup.sql Supabase SQL Editor me ek baar chalao.";
   }

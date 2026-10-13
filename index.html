@@ -269,6 +269,132 @@ a.row{text-decoration:none;color:inherit}
 @media (prefers-reduced-motion:reduce){.vpb.hl{animation:none;background:#fff4c2;border-color:#f59e0b}}
 .exl{display:inline-block;background:#7c3aed;color:#fff;border-radius:6px;padding:1px 9px;font-weight:700;font-size:11.5px;margin:3px 0 2px;line-height:1.5}
 .vpa .pvw{background:#fff;color:var(--main)}.dark .vpa .pvw{background:#19243a;color:#7fb0ff;border-color:#7fb0ff}
+/* ===== V2 update ===== */
+.tiles2 button{position:relative}
+.nbadge{display:inline-block;background:#ef4444;color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.4px;padding:2px 8px;border-radius:10px;line-height:1.35}
+.tiles2 .nbadge{font-size:10.5px;position:absolute;top:8px;right:8px;box-shadow:0 1px 5px rgba(0,0,0,.3);animation:nbp 1.8s ease-in-out infinite}
+@keyframes nbp{50%{transform:scale(1.1)}}
+.nbadge.inl{margin-left:6px;vertical-align:middle}
+.scard .nbadge{position:absolute;top:10px;left:10px}
+.nw{flex:none;background:#ef4444;color:#fff;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px}
+.bell{position:relative}.bdot{position:absolute;top:7px;right:8px;width:11px;height:11px;border-radius:50%;background:#ef4444;border:2px solid #fff}
+.bg.dn{background:#16a34a}
+.exc{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 2px}.exc .exl{margin:0;font-size:11px;padding:1px 8px}.exl.more{background:#64748b;cursor:pointer}
+.chips.fl{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;margin:0 -2px}
+.chips.fl button{flex:none;border:2px solid var(--line);background:#fff;color:var(--mute);border-radius:20px;padding:5px 12px;font-weight:700;font-size:12.5px}
+.chips.fl button.on{background:#7c3aed;border-color:#7c3aed;color:#fff}
+.tc{background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(20,40,80,.08);overflow:hidden}
+.tc .row{box-shadow:none;border-radius:0;background:transparent}
+.tca{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding:8px 12px;font-size:12px;color:var(--mute)}
+.tca span{flex:1;min-width:140px}
+.tca button,.rtb{border:0;border-radius:16px;padding:6px 12px;font-weight:700;font-size:12.5px;background:#fff;color:var(--main);box-shadow:inset 0 0 0 1.5px var(--main)}
+.ar{align-items:center;gap:8px}.ar .arm{display:grid;grid-template-columns:1fr auto;column-gap:8px;cursor:pointer}
+.mtest{background:linear-gradient(135deg,#fff7ed,#fef3c7);border:1.5px solid #f59e0b;border-radius:14px;padding:12px;margin:6px 0 12px;display:flex;flex-direction:column;gap:6px}
+.mtest .btn{flex:none;width:100%}.mtest small{color:#92400e;font-size:12px;text-align:center}
+.mc{background:#fff;border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(20,40,80,.08);margin-bottom:10px;cursor:pointer}
+.mcq{font-weight:600;font-size:14.5px;line-height:1.4}
+.mcn{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 6px;border-radius:12px;background:#eaf1ff;color:var(--navy);font-size:12px;font-weight:700;margin-right:8px}
+.mcs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.sch{font-size:11.5px;background:#eef2ff;color:#3730a3;border-radius:8px;padding:3px 8px;line-height:1.35}.sch.leg{background:#f1f5f9;color:#475569}.sch.mo{background:#fef3c7;color:#92400e}
+.mgh{margin:14px 2px 8px;font-size:14px;color:var(--navy)}
+.crb{color:var(--main);font-weight:700;cursor:pointer}
+.mst{border-radius:10px;padding:9px 12px;font-size:13.5px;font-weight:600;margin-bottom:10px}
+.mst.ok{background:var(--okbg);color:#166534}.mst.bad{background:var(--badbg);color:#991b1b}.mst.mu{background:#f1f5f9;color:#475569}
+.msrc{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:12.5px;line-height:1.55}.msrc>b:first-child{display:block;margin-bottom:2px}
+div.opt{cursor:default}
+.opt .ot{flex:none;font-style:normal;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:#e2e8f0;color:#334155}
+.opt .ot.gd{background:var(--ok);color:#fff}.opt .ot.bd{background:var(--bad);color:#fff}
+.stat.s4{grid-template-columns:repeat(4,1fr);gap:8px}.stat.s4 b{font-size:20px}
+.cmp{margin:0 0 8px;font-size:13px}
+.rsh{margin:14px 0 8px;font-size:14px}.secs{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.sect{display:flex;justify-content:space-between;font-size:12.5px;gap:8px}.sect b{font-size:13px}
+.rbt{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.rbt .btn{flex:none}
+.mrk{white-space:nowrap}
+.ntp{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:30;display:flex;align-items:flex-start;justify-content:center;padding:14px;animation:ntf .18s ease-out}
+.ntp.out{opacity:0;transition:opacity .18s}
+@keyframes ntf{from{opacity:0}}
+.ntpc{position:relative;width:100%;max-width:440px;background:#fff;border-radius:18px;padding:16px 16px 14px;box-shadow:0 12px 40px rgba(0,0,0,.3);margin-top:max(8px,env(safe-area-inset-top));animation:nts .22s ease-out;border-top:4px solid #f59e0b}
+@keyframes nts{from{transform:translateY(-18px);opacity:0}}
+.ntx{position:absolute;top:8px;right:8px;width:30px;height:30px;border:0;border-radius:50%;background:#f1f5f9;color:#475569;font-size:14px}
+.ntph{display:flex;gap:12px;align-items:center;padding-right:30px}.ntph .nti{flex:none}
+.ntph small{color:#d97706;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px}.ntph h3{margin:2px 0 0;font-size:16.5px;line-height:1.3}
+.ntpc p{margin:10px 0 6px;font-size:14px;color:var(--ink);line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.ntm{display:block;color:var(--mute);font-size:12px;margin-bottom:6px}
+.ntb{display:flex;gap:10px;margin-top:10px}.ntb .btn{padding:10px 12px}
+.ntt{color:var(--mute)}
+.dark .tc,.dark .mc,.dark .ntpc,.dark .chips.fl button,.dark .tca button,.dark .rtb{background:#19243a}
+.dark .tca button,.dark .rtb{color:#7fb0ff;box-shadow:inset 0 0 0 1.5px #7fb0ff}
+.dark .mtest{background:#2a2410;border-color:#8a6a14}.dark .mtest small{color:#fcd34d}
+.dark .sch{background:#26324e;color:#cfe0ff}.dark .sch.leg{background:#222f4a;color:#9aa8c0}.dark .sch.mo{background:#3a2e10;color:#fcd34d}
+.dark .msrc{background:#162540}.dark .mst.mu{background:#222f4a;color:#cbd5e1}.dark .mst.ok{color:#86efac}.dark .mst.bad{color:#fca5a5}
+.dark .mcn{background:#26324e;color:#cfe0ff}.dark .ntx{background:#26324e;color:#cbd5e1}.dark .mgh{color:#9cc2ff}
+.dark .chips.fl button.on{background:#7c3aed;color:#fff}.dark .bdot{border-color:#0b3a8c}
+/* ===== Result Dashboard ===== */
+.rsdash{display:flex;flex-direction:column;gap:14px}
+.rsh1{position:relative;text-align:center;color:#fff;border-radius:22px;padding:22px 16px 18px;background:linear-gradient(145deg,#0b3a8c 0%,#1457d9 60%,#3b82f6 100%);box-shadow:0 10px 28px rgba(20,87,217,.28);overflow:hidden}
+.rsh1:before{content:"";position:absolute;inset:auto -40px -60px auto;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.08)}
+.rsok{width:46px;height:46px;border-radius:50%;background:#16a34a;display:grid;place-items:center;margin:0 auto 8px;box-shadow:0 0 0 6px rgba(255,255,255,.18)}
+.fresh .rsok{animation:rspop .6s cubic-bezier(.2,1.4,.4,1)}
+.fresh .rsok path{stroke-dasharray:24;stroke-dashoffset:24;animation:rsdraw .5s .25s forwards}
+@keyframes rspop{from{transform:scale(.3);opacity:0}}@keyframes rsdraw{to{stroke-dashoffset:0}}
+.rst{display:block;font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-size:11.5px;opacity:.85}
+.rsh1 h2{margin:4px 0 8px;font-size:19px;line-height:1.3;color:#fff;word-break:break-word}
+.rsmeta{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.rsmeta span{background:rgba(255,255,255,.16);border-radius:12px;padding:2px 10px;font-size:11.5px;font-weight:600}
+.rsh1 .exl{background:rgba(255,255,255,.22);color:#fff}
+.rsdt{font-size:12px;opacity:.85;margin-top:8px}
+.rsbig{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:16px;flex-wrap:wrap}
+.rsring{width:104px;height:104px;border-radius:50%;display:grid;place-content:center;text-align:center;background:conic-gradient(#fff calc(var(--p)*1%),rgba(255,255,255,.22) 0);position:relative}
+.rsring:before{content:"";position:absolute;inset:9px;border-radius:50%;background:#1451cc}
+.rsring b,.rsring small{position:relative}.rsring b{font-size:24px;line-height:1.1}.rsring small{font-size:10.5px;opacity:.8}
+.rsmk{display:flex;gap:10px}.rsmk>div{background:rgba(255,255,255,.14);border-radius:14px;padding:8px 14px;min-width:84px}
+.rsmk small{display:block;font-size:11px;opacity:.85}.rsmk b{font-size:24px}
+.rscards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.rsc1{border:0;background:#fff;border-radius:16px;padding:10px 4px;text-align:center;box-shadow:0 2px 10px rgba(20,40,80,.08);display:flex;flex-direction:column;align-items:center;gap:2px;min-height:92px;justify-content:center;color:var(--ink)}
+.rsc1:not([disabled]):active{transform:scale(.97)}
+.rsc1 .ci{font-size:20px}.rsc1 b{font-size:22px;line-height:1.1}.rsc1 small{font-size:11px;color:var(--mute)}
+.rsc1.ok b{color:var(--ok)}.rsc1.bad b{color:var(--bad)}.rsc1.mu b{color:#64748b}.rsc1.ac b{color:var(--main)}
+.rsact{display:flex;flex-direction:column;gap:10px}
+.rsact .btn{flex:none;width:100%;min-height:48px}.rsprim{font-size:16px}
+.rsa2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.rsa2 .btn{padding:12px 6px;font-size:13.5px}
+.rshome{border:0;background:none;color:var(--main);font-weight:700;padding:10px;font-size:14px}
+.rsec{padding:16px}.rsec h3{margin:0 0 12px;font-size:16px}
+.rsan{display:flex;align-items:center;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+.donut{width:140px;height:140px;flex:none}.dseg{transition:stroke-dasharray .6s}
+.dn1{font-size:26px;font-weight:800;fill:var(--ink)}.dn2{font-size:11px;fill:var(--mute)}
+.rsleg{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.rsleg li{display:flex;align-items:center;gap:8px}.rsleg i{width:12px;height:12px;border-radius:4px;flex:none}.rsleg b{margin-left:auto;padding-left:14px}
+.rsmx{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}
+.rsmx>div{background:#f4f7fd;border-radius:12px;padding:9px 10px;text-align:center}.rsmx small{display:block;font-size:11px;color:var(--mute)}.rsmx b{font-size:18px}
+.rsub{display:flex;flex-direction:column;gap:12px}
+.rsrt{display:flex;justify-content:space-between;gap:8px;font-size:14px}.rsrt span{font-weight:800;color:var(--main)}
+.rsbar{display:flex;height:9px;border-radius:6px;background:var(--line);overflow:hidden;margin:6px 0}.rsbar .b1{background:#16a34a}.rsbar .b2{background:#dc2626}
+.rsrs{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--mute)}
+.rsins{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.rsins li{display:flex;gap:10px;align-items:flex-start}.rsins li>span{font-size:18px;flex:none}.rsins p{margin:0;font-size:13.5px;line-height:1.5}
+.rsimp{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.rsimp .btn{flex:1 1 100%}
+.rsch{border:1.5px solid var(--main);background:#fff;color:var(--main);border-radius:18px;padding:6px 12px;font-weight:700;font-size:12.5px}
+.rsprev{display:flex;flex-direction:column;gap:8px}
+.rsprev button{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px 12px;text-align:left;color:var(--ink)}
+.rsprev .pn{background:#eaf1ff;color:var(--navy);font-weight:800;border-radius:10px;padding:4px 8px;font-size:13px}
+.rsprev .pd{flex:1}.rsprev .pd b,.rsprev .ps b{display:block;font-size:13.5px}.rsprev small{font-size:12px;color:var(--mute)}.rsprev .ps{text-align:right}
+.rtabs{display:flex;gap:6px;overflow-x:auto;margin:0 -2px 12px;padding:2px}
+.rtabs button{flex:none;border:1.5px solid var(--line);background:#fff;color:var(--mute);border-radius:18px;padding:7px 12px;font-weight:700;font-size:12.5px;display:flex;gap:6px;align-items:center}
+.rtabs button i{font-style:normal;background:#eef2f9;border-radius:9px;padding:0 7px;font-size:11.5px}
+.rtabs button.on{background:var(--main);border-color:var(--main);color:#fff}.rtabs button.on i{background:rgba(255,255,255,.25)}
+.rq{border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:12px}
+.rqh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.rqs{font-size:12px;font-weight:700;border-radius:10px;padding:2px 10px}.rqs.ok{background:var(--okbg);color:#166534}.rqs.bad{background:var(--badbg);color:#991b1b}.rqs.mu{background:#eef2f9;color:#475569}
+.rqm{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}.rqm span{font-size:11.5px;background:#eef2ff;color:#3730a3;border-radius:8px;padding:2px 8px}
+.rq .q{margin:6px 0 10px}
+.rsheet{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.rsc{width:100%;max-width:480px;background:#fff;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;animation:rsup .22s ease-out}
+@keyframes rsup{from{transform:translateY(40px);opacity:0}}
+.rsc h3{margin:0}.rsc p{margin:0 0 4px;color:var(--mute);font-size:13.5px}.rsc .btn{flex:none;width:100%;display:flex;flex-direction:column;gap:2px;padding:12px}.rsc .btn small{font-weight:500;font-size:12px;opacity:.85}
+.dark .rsc1,.dark .rsprev button,.dark .rtabs button,.dark .rsc,.dark .rsch{background:#19243a}.dark .rsmx>div{background:#162540}
+.dark .rtabs button i,.dark .rsprev .pn,.dark .rqm span{background:#26324e;color:#cfe0ff}.dark .rsring:before{background:#1451cc}
+@media(max-width:360px){.rscards{grid-template-columns:repeat(2,1fr)}.rsmk b{font-size:20px}.rsh1 h2{font-size:17px}}
+@media(prefers-reduced-motion:reduce){.fresh .rsok,.fresh .rsok path,.rsc{animation:none}.fresh .rsok path{stroke-dashoffset:0}}
 </style>
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#1457d9">
@@ -776,7 +902,7 @@ const SUBJECTS=[
  {name:"कंप्यूटर",icon:"💻",color:"#0891b2",chapters:[]}
 ];
 const CONTACT={yt:"https://youtube.com/@vinodkumarnath007",tg:"https://t.me/vinodkumarnath007",mail:"nvinu2259@gmail.com"};
-const NEG=1/3;const CFG0=()=>({mark:1,neg:NEG,dur:0,kind:""});let CFG=CFG0(),TESTQ={};const qFind=t=>QS.find(x=>x.question===t)||TESTQ[t];const doIntro=()=>CFG.kind?tintro():intro();   // टेस्ट मोड में नेगेटिव मार्किंग
+const NEG=1/3;const CFG0=()=>({mark:1,neg:NEG,dur:0,kind:""});let CFG=CFG0(),TESTQ={};const qFind=t=>QS.find(x=>x.question===t)||TESTQ[t]||TQX(t);const doIntro=()=>CFG.kind?tintro():intro();   // टेस्ट मोड में नेगेटिव मार्किंग
 const YT='<svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="5" fill="#f00"/><path d="M10 8.6v6.8l6-3.4z" fill="#fff"/></svg>';
 const QS=QUESTIONS.filter(q=>SUBJECTS.some(s=>s.name===q.subject&&s.chapters.includes(q.chapter)));
 if(QS.length!==QUESTIONS.length)console.warn((QUESTIONS.length-QS.length)+" प्रश्न नहीं दिख रहे: subject/chapter का नाम SUBJECTS से मेल नहीं खाता");
@@ -794,18 +920,8 @@ const day=d=>d.toLocaleDateString("en-CA");
 function streak(){const D=new Set(store.get("jk_days"));let n=0,t=new Date();if(!D.has(day(t)))t.setDate(t.getDate()-1);while(D.has(day(t))){n++;t.setDate(t.getDate()-1)}return n}
 function ago(t){const m=Math.round((Date.now()-t)/6e4);return m<1?"अभी":m<60?m+" मिनट पहले":m<1440?Math.round(m/60)+" घंटे पहले":Math.round(m/1440)+" दिन पहले"}
 function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
-const actRow=(h,i)=>`<div onclick="openHist(${i})"><b>${h.n}${h.m==="test"?" · टेस्ट":""}</b><small>${h.r} सही · ${h.w} गलत · ${h.s} छोड़े${h.m==="test"?" · "+h.sc+" अंक":""}</small><em>${ago(h.ts)}</em></div>`;
-function openHist(i){
-  const h=store.get("jk_hist")[i];
-  if(!h||!h.qs)return toast("इस टेस्ट का विस्तृत रिज़ल्ट उपलब्ध नहीं है");
-  const it=h.qs.map((t,k)=>({q:qFind(t)||(h.qo||[]).find(o=>o.question===t),p:h.p[k],t:h.t[k],rv:h.rv[k]})).filter(x=>x.q);
-  if(!it.length)return toast("इस टेस्ट के प्रश्न अब उपलब्ध नहीं हैं");
-  Q=it.map(x=>x.q);state=it.map(x=>({picked:x.p,time:x.t,review:!!x.rv}));CFG=h.k?{mark:h.mk||1,neg:h.ng==null?NEG:h.ng,dur:0,kind:h.k}:CFG0();mode=h.m;label=h.n;finished=true;cur=0;ret=home;
-  let r=0,w=0,s=0,t=0;state.forEach((x,k)=>{t+=x.time;if(x.picked===null)s++;else if(x.picked===Q[k].answer)r++;else w++});
-  window.__w=Q.filter((q,k)=>state[k].picked!==null&&state[k].picked!==q.answer).map(q=>q.question);
-  window.__r=Q.filter((q,k)=>state[k].review).map(q=>q.question);
-  RS={r:r,w:w,s:s,t:t,sc:mode==="test"?+(r*CFG.mark-w*CFG.mark*CFG.neg).toFixed(2):r};result();
-}
+const actRow=(h,i)=>`<div onclick="openHist(${i})"><b>${smE(jvDisp(h.n,h.k,h.ex))}${h.m==="test"?" · टेस्ट":""}${h.an>1?" · प्रयास "+h.an:""}</b><small>${h.ex&&h.ex.length?smE(h.ex.slice(0,2).join(" · "))+" · ":""}${h.r} सही · ${h.w} गलत · ${h.s} छोड़े${h.m==="test"?" · "+h.sc+" अंक":""}</small><em>${ago(h.ts)}</em></div>`;
+function openHist(i){histOpen(i)}
 const TABS=[["home","🏠","Home"],["subj","📚","Subjects"],["tests","📝","Tests"],["mist","🔍","Mistake Analysis"],["prof","👤","Profile"]];
 const BM=on=>`<svg viewBox="0 0 24 24" fill="${on?"#ffd21f":"none"}" stroke="${on?"#ffd21f":"#fff"}" stroke-width="2.4" stroke-linejoin="round"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg>`;
 const BACK='<button class="ib" id="bk"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H5M11.5 5.5L5 12l6.5 6.5"/></svg></button>';
@@ -820,7 +936,7 @@ function view(html,tab,keep,bf){
 function goTab(k){clearInterval(tick);({home:home,subj:subjSubjects,pyq:pyqSubjects,tests:tests,mist:mistakes,prof:profile})[k]()}
 /* एक पंक्ति (row): o = {c रंग, i आइकन, raw (SVG हो तो), t, s, b बैज, soon, on क्लिक, href, ext} */
 function R(o){
-  const inner=`<span class="ic${o.raw?" raw":""}">${o.i}</span><span class="tx"><b>${o.t}</b><small>${o.s||""}</small></span>${o.b?`<span class="bg${o.soon?" soon":""}">${o.b}</span>`:""}<i>›</i>`;
+  const inner=`<span class="ic${o.raw?" raw":""}">${o.i}</span><span class="tx"><b>${o.t}</b><small>${o.s||""}</small></span>${o.n?`<span class="nw">${o.n}</span>`:""}${o.b?`<span class="bg${o.soon?" soon":""}">${o.b}</span>`:""}<i>›</i>`;
   return o.href?`<a class="row" style="--c:${o.c}" href="${o.href}"${o.ext?' target="_blank" rel="noopener"':""}>${inner}</a>`:`<button class="row" style="--c:${o.c}" onclick="${o.on}">${inner}</button>`;
 }
 function comingSoon(t,bf,tab,sub){
@@ -845,7 +961,7 @@ function notifs(from){
   const nh=L=>L.map(n=>`<div class="card nt"><span class="nti">${n.i}</span><div><h3>${n.t}</h3><p>${n.p}</p></div></div>`).join("");
   view(hdr(BACK,"","सूचनाएँ")+`<main class="pg" id="ntl">${nh(N)}</main>`,"",false,from==="yt"?ytVideos:home);
   /* Admin Panel se jodi notifications (app_notifications) - sabse upar; built-in swagat sandesh neeche */
-  if(from!=="yt")fetch(SM_BASE+"/rest/v1/app_notifications?select=id,icon,title,body,created_at&is_active=eq.true&order=created_at.desc&limit=100",{headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}}).then(r=>r.ok?r.json():[]).then(rows=>{const el=document.getElementById("ntl");if(!el||!rows||!rows.length)return;el.innerHTML=nh(rows.map(r=>({i:smE(r.icon||"🔔"),t:smE(r.title),p:smE(r.body).replace(/\n/g,"<br>")})).concat(N))}).catch(()=>{});
+  if(from!=="yt")ntRender(N,nh);
 }
 function welcome(){
   const d=document.createElement("div");d.className="mdl";
@@ -858,45 +974,48 @@ function home(){
   clearInterval(tick);
   const T=QS.length,done=cnt("jk_done"),pc=T?Math.round(done/T*100):0,H=store.get("jk_hist");
   const R_=H.reduce((a,h)=>a+h.r,0),A=H.reduce((a,h)=>a+h.r+h.w,0),acc=A?Math.round(R_/A*100):0;
-  view(`<header class="hd"><button class="ib" onclick="goTab('prof')" aria-label="प्रोफ़ाइल">☰</button><h1 class="brand">JAKHAR</h1><button class="ib" onclick="notifs()" aria-label="सूचना">🔔</button></header>
+  view(`<header class="hd"><button class="ib" onclick="goTab('prof')" aria-label="प्रोफ़ाइल">☰</button><h1 class="brand">JAKHAR</h1><button class="ib bell" onclick="notifs()" aria-label="सूचना">🔔${ntDot()}</button></header>
   <main class="pg"><div class="greet"><img src="${GREET_IMG}" alt="नमस्कार! आपका लक्ष्य, हमारी जिम्मेदारी"></div>
   <div class="card stats"><div><span class="ring" style="--p:${pc}"><b>${pc}%</b></span><small>Overall Progress<br>${done} / ${T}</small></div>
   <div><span class="big">🔥 ${streak()}</span><small>Day Streak<br>लगातार</small></div>
   <div><span class="big">🎯 ${A?acc+"%":"--"}</span><small>Accuracy<br>सही उत्तर</small></div></div>
   <div class="tiles2">
-   <button style="background:linear-gradient(135deg,#0b3a8c,#1457d9)" onclick="pyqSubjects('home')"><span>📘</span><b>Chapter Wise PYQ Test</b><small>विषय → चैप्टर → Test / Practice</small></button>
-   <button style="background:#16a34a" onclick="fstSubjects()"><span>📚</span><b>Full Subject Test</b><small>विषय के सभी चैप्टर मिलाकर</small></button>
-   <button style="background:#7c3aed" onclick="mockList('home')"><span>🎯</span><b>Full Mock Test</b><small>All Subjects Combined</small></button>
+   <button style="background:linear-gradient(135deg,#0b3a8c,#1457d9)" data-cat="pyq" onclick="pyqSubjects('home')">${nb("pyq")}<span>📘</span><b>Chapter Wise PYQ Test</b><small>विषय → चैप्टर → Test / Practice</small></button>
+   <button style="background:#16a34a" data-cat="subject" onclick="fstSubjects()">${nb("subject")}<span>📚</span><b>Full Subject Test</b><small>विषय के सभी चैप्टर मिलाकर</small></button>
+   <button style="background:#7c3aed" data-cat="mock" onclick="mockList('home')">${nb("mock")}<span>🎯</span><b>Full Mock Test</b><small>All Subjects Combined</small></button>
    <button style="background:#f59e0b" onclick="mistakes()"><span>🔍</span><b>Mistake Analysis</b><small>गलतियाँ सुधारें</small></button>
    <button style="background:#e11d1d" onclick="youtube()"><span class="yti">${YT}</span><b>YouTube</b><small>Videos &amp; PDF</small></button>
    <button class="dvt" style="background:linear-gradient(135deg,#0f766e,#14b8a6)" onclick="dvDocs()"><span>📑</span><b>Lab Assistant Geography DV Documents</b><small>PDF · Forms · Updates</small></button></div>
   <button class="seemore" onclick="seeMore()">See More &nbsp;→</button>
   <div class="sh"><h3>हाल की गतिविधि</h3><a onclick="goTab('tests')">सभी देखें →</a></div>
-  <div class="card act">${H.length?H.slice(0,3).map(actRow).join(""):"<small>अभी कोई टेस्ट नहीं दिया — ऊपर से शुरू करें।</small>"}</div></main>`,"home");
+  <div class="card act">${H.length?H.slice(0,3).map(actRow).join(""):"<small>अभी कोई टेस्ट नहीं दिया — ऊपर से शुरू करें।</small>"}</div></main>`,"home");homeExtras();
 }
 const studySoon=()=>comingSoon("Study Material",()=>goTab("home"),"home","स्टडी मटेरियल और PDF");
 
 /* ---------- 1. Chapter Wise PYQ Test: विषय → चैप्टर → Test/Practice ---------- */
 let pyqFrom="home";
-const subjGrid=fn=>`<div class="sg">${SUBJECTS.map((S,i)=>`<button class="scard" style="--c:${S.color}" onclick="${fn}(${i})">${S.chapters.length?"":'<span class="soonb">Coming Soon</span>'}<span class="si">${S.icon}</span><span><b>${S.name}</b><small>${S.chapters.length?S.chapters.length+" चैप्टर":"जल्द आ रहा है"}</small></span></button>`).join("")}</div>`;
+const subjGrid=fn=>`<div class="sg">${SUBJECTS.map((S,i)=>`<button class="scard" style="--c:${S.color}" onclick="${fn}(${i})">${fn==="pyqChapters"&&NEWSNAP.pyq&&NEWSNAP.pyq.sub.has(S.name)?'<span class="nbadge">NEW</span>':""}${S.chapters.length?"":'<span class="soonb">Coming Soon</span>'}<span class="si">${S.icon}</span><span><b>${S.name}</b><small>${S.chapters.length?S.chapters.length+" चैप्टर":"जल्द आ रहा है"}</small></span></button>`).join("")}</div>`;
 function pyqSubjects(f){
-  clearInterval(tick);if(f==="home"||f==="tests")pyqFrom=f;
+  clearInterval(tick);if(f==="home"||f==="tests")pyqFrom=f;newOpen("pyq");
   view(hdr(BACK,"","Chapter Wise PYQ Test")+`<main class="pg"><div class="sub">विषय चुनें</div>${subjGrid("pyqChapters")}</main>`,pyqFrom,false,pyqFrom==="tests"?()=>tests():()=>home());
 }
 function pyqChapters(si){
   clearInterval(tick);const S=SUBJECTS[si];
   if(!S.chapters.length)return comingSoon(S.name,()=>pyqSubjects(pyqFrom),pyqFrom,"चैप्टर जल्द जोड़े जाएँगे");
   view(hdr(BACK,"",S.name)+`<main class="pg"><div class="sub">${S.chapters.length} चैप्टर · ${sc_(S.name)} प्रश्न</div><div class="list">
-  ${S.chapters.map((c,ci)=>{const n=qc(S.name,c);return R({c:S.color,i:ci+1,t:c,s:n?n+" प्रश्न उपलब्ध":"जल्द आ रहा है",b:n?n+" प्रश्न":"Coming Soon",soon:!n,on:n?`chapterModes(${si},${ci})`:`chapSoon(${si},${ci})`})}).join("")}</div></main>`,pyqFrom,false,()=>pyqSubjects(pyqFrom));
+  ${S.chapters.map((c,ci)=>{const n=qc(S.name,c);return R({c:S.color,i:ci+1,t:c,s:n?n+" प्रश्न उपलब्ध":"जल्द आ रहा है",n:NEWSNAP.pyq&&NEWSNAP.pyq.ch.has(S.name+"||"+c)?"NEW":"",b:n?n+" प्रश्न":"Coming Soon",soon:!n,on:n?`chapterModes(${si},${ci})`:`chapSoon(${si},${ci})`})}).join("")}</div></main>`,pyqFrom,false,()=>pyqSubjects(pyqFrom));
 }
 function chapSoon(si,ci){comingSoon(SUBJECTS[si].chapters[ci],()=>pyqChapters(si),pyqFrom,SUBJECTS[si].name)}
 function chapterModes(si,ci){
   const S=SUBJECTS[si],c=S.chapters[ci],n=qc(S.name,c),f=q=>q.subject===S.name&&q.chapter===c;
   ret=()=>chapterModes(si,ci);
+  const A=store.get("jk_hist").map((h,i)=>({h:h,i:i})).filter(o=>o.h&&!o.h.k&&!o.h.tid&&o.h.n===c&&(!o.h.cx||o.h.cx==="chapter")).slice(0,4);
   view(hdr(BACK,"",c)+`<main class="pg"><div class="card hello" style="margin-bottom:14px"><span class="av" style="background:${S.color}">${S.icon}</span><div><b>${S.name}</b><br><small>${ci+1}. ${c} · ${n} प्रश्न</small></div></div><div class="list">
   ${R({c:"#7c3aed",i:"📝",t:"Test Mode",s:"सबमिट के बाद ही उत्तर · −1/3 नेगेटिव मार्किंग",on:"cm('test')"})}
-  ${R({c:"#1457d9",i:"📘",t:"Practice Mode",s:"उत्तर चुनते ही सही/गलत और व्याख्या",on:"cm('practice')"})}</div></main>`,pyqFrom,false,()=>pyqChapters(si));
+  ${R({c:"#1457d9",i:"📘",t:"Practice Mode",s:"उत्तर चुनते ही सही/गलत और व्याख्या",on:"cm('practice')"})}</div>
+  ${A.length?`<h3>पिछले प्रयास</h3><div class="card act">${A.map(o=>`<div class="ar"><div class="arm" onclick="histOpen(${o.i})"><b>${o.h.m==="test"?"Test Mode":"Practice Mode"}${o.h.an>1?" · प्रयास "+o.h.an:""}</b><small>${o.h.r} सही · ${o.h.w} गलत · ${o.h.s} छोड़े${o.h.m==="test"?" · "+o.h.sc+" अंक":""}</small><em>${ago(o.h.ts)}</em></div><button class="rtb" onclick="cmFresh('${o.h.m}')">🔁 Retest</button></div>`).join("")}</div>`:""}</main>`,pyqFrom,false,()=>pyqChapters(si));
   window.cm=m=>start(f,c,0,m);
+  window.cmFresh=m=>{const sp=progAll()[m+"|"+c];if(sp&&Array.isArray(sp.qs)&&!confirm("इस चैप्टर का एक अधूरा प्रयास सेव है। Retest शुरू करने पर वह हट जाएगा (पुराने रिज़ल्ट सुरक्षित रहेंगे)। जारी रखें?"))return;start(f,c,0,m,undefined,true)};
 }
 
 /* ---------- नीचे के "Subjects" टैब: विषय → चैप्टर → Detail Notes / Short Notes / Video Lecture ---------- */
@@ -925,64 +1044,68 @@ const exRank=e=>{const i=EXAM_ORDER.indexOf(e);return i<0?999:i};
 let TL=[],TLOK=false,mockFrom="home";
 try{const o=JSON.parse(localStorage.getItem("jkx_tests_v1")||"null");if(o&&Array.isArray(o.l))TL=o.l}catch(e){}
 function tstLoad(){
-  return fetch(SM_BASE+"/rest/v1/tests?select=id,kind,title,subject,exam,duration_min,marks_per_q,neg_marking,q_count,created_at&is_active=eq.true&order=created_at.desc&limit=1000",{cache:"no-store",headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}})
-  .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
-  .then(d=>{TL=(d||[]).filter(x=>x&&x.id&&x.title&&(x.kind==="subject"||x.kind==="mock"));TLOK=true;try{localStorage.setItem("jkx_tests_v1",JSON.stringify({ts:Date.now(),l:TL}))}catch(e){}return TL});
+  const sel=c=>fetch(SM_BASE+"/rest/v1/tests?select="+c+"&is_active=eq.true&order=created_at.desc&limit=1000",{cache:"no-store",headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}});
+  const base="id,kind,title,subject,exam,duration_min,marks_per_q,neg_marking,q_count,created_at";
+  return sel(base+",exams").then(r=>r.ok?r:sel(base)).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
+  .then(d=>{TL=(d||[]).filter(x=>x&&x.id&&x.title&&(x.kind==="subject"||x.kind==="mock"));TLOK=true;TQC=null;try{localStorage.setItem("jkx_tests_v1",JSON.stringify({ts:Date.now(),l:TL}))}catch(e){}return TL});
 }
 const tmeta=x=>[x.q_count?x.q_count+" प्रश्न":"",x.q_count&&x.marks_per_q?+(x.q_count*x.marks_per_q).toFixed(2)+" अंक":"",x.duration_min?x.duration_min+" मिनट":""].filter(Boolean).join(" · ");
 function fstSubjects(){
-  clearInterval(tick);
-  const draw=keep=>view(hdr(BACK,"","Full Subject Test")+`<main class="pg" id="fstroot"><div class="sub">हर विषय का पूरा टेस्ट, उसके सभी चैप्टर मिलाकर</div><div class="list">
-  ${SUBJECTS.map((S,i)=>{const n=TL.filter(x=>x.kind==="subject"&&x.subject===S.name).length;return R({c:S.color,i:S.icon,t:S.name,s:n?n+" टेस्ट उपलब्ध":"सभी चैप्टर मिलाकर पूर्ण टेस्ट",b:n?n+" टेस्ट":"Coming Soon",soon:!n,on:`fstTests(${i})`})}).join("")}</div></main>`,"tests",keep,()=>goTab("tests"));
-  draw();tstLoad().then(()=>{if(document.getElementById("fstroot"))draw(true)}).catch(()=>{});
+  clearInterval(tick);newOpen("subject");
+  const draw=keep=>{const sn=NEWSNAP.subject;view(hdr(BACK,"","Full Subject Test")+`<main class="pg" id="fstroot"><div class="sub">हर विषय का पूरा टेस्ट, उसके सभी चैप्टर मिलाकर</div><div class="list">
+  ${SUBJECTS.map((S,i)=>{const n=TL.filter(x=>x.kind==="subject"&&x.subject===S.name).length;return R({c:S.color,i:S.icon,t:S.name,s:n?n+" टेस्ट उपलब्ध":"सभी चैप्टर मिलाकर पूर्ण टेस्ट",n:sn&&sn.sub.has(S.name)?"NEW":"",b:n?n+" टेस्ट":"Coming Soon",soon:!n,on:`fstTests(${i})`})}).join("")}</div></main>`,"tests",keep,()=>goTab("tests"))};
+  draw();tstLoad().then(()=>{if(document.getElementById("fstroot")){newOpen("subject",true);draw(true)}}).catch(()=>{});
 }
 function fstTests(si){
   clearInterval(tick);const S=SUBJECTS[si],L=TL.filter(x=>x.kind==="subject"&&x.subject===S.name);
   if(!L.length)return comingSoon(S.name,fstSubjects,"tests","इस विषय का Full Subject Test जल्द जोड़ा जाएगा");
   view(hdr(BACK,"","Full Subject Test")+`<main class="pg"><div class="card hello" style="margin-bottom:14px"><span class="av" style="background:${S.color}">${S.icon}</span><div><b>${S.name}</b><br><small>${L.length} टेस्ट · Test Mode</small></div></div><div class="list">
-  ${L.map(x=>R({c:S.color,i:"📝",t:smE(x.title),s:smE(tmeta(x)),b:"Test",on:`tstOpen('${smE(x.id)}')`})).join("")}</div></main>`,"tests",false,fstSubjects);
+  ${L.map(x=>tstCard(x,S.color,"📝")).join("")}</div></main>`,"tests",false,fstSubjects);
 }
+let mockFlt="";window.__mockEx=[];
+function mockSet(i){mockFlt=i<0?"":(window.__mockEx[i]||"");mockList("__flt")}
 function mockList(f){
   clearInterval(tick);if(f==="home"||f==="tests")mockFrom=f;
-  const draw=keep=>{const L=TL.filter(x=>x.kind==="mock").sort((a,b)=>exRank(a.exam)-exRank(b.exam));
-    view(hdr(BACK,"","Full Mock Test")+`<main class="pg" id="mockroot"><div class="sub">परीक्षा के अनुसार Full Mock Test · Test Mode</div>${L.length?`<div class="list">
-    ${L.map(x=>R({c:"#7c3aed",i:"🎯",t:smE(x.title),s:`<span class="exl">For ${smE(x.exam)}</span><br>${smE(tmeta(x))}`,b:"Test",on:`tstOpen('${smE(x.id)}')`})).join("")}</div>`:`<div class="card cs"><div class="csi">🎯</div><p>${TLOK?"अभी कोई Full Mock Test नहीं है।<br>जल्द ही जोड़े जाएँगे।":"लोड हो रहा है…"}</p></div>`}</main>`,mockFrom,keep,mockFrom==="tests"?()=>tests():()=>home())};
-  draw();tstLoad().then(()=>{if(document.getElementById("mockroot"))draw(true)}).catch(()=>{});
+  if(f!=="__flt")newOpen("mock");
+  const draw=keep=>{
+    let L=TL.filter(x=>x.kind==="mock");const all=[];
+    L.forEach(x=>examsOf(x).forEach(e=>{if(all.indexOf(e)<0)all.push(e)}));all.sort((a,b)=>exRank(a)-exRank(b));window.__mockEx=all;
+    if(mockFlt&&all.indexOf(mockFlt)<0)mockFlt="";
+    if(mockFlt)L=L.filter(x=>examsOf(x).indexOf(mockFlt)>=0);
+    L.sort((a,b)=>exMin(a)-exMin(b)||(new Date(b.created_at)-new Date(a.created_at)));
+    const flt=all.length>1?`<div class="chips fl"><button class="${mockFlt?"":"on"}" onclick="mockSet(-1)">सभी</button>${all.map((e,i)=>`<button class="${mockFlt===e?"on":""}" onclick="mockSet(${i})">${smE(exShort(e))}</button>`).join("")}</div>`:"";
+    view(hdr(BACK,"","Full Mock Test")+`<main class="pg" id="mockroot"><div class="sub">परीक्षा के अनुसार Full Mock Test · Test Mode</div>${flt}${L.length?`<div class="list">
+    ${L.map(x=>tstCard(x,"#7c3aed","🎯")).join("")}</div>`:`<div class="card cs"><div class="csi">🎯</div><p>${TLOK?"अभी कोई Full Mock Test नहीं है।<br>जल्द ही जोड़े जाएँगे।":"लोड हो रहा है…"}</p></div>`}</main>`,mockFrom,keep,mockFrom==="tests"?()=>tests():()=>home())};
+  draw();tstLoad().then(()=>{if(document.getElementById("mockroot")){newOpen("mock",true);draw(true)}}).catch(()=>{});
 }
 function tstBack(x){return x.kind==="subject"?(()=>{const i=SUBJECTS.findIndex(s=>s.name===x.subject);i<0?fstSubjects():fstTests(i)}):(()=>mockList())}
-async function tstOpen(id){
+async function tstOpen(id,opt){
   const x=TL.find(y=>String(y.id)===String(id));if(!x)return;
   clearInterval(tick);const back=tstBack(x);ret=back;
   view(hdr(BACK,"","टेस्ट")+'<main class="pg"><div class="card cs"><small>टेस्ट लोड हो रहा है…</small></div></main>',"",false,back);
-  let qs=null,gone=false;
-  try{
-    const r=await fetch(SM_BASE+"/rest/v1/tests?select=questions&is_active=eq.true&id=eq."+encodeURIComponent(x.id),{cache:"no-store",headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}});
-    if(!r.ok)throw new Error("HTTP "+r.status);
-    const d=await r.json();
-    if(Array.isArray(d)&&d.length&&Array.isArray(d[0].questions)){qs=d[0].questions;try{localStorage.setItem("jkx_tq_"+x.id,JSON.stringify(qs))}catch(e){}}
-    else if(Array.isArray(d)&&!d.length)gone=true;
-  }catch(e){try{qs=JSON.parse(localStorage.getItem("jkx_tq_"+x.id)||"null")}catch(z){}}
-  if(gone){try{localStorage.removeItem("jkx_tq_"+x.id)}catch(e){}TL=TL.filter(y=>y!==x);toast("यह टेस्ट अब उपलब्ध नहीं है");return back()}
-  const ok=r=>r&&typeof r.question==="string"&&Array.isArray(r.options)&&r.options.length===4&&Number.isInteger(r.answer)&&r.answer>=0&&r.answer<4;
-  const list=(Array.isArray(qs)?qs:[]).filter(ok).map(r=>({id:r.id,subject:r.subject||(x.kind==="mock"?x.exam:x.subject)||"",chapter:r.chapter||(x.kind==="mock"?"Full Mock Test":"Full Subject Test"),question:r.question,exams:Array.isArray(r.exams)?r.exams:[],options:r.options,answer:r.answer,explanation:r.explanation||""}));
+  const res=await jvLoadTest(x);
+  if(res.gone){TL=TL.filter(y=>y!==x);toast("यह टेस्ट अब उपलब्ध नहीं है");return back()}
+  const list=res.list;
   if(!list.length){
     view(hdr(BACK,"","टेस्ट")+'<main class="pg"><div class="card cs"><div class="csi">📡</div><p>टेस्ट के प्रश्न लोड नहीं हो पाए।<br>इंटरनेट जाँचकर दोबारा कोशिश करें।</p><button class="btn" id="tsr">दोबारा कोशिश करें</button></div></main>',"",false,back);
-    document.getElementById("tsr").onclick=()=>tstOpen(id);return;
+    document.getElementById("tsr").onclick=()=>tstOpen(id,opt);return;
   }
   list.forEach(q=>{TESTQ[q.question]=q});
   Q=list;mode="test";sortDir="new";label=x.title;
-  CFG={mark:+x.marks_per_q>0?+x.marks_per_q:1,neg:+x.neg_marking>0?+x.neg_marking:0,dur:+x.duration_min>0?+x.duration_min:0,kind:x.kind,t:x};
-  const sp=progAll()[progKey()];
+  CFG={mark:+x.marks_per_q>0?+x.marks_per_q:1,neg:+x.neg_marking>0?+x.neg_marking:0,dur:+x.duration_min>0?+x.duration_min:0,kind:x.kind,t:x,ctx:"test"};
+  if(opt&&opt.fresh){clearProg();return tintro()}   /* Retest: bilkul naya attempt (resume nahi) */
+  const sp=progGet();
   if(sp&&Array.isArray(sp.qs))return resumeAsk(sp);
   tintro();
 }
 function tintro(){
   const x=CFG.t,n=Q.length,mk=CFG.mark,ng=CFG.neg,tot=+(n*mk).toFixed(2);
   const nt=Math.abs(ng-1/3)<1e-3?"1/3":Math.abs(ng-.25)<1e-9?"1/4":Math.abs(ng-.5)<1e-9?"1/2":String(ng);
-  view(hdr(BACK,"","टेस्ट निर्देश")+`<main class="pg"><div class="card"><h2 style="margin:0;font-size:19px">${smE(x.title)}</h2>
-  ${x.kind==="mock"&&x.exam?`<div><span class="exl">For ${smE(x.exam)}</span></div>`:""}
+  const A=x.kind==="mistake"?[]:histOfTest(x);
+  view(hdr(BACK,"","टेस्ट निर्देश")+`<main class="pg"><div class="card"><h2 style="margin:0;font-size:19px">${smE(cleanTitle(x))}</h2>
+  ${x.kind==="mock"?exChips(examsOf(x),x.id,1):""}
   ${x.kind==="subject"&&x.subject?`<div style="margin:6px 0 0;font-size:14px">विषय: <b>${smE(x.subject)}</b></div>`:""}
-  <div class="sub" style="margin:6px 0 12px">Test Mode</div>
+  <div class="sub" style="margin:6px 0 12px">Test Mode${A.length?" · प्रयास "+(A.length+1):""}</div>
   <ul class="ins"><li>कुल प्रश्न: <b>${n}</b></li><li>कुल अंक: <b>${tot}</b></li>
   ${CFG.dur?`<li>समय सीमा: <b>${CFG.dur} मिनट</b> — समय पूरा होते ही टेस्ट अपने-आप सबमिट हो जाएगा।</li>`:""}
   <li>हर सही उत्तर: <b style="color:var(--ok)">+${mk} अंक</b></li>
@@ -991,6 +1114,7 @@ function tintro(){
   <li>टेस्ट के दौरान सही उत्तर नहीं दिखेगा। सबमिट के बाद ही रिज़ल्ट, सही उत्तर और व्याख्या दिखेंगे।</li>
   <li>सबमिट से पहले आप उत्तर बदल या हटा सकते हैं और प्रश्नों को 🚩 रिव्यू में रख सकते हैं। नीचे के नंबरों से किसी भी प्रश्न पर जा सकते हैं।</li>
   <li>सबमिट आखिरी प्रश्न पर दिखेगा। सबमिट के बाद उत्तर बदले नहीं जा सकेंगे।</li></ul>
+  ${A.length?`<p class="legend" style="margin:0 0 8px">आप यह टेस्ट पहले ${A.length} बार दे चुके हैं। यह नया प्रयास होगा — पुराने रिज़ल्ट सुरक्षित रहेंगे।</p>`:""}
   <label class="chk"><input type="checkbox" id="agree"> मैंने सभी निर्देश पढ़ लिए हैं</label>
   <button class="btn" style="width:100%;margin-top:12px" id="go" disabled>Proceed to Test →</button></div></main>`,"",false,ret||home);
   const cb=document.getElementById("agree"),g=document.getElementById("go");
@@ -999,22 +1123,13 @@ function tintro(){
 function tests(){
   clearInterval(tick);const H=store.get("jk_hist");
   view(hdr(BACK,"","टेस्ट")+`<main class="pg"><div class="list">
-  ${R({c:"#1457d9",i:"📘",t:"Chapter Wise Test",s:"विषय → चैप्टर → Practice / Test Mode",b:"विषय चुनें",on:"pyqSubjects('tests')"})}
-  ${R({c:"#16a34a",i:"📚",t:"Full Subject Test",s:"विषय के सभी चैप्टर मिलाकर",b:"विषय चुनें",on:"fstSubjects()"})}
-  ${R({c:"#7c3aed",i:"🎯",t:"Full Mock Test",s:"परीक्षा के अनुसार पूरे Mock Test",b:"टेस्ट देखें",on:"mockList('tests')"})}</div>
+  ${R({c:"#1457d9",i:"📘",t:"Chapter Wise Test",s:"विषय → चैप्टर → Practice / Test Mode",n:nbTxt("pyq"),b:"विषय चुनें",on:"pyqSubjects('tests')"})}
+  ${R({c:"#16a34a",i:"📚",t:"Full Subject Test",s:"विषय के सभी चैप्टर मिलाकर",n:nbTxt("subject"),b:"विषय चुनें",on:"fstSubjects()"})}
+  ${R({c:"#7c3aed",i:"🎯",t:"Full Mock Test",s:"परीक्षा के अनुसार पूरे Mock Test",n:nbTxt("mock"),b:"टेस्ट देखें",on:"mockList('tests')"})}</div>
   <h3>पिछले टेस्ट</h3><div class="card act">${H.length?H.slice(0,10).map(actRow).join(""):"<small>अभी कोई टेस्ट नहीं दिया।</small>"}</div></main>`,"tests",false,home);
 }
 
 /* ---------- 4. Mistake Analysis ---------- */
-function mistakes(){
-  clearInterval(tick);
-  view(hdr(BACK,"","Mistake Analysis")+`<main class="pg"><div class="list">
-  ${R({c:"#dc2626",i:"❌",t:"गलत प्रश्नों का रीविज़न",s:"जो प्रश्न गलत हुए",b:cnt("pyq_wrong"),on:"startSet(store.get('pyq_wrong'),'गलत प्रश्न रीविज़न')"})}
-  ${R({c:"#16a34a",i:"📒",t:"Notes",s:"आपके नोट्स",b:"Coming Soon",soon:1,on:"mistSoon('Notes')"})}
-  ${R({c:"#f59e0b",i:"🚩",t:"Review Questions",s:"टेस्ट में रिव्यू के लिए मार्क किए प्रश्न",b:cnt("jk_review"),on:"startSet(store.get('jk_review'),'Review Questions')"})}
-  ${R({c:"#2563eb",i:BM(1).replace('fill="#ffd21f"','fill="#2563eb"').replace(/#ffd21f/g,"#2563eb"),raw:1,t:"Saved Questions",s:"जो आपने सेव किए",b:cnt("pyq_saved"),on:"startSet(store.get('pyq_saved'),'Saved Questions')"})}
-  ${R({c:"#7c3aed",i:"💬",t:"Remark by Admin",s:"आपकी परफॉर्मेंस पर पर्सनल गाइडेंस",on:"adminRemarks()"})}</div></main>`,"mist",false,home);
-}
 const mistSoon=t=>comingSoon(t,mistakes,"mist");
 /* ---------- Remark by Admin (admin_remarks table; user sirf apne remarks padh sakta hai) ---------- */
 async function adminRemarks(){
@@ -1417,9 +1532,9 @@ const smSoon=t=>comingSoon(t,seeMore,"");
 function examList(){
   clearInterval(tick);
   view(hdr(BACK,"","Prepare According to Your Exam")+`<main class="pg"><div class="sub">अपनी परीक्षा चुनें</div><div class="list">
-  ${EXAMS.map((e,i)=>R({c:COLORS[i%COLORS.length],i:i+1,t:e,s:"Syllabus · PYQ · Strategy · Study Material",b:"Coming Soon",soon:1,on:`examSoon(${i})`})).join("")}</div></main>`,"",false,seeMore);
+  ${EXAMS.map((e,i)=>R({c:COLORS[i%COLORS.length],i:i+1,t:exShort(e),s:"Syllabus · PYQ · Strategy · Study Material",b:"Coming Soon",soon:1,on:`examSoon(${i})`})).join("")}</div></main>`,"",false,seeMore);
 }
-const examSoon=i=>comingSoon(EXAMS[i],examList,"","इस परीक्षा की तैयारी जल्द जोड़ी जाएगी");
+const examSoon=i=>comingSoon(exShort(EXAMS[i]),examList,"","इस परीक्षा की तैयारी जल्द जोड़ी जाएगी");
 
 /* ---------- Profile / Privacy / Contact ---------- */
 function profile(){
@@ -1455,20 +1570,20 @@ function contact(){
 }
 
 /* ---------- शुरू करना: Practice सीधा, Test पहले निर्देश ---------- */
-function startSet(keys,l){ret=mistakes;const s=new Set(keys||[]),seen=new Set();const src=QS.concat(Object.values(TESTQ)).filter(q=>{if(!s.has(q.question)||seen.has(q.question))return false;seen.add(q.question);return true});start(()=>true,l,0,"practice",src)}
-function start(f,l,n,m,src){
-  mode=m||"practice";CFG=CFG0();Q=(src||QS).filter(f);if(n)Q=Q.sort(()=>Math.random()-.5).slice(0,n);
+function start(f,l,n,m,src,fresh){
+  mode=m||"practice";CFG=CFG0();CFG.ctx=src?"set":"chapter";Q=(src||QS).filter(f);if(n)Q=Q.sort(()=>Math.random()-.5).slice(0,n);
   sortDir="new";Q=sortList(Q,"new"); // हर नए सेशन में डिफ़ॉल्ट: Newest to Oldest
   if(!Q.length)return toast("अभी इसमें कोई प्रश्न नहीं है");
   label=l||"PYQ अभ्यास";
-  const sp=progAll()[progKey()];
+  if(fresh)clearProg();
+  const sp=fresh?null:progGet();
   if(sp&&Array.isArray(sp.qs))return resumeAsk(sp);
   if(mode==="test")doIntro();else begin();
 }
 /* ---------- अधूरे टेस्ट की प्रगति (localStorage: jk_prog) — रीसेट या सबमिट तक सेव ---------- */
 const progAll=()=>{const o=store.get("jk_prog");return o&&!Array.isArray(o)?o:{}};
-const progKey=()=>mode+"|"+label;
-function clearProg(){const o=progAll();delete o[progKey()];store.set("jk_prog",o)}
+const progKey=()=>mode+"|"+label+(CFG.t&&CFG.t.id?"|"+CFG.t.id:"");
+function clearProg(){const o=progAll();delete o[progKey()];if(CFG.t&&CFG.t.id)delete o[mode+"|"+label];store.set("jk_prog",o)}
 function saveProg(live){
   if(finished||!Q.length||state.length!==Q.length)return;
   if(live&&!document.getElementById("timer"))return;
@@ -1492,13 +1607,13 @@ function resumeAsk(sp){
     const rvS=new Set(store.get("jk_review"));
     Q=it.map(x=>x.q);state=it.map(x=>({picked:x.p,time:x.t,review:rvS.has(x.q.question)}));
     sortDir=sortList(Q,"new").every((q,i)=>q===Q[i])?"new":(sortList(Q,"old").every((q,i)=>q===Q[i])?"old":"new");
-    cur=c0;finished=false;render();
+    cur=c0;finished=false;window.SID=Date.now();render();
   };
   document.getElementById("rsn").onclick=()=>{clearProg();if(mode==="test")doIntro();else begin()};
 }
 document.addEventListener("visibilitychange",()=>{if(document.hidden)saveProg(true)});
 window.addEventListener("pagehide",()=>saveProg(true));
-function begin(){finished=false;const rvS=new Set(store.get("jk_review"));state=Q.map(q=>({picked:null,time:0,review:rvS.has(q.question)}));cur=0;render()}
+function begin(){window.SID=Date.now();finished=false;const rvS=new Set(store.get("jk_review"));state=Q.map(q=>({picked:null,time:0,review:rvS.has(q.question)}));cur=0;render()}
 function intro(){
   view(hdr(BACK,"","टेस्ट निर्देश")+`<main class="pg"><div class="card"><h2 style="margin:0;font-size:19px">${label}</h2><div class="sub" style="margin:0 0 12px">Test Mode</div>
   <ul class="ins"><li>कुल प्रश्न: <b>${Q.length}</b></li><li>हर सही उत्तर: <b style="color:var(--ok)">+1 अंक</b></li>
@@ -1627,10 +1742,10 @@ function render(keep){
     if(trQ===q.question){trQ=null;trOff=q.question;trPaint([q.question,...q.options,q.explanation||""]);return}
     trOff=null;trRun(q)};
   rv.onclick=()=>{st.review=!st.review;rv.classList.toggle("on",st.review);const c=document.querySelector(".pb.cur");if(c)c.classList.toggle("rv",st.review);
-    const rs=new Set(store.get("jk_review"));if(st.review)rs.add(q.question);else rs.delete(q.question);store.set("jk_review",[...rs])};
+    const rs=new Set(store.get("jk_review"));if(st.review)rs.add(q.question);else rs.delete(q.question);store.set("jk_review",[...rs]);jvTrack(q,"r",st.review,st.picked)};
   if(clr)clr.onclick=()=>{stopTimer();st.picked=null;render(true)};
   sb.onclick=()=>{const s=new Set(store.get("pyq_saved"));if(s.has(q.question))s.delete(q.question);else s.add(q.question);
-    store.set("pyq_saved",[...s]);sb.innerHTML=BM(s.has(q.question));toast(s.has(q.question)?"सेव किया":"सेव हटाया")};
+    store.set("pyq_saved",[...s]);jvTrack(q,"s",s.has(q.question),st.picked);sb.innerHTML=BM(s.has(q.question));toast(s.has(q.question)?"सेव किया":"सेव हटाया")};
   document.getElementById("bk").onclick=()=>finished?result():ask("टेस्ट बीच में छोड़ें? आपकी प्रगति सेव रहेगी, आप बाद में यहीं से जारी रख सकेंगे।","जारी रखें","हाँ, छोड़ें",()=>{saveProg(true);(ret||home)()});
 }
 function ask(msg,no,yes,fn){
@@ -1646,7 +1761,7 @@ function trySubmit(){
   ask([left?left+" प्रश्न बाकी हैं":"",rv?rv+" प्रश्न रिव्यू में हैं":""].filter(Boolean).join(" और ")+"। फिर भी सबमिट करें?","नहीं, वापस जाएँ","हाँ, सबमिट करें",finish);
 }
 function pick(i){if(finished)return;if(mode==="practice"&&state[cur].picked!==null)return;stopTimer();state[cur].picked=i;
-  if(i!==Q[cur].answer){const ws=new Set(store.get("pyq_wrong"));ws.add(Q[cur].question);store.set("pyq_wrong",[...ws])}
+  if(i!==Q[cur].answer){const ws=new Set(store.get("pyq_wrong"));ws.add(Q[cur].question);store.set("pyq_wrong",[...ws]);jvTrackWrong(Q[cur],i)}
   render(true)}
 function go(n){if(!stopped())stopTimer();cur=n;render()}
 
@@ -1659,29 +1774,25 @@ function finish(){
   state.forEach((x,i)=>{if(x.picked===null)return;ds.add(Q[i].question);if(x.picked!==Q[i].answer)ws.add(Q[i].question)});
   store.set("pyq_wrong",[...ws]);store.set("jk_done",[...ds]);
   const sc=mode==="test"?+(r*CFG.mark-w*CFG.mark*CFG.neg).toFixed(2):r;
-  const H=store.get("jk_hist");H.unshift({n:label,r:r,w:w,s:s,m:mode,sc:sc,ts:Date.now(),qs:Q.map(q=>q.question),p:state.map(x=>x.picked),t:state.map(x=>x.time),rv:state.map(x=>x.review?1:0),...(CFG.kind?{k:CFG.kind,mk:CFG.mark,ng:CFG.neg,qo:Q.map(q=>({subject:q.subject,chapter:q.chapter,question:q.question,exams:q.exams,options:q.options,answer:q.answer,explanation:q.explanation}))}:{})});store.set("jk_hist",H);
+  const ts=Date.now(),tid=CFG.t&&CFG.t.id?String(CFG.t.id):"",H=store.get("jk_hist");
+  const an=H.filter(h=>h&&h.n===label&&h.m===mode&&String(h.tid||"")===tid&&!!h.k===!!CFG.kind).length+1;
+  const ent={n:label,r:r,w:w,s:s,m:mode,sc:sc,ts:ts,an:an,qs:Q.map(q=>q.question),p:state.map(x=>x.picked),t:state.map(x=>x.time),rv:state.map(x=>x.review?1:0)};
+  if(CFG.kind){ent.k=CFG.kind;ent.mk=CFG.mark;ent.ng=CFG.neg;ent.qo=Q.map(q=>({subject:q.subject,chapter:q.chapter,tsub:q.tsub||"",tch:q.tch||"",question:q.question,exams:q.exams,options:q.options,answer:q.answer,explanation:q.explanation}))}
+  if(tid)ent.tid=tid;
+  if(CFG.t&&CFG.kind==="mock"){const ex=examsOf(CFG.t).map(exShort);if(ex.length)ent.ex=ex}
+  if(CFG.ctx==="mistake"||CFG.ctx==="set")ent.cx=CFG.ctx;
+  if(CFG.mkd)ent.mkd=CFG.mkd;
+  H.unshift(ent);saveHist(H);
   const D=new Set(store.get("jk_days"));D.add(day(new Date()));store.set("jk_days",[...D].slice(-400));
+  jvFinalizeSrc(ent);
   window.__w=Q.filter((q,i)=>state[i].picked!==null&&state[i].picked!==q.answer).map(q=>q.question);
   window.__r=Q.filter((q,i)=>state[i].review).map(q=>q.question);
-  RS={r:r,w:w,s:s,t:t,sc:sc};result();
+  RS={r:r,w:w,s:s,t:t,sc:sc,an:an,ts:ts,h:ent};result();
 }
 function scoreLegend(r,w,sc){
   const mk=CFG.mark,ng=CFG.neg,nt=Math.abs(ng-1/3)<1e-3?"1/3":Math.abs(ng-.25)<1e-9?"1/4":Math.abs(ng-.5)<1e-9?"1/2":String(ng);
   const f=ng>0?(mk===1?`${r} − (${w} × ${nt})`:`${r}×${mk} − (${w}×${mk}×${nt})`):(mk===1?`${r}`:`${r} × ${mk}`);
   return `<p class="legend" style="margin:-4px 0 10px">अंक = ${f} = ${sc}</p>`}
-function result(){
-  const r=RS.r,w=RS.w,s=RS.s,t=RS.t,sc=RS.sc,n=Q.length,test=mode==="test",tot=test?+(n*CFG.mark).toFixed(2):n,acc=(r+w)?Math.round(r/(r+w)*100):0,pc=Math.max(0,Math.round(sc/tot*100));
-  view(hdr("","","आपका रिज़ल्ट")+`<main class="pg"><div class="card"><div class="score"><span class="ring" style="--p:${pc}"><b>${pc}%</b></span><div><b>${test?sc+" / "+tot+" अंक":r+" / "+n+" सही"}</b><br><small style="color:var(--mute)">${label} · ${test?"Test Mode":"Practice Mode"}</small></div></div>
-  <div class="stat"><div><b style="color:var(--ok)">${r}</b>सही</div><div><b style="color:var(--bad)">${w}</b>गलत</div><div><b>${s}</b>छोड़े</div></div>
-  ${test?scoreLegend(r,w,sc):""}
-  <p style="margin:0 0 6px">सटीकता (Accuracy): <b>${acc}%</b> <small style="color:var(--mute)">(दिए गए उत्तरों में सही)</small></p><p style="margin:0 0 10px">कुल समय: <b>${fmt(t)}</b> | औसत प्रति प्रश्न: <b>${fmt(Math.round(t/n))}</b></p>
-  <table><tr><th>प्रश्न</th><th>नतीजा</th><th>समय</th></tr>${state.map((x,i)=>`<tr onclick="cur=${i};render()" style="cursor:pointer"><td>${i+1}</td><td>${x.picked===null?"छोड़ा":x.picked===Q[i].answer?"✅ सही":"❌ गलत"}</td><td>${fmt(x.time)}</td></tr>`).join("")}</table>
-  <p class="legend" style="margin-top:8px">किसी भी पंक्ति पर टैप करें — वही प्रश्न सही उत्तर और व्याख्या के साथ खुलेगा।</p>
-  <div class="nav res"><button class="btn ghost" onclick="cur=0;render()">📖 सारे उत्तर देखें</button>
-  <button class="btn ghost" onclick="startSet(window.__w,'गलत प्रश्न')" ${window.__w.length?"":"disabled"}>❌ गलत (${window.__w.length})</button>
-  <button class="btn ghost" onclick="startSet(window.__r,'रिव्यू वाले प्रश्न')" ${window.__r.length?"":"disabled"}>🚩 रिव्यू (${window.__r.length})</button>
-  <button class="btn" onclick="home()">🏠 होम</button></div></div></main>`);
-}
 
 document.documentElement.classList.toggle("dark",store.get("jk_theme")[0]==="dark");
 splash();
@@ -1714,6 +1825,10 @@ splash();
           const live=new Set(good.map(q=>q.id));
           if(Array.isArray(QUESTIONS)&&QUESTIONS.some(q=>q.id)){
             for(let i=QUESTIONS.length-1;i>=0;i--){if(QUESTIONS[i].id&&!live.has(QUESTIONS[i].id))QUESTIONS.splice(i,1)}
+            for(let i=QS.length-1;i>=0;i--){if(QS[i].id&&!live.has(QS[i].id))QS.splice(i,1)}
+            const have=new Set(QUESTIONS.map(q=>q.id).filter(Boolean));let added=0;
+            good.forEach(r=>{if(have.has(r.id))return;const q={id:r.id,subject:r.subject,chapter:r.chapter,question:r.question,exams:r.exams,options:r.options,answer:r.answer,explanation:r.explanation||""};QUESTIONS.push(q);if(SUBJECTS.some(z=>z.name===q.subject&&z.chapters.includes(q.chapter)))QS.push(q);added++});
+            if(added&&document.querySelector(".tiles2")&&window.newRefresh)newRefresh();
           }
         }
       }catch(e){}
@@ -1775,9 +1890,9 @@ splash();
       const hr=await fetch(BASE+"/rest/v1/user_history?select=ts:data->>ts",{headers:{...hd,Range:"0-4999"}});
       if(!hr.ok){const j=await hr.json().catch(()=>null);throw new Error((j&&(j.message||j.msg))||("History HTTP "+hr.status))}
       const have=new Set((await hr.json()).map(x=>String(x.ts)));
-      const newH=store.get("jk_hist").filter(h=>h&&h.ts&&!have.has(String(h.ts))).map(h=>({data:{n:h.n,r:h.r,w:h.w,s:h.s,m:h.m,sc:h.sc,ts:h.ts,qi:h.qs?h.qs.map(x=>idOf[x]||null):null,p:h.p,t:h.t,rv:h.rv}}));
-      for(let i=0;i<newH.length;i+=25){
-        const r=await fetch(BASE+"/rest/v1/user_history",{method:"POST",headers:hd,body:JSON.stringify(newH.slice(i,i+25))});
+      const newH=store.get("jk_hist").filter(h=>h&&h.ts&&!have.has(String(h.ts))).map(h=>jvPackHist(h,idOf));
+      for(let i=0;i<newH.length;i+=10){
+        const r=await fetch(BASE+"/rest/v1/user_history",{method:"POST",headers:hd,body:JSON.stringify(newH.slice(i,i+10))});
         if(!r.ok){const j=await r.json().catch(()=>null);throw new Error((j&&(j.message||j.msg))||("History HTTP "+r.status))}
       }
       const c=await fetch(BASE+"/rest/v1/user_flags?select=question_id",{headers:{apikey:KEY,Authorization:"Bearer "+s.access_token,Prefer:"count=exact",Range:"0-0"}});
@@ -1807,11 +1922,11 @@ splash();
       const HL=store.get("jk_hist"),haveTs=new Set(HL.map(h=>String(h.ts))),addH=[];let fixed=0;
       (await hr.json()).forEach(row=>{const d=row.data;if(!d||!d.ts)return;
         if(haveTs.has(String(d.ts))){const loc=HL.find(h=>String(h.ts)===String(d.ts));
-          if(loc&&d.qi&&(!loc.qs||loc.qs.some(x=>!x))){loc.qs=d.qi.map(id=>textOf[id]||null);loc.p=d.p;loc.t=d.t;loc.rv=d.rv;fixed++}
+          if(loc&&d.qi&&(!loc.qs||loc.qs.some(x=>!x))){loc.qs=d.qi.map((id,i)=>textOf[id]||(d.qx&&d.qx[i])||(loc.qs&&loc.qs[i])||null);loc.p=d.p;loc.t=d.t;loc.rv=d.rv;fixed++}
           return}
         haveTs.add(String(d.ts));
-        const e={n:d.n,r:d.r,w:d.w,s:d.s,m:d.m,sc:d.sc,ts:d.ts};
-        if(d.qi){e.qs=d.qi.map(id=>textOf[id]||null);e.p=d.p;e.t=d.t;e.rv=d.rv}
+        const e=jvUnpackHist(d,textOf);
+        
         addH.push(e)});
       if(addH.length||fixed)store.set("jk_hist",HL.concat(addH).sort((x,y)=>y.ts-x.ts));
       const total=add.jk_done+add.pyq_saved+add.pyq_wrong+add.jk_review;
@@ -2092,16 +2207,16 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
     /* history: union by ts (kabhi delete nahi) */
     const hrows=await fetchAll("/rest/v1/user_history?select=data&order=taken_at.desc",tok,1000);
     const srvTs=new Set();hrows.forEach(r=>{if(r.data&&r.data.ts)srvTs.add(String(r.data.ts))});
-    const newH=store.get("jk_hist").filter(h=>h&&h.ts&&!srvTs.has(String(h.ts))).map(h=>({data:{n:h.n,r:h.r,w:h.w,s:h.s,m:h.m,sc:h.sc,ts:h.ts,qi:h.qs?h.qs.map(x=>idOf[x]||null):null,p:h.p,t:h.t,rv:h.rv}}));
-    for(let i=0;i<newH.length;i+=25){
-      const part=newH.slice(i,i+25),r=await fetch(BASE+"/rest/v1/user_history",{method:"POST",headers:hd(tok),body:JSON.stringify(part)});
+    const newH=store.get("jk_hist").filter(h=>h&&h.ts&&!srvTs.has(String(h.ts))).map(h=>jvPackHist(h,idOf));
+    for(let i=0;i<newH.length;i+=10){
+      const part=newH.slice(i,i+10),r=await fetch(BASE+"/rest/v1/user_history",{method:"POST",headers:hd(tok),body:JSON.stringify(part)});
       if(r.status===409){for(const one of part){const r2=await fetch(BASE+"/rest/v1/user_history",{method:"POST",headers:hd(tok),body:JSON.stringify([one])});if(!r2.ok&&r2.status!==409)await must(r2)}}
       else await must(r);
     }
     const fresh=store.get("jk_hist"),haveTs=new Set(fresh.map(h=>String(h&&h.ts))),addH=[];
     hrows.forEach(row=>{const d=row.data;if(!d||!d.ts||haveTs.has(String(d.ts)))return;haveTs.add(String(d.ts));
-      const e={n:d.n,r:d.r,w:d.w,s:d.s,m:d.m,sc:d.sc,ts:d.ts};
-      if(d.qi){e.qs=d.qi.map(id=>textOf[id]||null);e.p=d.p;e.t=d.t;e.rv=d.rv}
+      const e=jvUnpackHist(d,textOf);
+      
       addH.push(e)});
     if(addH.length){applying=true;try{rawSet.call(store,"jk_hist",fresh.concat(addH).sort((x,y)=>y.ts-x.ts))}finally{applying=false}changed=true}
     /* nayi shadow = server ki ab ki halat */
@@ -2149,6 +2264,714 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
 if("serviceWorker" in navigator&&location.protocol==="https:"){
   window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){})});
 }
+</script>
+<script id="jk-v2">
+/* =====================================================================
+   V2 UPDATE — Mistake Analysis (source-wise), Retest, Result/Activity fix,
+   short exam names + multi-exam, NEW indicators, Notification popup.
+   Purane localStorage keys (pyq_wrong, jk_review, pyq_saved, jk_hist, jk_prog ...) jaise the waise;
+   naya data alag keys me: jk_qsrc, jk_srcbf, jkx_seen_v1, jkx_nt_<uid>, jkx_tqm_<id>.
+   ===================================================================== */
+const jvGet=k=>{try{const o=JSON.parse(localStorage.getItem(k)||"{}");return o&&typeof o==="object"&&!Array.isArray(o)?o:{}}catch(e){return{}}};
+const jvSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
+const jvTxt=(s,n)=>{s=String(s==null?"":s).replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().replace(/</g,"&lt;");return n&&s.length>n?s.slice(0,n).trim()+"…":s};
+const jvDate=ts=>{try{return new Date(ts).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}catch(e){return""}};
+
+/* ---------- Exam naam: sirf DISPLAY chhota hota hai (ID / stored naam wahi rehte hain) ---------- */
+function exShort(e){
+  e=String(e==null?"":e).trim();if(!e)return"";
+  const m=e.match(/^(?:Rajasthan\s+)?CET\b\s*[-–:]?\s*\(?\s*([^)]*?)\s*\)?\s*$/i);
+  if(m){const r=m[1]||"";if(/graduat/i.test(r))return"CET Graduation Level";if(/(senior|secondary|12|sr\b|\+2)/i.test(r))return"CET 12th Level"}
+  return e.replace(/^Rajasthan\s+/i,"");
+}
+function examsOf(x){
+  const a=[];if(x&&Array.isArray(x.exams))x.exams.forEach(e=>{if(e&&a.indexOf(e)<0)a.push(e)});
+  if(x&&x.exam&&a.indexOf(x.exam)<0)a.unshift(x.exam);return a;
+}
+const exMin=x=>{const r=examsOf(x).map(exRank);return r.length?Math.min.apply(null,r):999};
+function cleanTitle(x){
+  let t=String(x&&x.title||"");const names=[];
+  examsOf(x).forEach(e=>{names.push(e,exShort(e))});
+  names.filter(Boolean).sort((a,b)=>b.length-a.length).forEach(n=>{
+    const re=new RegExp("(^|[\\s\\-–—:|(\\[])"+n.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?=$|[\\s\\-–—:|)\\]])","ig");t=t.replace(re,"$1")});
+  t=t.replace(/\b(Rajasthan\s+)?CET\s*\(?\s*(Graduation|Senior\s+Secondary|12th)\s*Level\)?/ig,"").replace(/^\s*Rajasthan\s+/i,"");
+  t=t.replace(/^[\s\-–—:|,()]+|[\s\-–—:|,()]+$/g,"").replace(/\s{2,}/g," ");
+  return t||String(x&&x.title||"");
+}
+const EXMAP={};
+function exChips(ex,id,all){
+  const L=ex.map(exShort).filter(Boolean),n=L.length;if(!n)return"";
+  EXMAP[id]=L;const vis=all?L:L.slice(0,2),more=n-vis.length;
+  return `<span class="exc" data-id="${smE(id)}">${vis.map(e=>`<span class="exl">${smE(e)}</span>`).join("")}${more>0?`<span class="exl more" onclick="event.stopPropagation();exMore(this)">+${more} More</span>`:""}</span>`;
+}
+function jvDisp(l,k,ex){return k==="mock"?cleanTitle({title:l,exams:ex||[]}):l}
+function exMore(el){const p=el.closest(".exc");if(!p)return;const L=EXMAP[p.dataset.id]||[];p.innerHTML=L.map(e=>`<span class="exl">${smE(e)}</span>`).join("")}
+
+/* ---------- Test ke prashn: ek hi jagah se (tstOpen aur history dono ke liye) ---------- */
+function jvNorm(qs,x){
+  const ok=r=>r&&typeof r.question==="string"&&Array.isArray(r.options)&&r.options.length===4&&Number.isInteger(r.answer)&&r.answer>=0&&r.answer<4;
+  return(Array.isArray(qs)?qs:[]).filter(ok).map(r=>({id:r.id,subject:r.subject||(x.kind==="mock"?x.exam:x.subject)||"",chapter:r.chapter||(x.kind==="mock"?"Full Mock Test":"Full Subject Test"),tsub:r.subject||(x.kind==="subject"?(x.subject||""):""),tch:r.chapter||"",question:r.question,exams:Array.isArray(r.exams)?r.exams:[],options:r.options,answer:r.answer,explanation:r.explanation||""}));
+}
+let TQC=null;
+async function jvLoadTest(x){
+  let qs=null,gone=false;
+  try{
+    const r=await fetch(SM_BASE+"/rest/v1/tests?select=questions&is_active=eq.true&id=eq."+encodeURIComponent(x.id),{cache:"no-store",headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}});
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    const d=await r.json();
+    if(Array.isArray(d)&&d.length&&Array.isArray(d[0].questions)){qs=d[0].questions;try{localStorage.setItem("jkx_tq_"+x.id,JSON.stringify(qs));localStorage.setItem("jkx_tqm_"+x.id,JSON.stringify({kind:x.kind,subject:x.subject,exam:x.exam,title:x.title}));TQC=null}catch(e){}}
+    else if(Array.isArray(d)&&!d.length)gone=true;
+  }catch(e){}
+  if(!qs){try{qs=JSON.parse(localStorage.getItem("jkx_tq_"+x.id)||"null")}catch(z){}}
+  return{gone:gone,list:jvNorm(qs,x)};
+}
+/* App band hone ke baad bhi test ke prashn yaad rahein (Mistake Analysis / History ke liye): saved test cache + history ke qo se */
+function TQALL(rebuild){
+  if(TQC&&!rebuild)return TQC;
+  const m=new Map();
+  try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);
+    if(k&&k.indexOf("jkx_tq_")===0){const id=k.slice(7);let x=TL.find(y=>String(y.id)===id);
+      if(!x){x=jvGet("jkx_tqm_"+id);if(!x.kind)x={kind:"mock",exam:"",id}}
+      let rows=null;try{rows=JSON.parse(localStorage.getItem(k)||"null")}catch(e){}
+      jvNorm(rows,x).forEach(q=>{if(!m.has(q.question))m.set(q.question,q)})}}}catch(e){}
+  store.get("jk_hist").forEach(h=>{(h&&h.qo||[]).forEach(o=>{if(o&&o.question&&!m.has(o.question)&&Array.isArray(o.options)&&o.options.length===4)
+    m.set(o.question,{subject:o.subject||"",chapter:o.chapter||"",tsub:o.tsub||"",tch:o.tch||"",question:o.question,exams:o.exams||[],options:o.options,answer:o.answer,explanation:o.explanation||""})})});
+  return TQC=m;
+}
+const TQX=t=>TQALL().get(t);
+
+/* ---------- Test Retest / pichhle attempts ---------- */
+function histOfTest(x){
+  const H=store.get("jk_hist"),id=String(x.id),uniq=TL.filter(y=>y.kind===x.kind&&y.title===x.title).length===1;
+  return H.map((h,i)=>({h:h,i:i})).filter(o=>o.h&&((o.h.tid&&String(o.h.tid)===id)||(!o.h.tid&&uniq&&o.h.k===x.kind&&o.h.n===x.title)));
+}
+function tstCard(x,c,icon){
+  const id=smE(x.id),A=histOfTest(x),L=A[0],sn=NEWSNAP[x.kind],nw=sn&&sn.ids.has(String(x.id));
+  const tot=+((x.q_count||0)*(+x.marks_per_q||1)).toFixed(2);
+  const ex=x.kind==="mock"?exChips(examsOf(x),x.id):"";
+  return `<div class="tc" style="--c:${c}"><button class="row" onclick="tstOpen('${id}')"><span class="ic">${icon}</span><span class="tx"><b>${smE(cleanTitle(x))}</b>${ex}<small>${smE(tmeta(x))}</small></span>${nw?'<span class="nw">NEW</span>':""}<span class="bg${L?" dn":""}">${L?"✔ दिया":"Test"}</span><i>›</i></button>`
+  +(L?`<div class="tca"><span>${A.length} प्रयास · अंतिम: ${L.h.sc}${tot?" / "+tot:""} · ${ago(L.h.ts)}</span><button onclick="histOpen(${L.i})">📊 रिज़ल्ट</button><button onclick="retestTest('${id}')">🔁 Retest</button></div>`:"")+`</div>`;
+}
+function retestTest(id){
+  const x=TL.find(y=>String(y.id)===String(id));if(!x)return;
+  const o=progAll(),sp=o["test|"+x.title+"|"+x.id]||o["test|"+x.title];
+  if(sp&&Array.isArray(sp.qs)&&!confirm("इस टेस्ट का एक अधूरा प्रयास सेव है। Retest शुरू करने पर वह अधूरा प्रयास हट जाएगा (पुराने रिज़ल्ट सुरक्षित रहेंगे)। जारी रखें?"))return;
+  tstOpen(id,{fresh:true});
+}
+function progGet(){
+  const o=progAll(),k=progKey();if(o[k])return o[k];
+  if(CFG.t&&CFG.t.id){const old=o[mode+"|"+label];
+    if(old&&Array.isArray(old.qs)&&old.qs.length===Q.length&&old.qs.every(t=>Q.some(q=>q.question===t)))return old}
+  return null;
+}
+function startFresh(list,l,m,cfg){
+  mode=m;CFG=Object.assign(CFG0(),cfg||{});Q=sortList(list.slice(),"new");sortDir="new";label=l;clearProg();
+  if(mode==="test")doIntro();else begin();
+}
+function saveHist(H){
+  const ok=()=>{try{localStorage.setItem("jk_hist",JSON.stringify(H));return true}catch(e){return false}};
+  let done=ok();
+  for(let i=H.length-1;i>0&&!done;i--){if(H[i]&&H[i].qo&&H[i].tid){delete H[i].qo;done=ok()}}
+  for(let i=H.length-1;i>0&&!done;i--){if(H[i]&&H[i].qo){delete H[i].qo;done=ok()}}
+  TQC=null;store.set("jk_hist",H);
+}
+
+/* ---------- Prashn ka SOURCE (kis test / chapter me galat hua) — jk_qsrc ---------- */
+function jvSrcCtx(q){
+  const t=CFG.t||null,k=CFG.kind==="mock"?"mock":CFG.kind==="subject"?"subject":"chapter";
+  const o={k:k,n:label};
+  if(t&&t.id)o.tid=String(t.id);
+  if(t&&k==="mock"){const ex=examsOf(t).map(exShort);if(ex.length)o.ex=ex}
+  if(k==="chapter"){o.sub=q.subject;o.ch=q.chapter}else{o.sub=q.tsub||"";o.ch=q.tch||""}
+  return o;
+}
+function jvAdd(M,q,kind,p,aid,ts){
+  const e=M[q.question]||(M[q.question]={}),L=e[kind]||(e[kind]=[]);
+  const i=L.findIndex(x=>x.a===aid);if(i>=0)L.splice(i,1);
+  L.unshift(Object.assign(jvSrcCtx(q),{a:aid,p:p==null?null:p,ts:ts||Date.now()}));
+  L.sort((a,b)=>b.ts-a.ts);if(L.length>8)L.length=8;
+}
+const jvSkipCtx=()=>CFG.ctx==="set"||CFG.ctx==="mistake";
+function jvTrack(q,kind,on,p){
+  if(jvSkipCtx())return;
+  const M=jvGet("jk_qsrc");
+  if(!on){const e=M[q.question];if(e){if(kind==="s")delete e.s;else if(e.r)e.r=e.r.filter(x=>x.a!=="p"+window.SID)}}
+  else jvAdd(M,q,kind,p,(kind==="s"?"v":"p")+window.SID,Date.now());
+  jvSet("jk_qsrc",M);
+}
+function jvTrackWrong(q,p){if(jvSkipCtx())return;const M=jvGet("jk_qsrc");jvAdd(M,q,"w",p,"p"+window.SID,Date.now());jvSet("jk_qsrc",M)}
+function jvFinalizeSrc(ent){
+  if(jvSkipCtx())return;
+  const M=jvGet("jk_qsrc"),tid=ent.tid||"";
+  Q.forEach(q=>{const e=M[q.question];if(!e)return;
+    ["w","r"].forEach(k=>{if(e[k])e[k]=e[k].filter(x=>!(String(x.a).charAt(0)==="p"&&x.n===label&&(x.tid||"")===tid))})});
+  Q.forEach((q,i)=>{const st=state[i];
+    if(st.picked!==null&&st.picked!==q.answer)jvAdd(M,q,"w",st.picked,"h"+ent.ts,ent.ts);
+    if(st.review)jvAdd(M,q,"r",st.picked,"h"+ent.ts,ent.ts)});
+  jvSet("jk_qsrc",M);
+  const d=jvGet("jk_srcbf"),a=d.d||[];a.push(ent.ts);jvSet("jk_srcbf",{d:a.slice(-2000)});
+}
+/* purani history se sources banao (ek baar; baar-baar chalane par duplicate nahi banta) */
+function jvBackfill(){
+  const H=store.get("jk_hist"),bf=jvGet("jk_srcbf"),done=new Set(bf.d||[]);let M=null,ch=false;
+  H.forEach(h=>{
+    if(!h||!h.ts||done.has(h.ts)||!Array.isArray(h.qs)||!Array.isArray(h.p))return;
+    done.add(h.ts);
+    if(h.cx==="mistake"||h.cx==="set")return;
+    M=M||jvGet("jk_qsrc");
+    const base={k:h.k==="mock"?"mock":h.k==="subject"?"subject":"chapter",n:h.n};
+    if(h.tid)base.tid=String(h.tid);if(Array.isArray(h.ex)&&h.ex.length)base.ex=h.ex;
+    h.qs.forEach((tx,i)=>{
+      if(!tx)return;const q=qFind(tx);if(!q)return;const pk=h.p[i];
+      const mk=(kind,p)=>{const e=M[tx]||(M[tx]={}),L=e[kind]||(e[kind]=[]);if(L.some(x=>x.a==="h"+h.ts))return;
+        const c=Object.assign({},base,{a:"h"+h.ts,p:p,ts:h.ts});
+        if(base.k==="chapter"){c.sub=q.subject;c.ch=q.chapter}else{c.sub=q.tsub||(h.k==="subject"?q.subject:"");c.ch=q.tch||""}
+        L.push(c);L.sort((a,b)=>b.ts-a.ts);if(L.length>8)L.length=8;ch=true};
+      if(pk!=null&&pk!==q.answer)mk("w",pk);
+      if(h.rv&&h.rv[i])mk("r",pk==null?null:pk);
+    });
+  });
+  if(ch)jvSet("jk_qsrc",M);
+  if(done.size!==(bf.d||[]).length)jvSet("jk_srcbf",{d:Array.from(done).slice(-2000)});
+}
+
+/* ---------- Mistake Analysis ---------- */
+const JVM={w:{key:"pyq_wrong",title:"Wrong Questions",hi:"गलत प्रश्न",ic:"❌",test:"Full Mistake Test"},r:{key:"jk_review",title:"Review Questions",hi:"रिव्यू प्रश्न",ic:"🚩",test:"Review Questions Test"},s:{key:"pyq_saved",title:"Saved Questions",hi:"सेव किए प्रश्न",ic:"🔖",test:"Saved Questions Test"}};
+let jvS={kind:"w",vw:"all",f:null},jvG=[],jvL={items:[],pref:null,i:0};
+function mistItems(kind){
+  const keys=store.get(JVM[kind].key),map=new Map();
+  QS.forEach(q=>{if(!map.has(q.question))map.set(q.question,q)});
+  Object.values(TESTQ).forEach(q=>{if(!map.has(q.question))map.set(q.question,q)});
+  const T=TQALL(),M=jvGet("jk_qsrc"),seen=new Set(),out=[];
+  keys.forEach(t=>{if(seen.has(t))return;seen.add(t);const q=map.get(t)||T.get(t);if(!q)return;
+    out.push({q:q,key:t,srcs:(M[t]&&M[t][kind])||[],all:M[t]||{}})});
+  return out;
+}
+const mcount=kind=>mistItems(kind).length;
+function mistakes(){
+  clearInterval(tick);jvBackfill();
+  view(hdr(BACK,"","Mistake Analysis")+`<main class="pg"><div class="list">
+  ${R({c:"#dc2626",i:"❌",t:"Wrong Questions",s:"जो प्रश्न गलत हुए · All / Chapter-wise / Source Test",b:mcount("w"),on:"mistList('w')"})}
+  ${R({c:"#16a34a",i:"📒",t:"Notes",s:"आपके नोट्स",b:"Coming Soon",soon:1,on:"mistSoon('Notes')"})}
+  ${R({c:"#f59e0b",i:"🚩",t:"Review Questions",s:"टेस्ट में रिव्यू के लिए मार्क किए प्रश्न",b:mcount("r"),on:"mistList('r')"})}
+  ${R({c:"#2563eb",i:BM(1).replace('fill="#ffd21f"','fill="#2563eb"').replace(/#ffd21f/g,"#2563eb"),raw:1,t:"Saved Questions",s:"जो आपने सेव किए",b:mcount("s"),on:"mistList('s')"})}
+  ${R({c:"#7c3aed",i:"💬",t:"Remark by Admin",s:"आपकी परफॉर्मेंस पर पर्सनल गाइडेंस",on:"adminRemarks()"})}</div></main>`,"mist",false,home);
+}
+/* kis source se aaya: ek chhota label */
+function jvSrcLabel(s){
+  if(!s)return"";
+  const dt=s.ts?" · "+jvDate(s.ts):"";
+  if(s.k==="mock"){const ex=(s.ex||[]);return"🎯 "+smE(cleanTitle({title:s.n,exams:ex}))+(ex.length?" · "+smE(ex[0])+(ex.length>1?" +"+(ex.length-1):""):"")+dt}
+  if(s.k==="subject")return"📚 "+smE(s.n)+(s.sub?" · "+smE(s.sub):"")+dt;
+  return"📘 "+smE(s.sub||"")+(s.ch?" › "+smE(s.ch):smE(s.n||""))+dt;
+}
+const jvLegacy=it=>({k:"chapter",n:it.q.chapter,sub:it.q.subject,ch:it.q.chapter,legacy:1});
+const jvSrcKey=s=>s.tid?"t:"+s.tid:s.k+":"+(s.n||"")+(s.k==="chapter"?"|"+(s.sub||""):"");
+function jvPref(it,pref){return(pref&&it.srcs.find(s=>jvSrcKey(s)===pref))||it.srcs[0]||null}
+function jvChips(it,pref){
+  if(!it.srcs.length){const l=jvLegacy(it);return`<span class="sch leg">📘 ${smE(l.sub)} › ${smE(l.ch)}</span>`}
+  const p=jvPref(it,pref),rest=it.srcs.length-1;
+  return`<span class="sch">${jvSrcLabel(p)}</span>`+(rest>0&&!pref?`<span class="sch mo">+${rest} और</span>`:"");
+}
+function jvChapOf(it){
+  const s=it.srcs[0]||{};let sub=s.sub||it.q.tsub||it.q.subject,ch=s.ch||it.q.tch||it.q.chapter;
+  const S=SUBJECTS.find(z=>z.name===sub);
+  if(S&&S.chapters.indexOf(ch)>=0)return{sub:sub,ch:ch};
+  const S2=SUBJECTS.find(z=>z.name===it.q.subject);
+  if(S2&&S2.chapters.indexOf(it.q.chapter)>=0)return{sub:it.q.subject,ch:it.q.chapter};
+  if(S)return{sub:sub,ch:ch||"अन्य"};
+  return{sub:"Full Test / अन्य",ch:s.k==="mock"?cleanTitle({title:s.n,exams:s.ex||[]}):(s.n||"अन्य प्रश्न")};
+}
+function jvGroupChap(items){
+  const G=new Map();
+  items.forEach(it=>{const g=jvChapOf(it),k=g.sub+"||"+g.ch;if(!G.has(k))G.set(k,{sub:g.sub,ch:g.ch,items:[]});G.get(k).items.push(it)});
+  const so=s=>{const i=SUBJECTS.findIndex(z=>z.name===s);return i<0?999:i};
+  const co=(s,c)=>{const S=SUBJECTS.find(z=>z.name===s),i=S?S.chapters.indexOf(c):-1;return i<0?999:i};
+  return Array.from(G.values()).sort((a,b)=>so(a.sub)-so(b.sub)||co(a.sub,a.ch)-co(b.sub,b.ch)||a.ch.localeCompare(b.ch));
+}
+function jvGroupSrc(items){
+  const G=new Map();
+  items.forEach(it=>{const L=it.srcs.length?it.srcs:[jvLegacy(it)],seen=new Set();
+    L.forEach(s=>{const k=jvSrcKey(s);if(seen.has(k))return;seen.add(k);if(!G.has(k))G.set(k,{k:k,s:s,items:[]});G.get(k).items.push(it)})});
+  const ko={mock:0,subject:1,chapter:2};
+  return Array.from(G.values()).sort((a,b)=>(ko[a.s.k]||0)-(ko[b.s.k]||0)||(b.s.ts||0)-(a.s.ts||0)||String(a.s.n).localeCompare(String(b.s.n)));
+}
+function mistCard(it,i,pref){
+  return`<div class="mc" onclick="mistOpen(${i})"><div class="mcq"><span class="mcn">${i+1}</span>${jvTxt(it.q.question,130)}</div><div class="mcs">${jvChips(it,pref)}</div></div>`;
+}
+function mistGo(i){const g=jvG[i];if(g)mistList(jvS.kind,jvS.vw,g.f)}
+function mistList(kind,vw,f){
+  clearInterval(tick);jvBackfill();
+  const T=JVM[kind];vw=vw||"all";jvS={kind:kind,vw:vw,f:f||null};
+  const items=mistItems(kind);
+  const seg=`<div class="seg">${[["all","All Questions"],["chap","Chapter-wise"],["src","Source Test"]].map(a=>`<button class="${a[0]===vw?"on":""}" onclick="mistList('${kind}','${a[0]}')">${a[1]}</button>`).join("")}</div>`;
+  let body="",sub=`${items.length} प्रश्न`,back=()=>mistakes();
+  const testBtn=(its,label,sfx)=>{jvTK={keys:its.map(x=>x.key),sfx:sfx||""};return`<div class="mtest"><button class="btn" onclick="mistTest()">🔁 ${label}</button><small>${its.length} प्रश्न · Test Mode · नया प्रयास — पुराने रिज़ल्ट सुरक्षित रहेंगे</small></div>`};
+  if(!items.length){
+    body=`<div class="card cs"><div class="csi">${T.ic}</div><p>अभी इसमें कोई प्रश्न नहीं है।</p></div>`;
+  }else if(f){
+    let its=[],pref=null,crumb="";
+    if(f.t==="chap"){its=jvGroupChap(items).filter(g=>g.sub===f.sub&&g.ch===f.ch).reduce((a,g)=>a.concat(g.items),[]);crumb=f.sub+" › "+f.ch}
+    else{const g=jvGroupSrc(items).find(g=>g.k===f.k);if(g){its=g.items;pref=g.k;crumb=jvSrcLabel(g.s).replace(/ · [0-9]+ \w+ [0-9]{4}$/,"").replace(/<[^>]*>/g,"")}}
+    jvL={items:its,pref:pref,i:0};back=()=>mistList(kind,vw);
+    sub=`<a class="crb" onclick="mistList('${kind}','${vw}')">← सभी ${vw==="chap"?"चैप्टर":"टेस्ट"}</a> · ${smE(crumb)} · ${its.length} प्रश्न`;
+    body=testBtn(its,T.test+" (इन "+its.length+" प्रश्नों का)",crumb)+its.map((it,i)=>mistCard(it,i,pref)).join("");
+  }else if(vw==="all"){
+    jvL={items:items,pref:null,i:0};
+    body=testBtn(items,"Full "+(kind==="w"?"Mistake Test / Retest":T.test),"")+items.map((it,i)=>mistCard(it,i,null)).join("");
+  }else if(vw==="chap"){
+    const G=jvGroupChap(items);jvG=G.map(g=>({f:{t:"chap",sub:g.sub,ch:g.ch}}));let last="";
+    sub=`${items.length} प्रश्न · ${G.length} चैप्टर/ग्रुप`;
+    body=G.map((g,i)=>{const S=SUBJECTS.find(z=>z.name===g.sub),h=g.sub!==last?`<h3 class="mgh">${S?S.icon+" ":""}${smE(g.sub)}</h3>`:"";last=g.sub;
+      return h+R({c:S?S.color:"#64748b",i:S?(S.chapters.indexOf(g.ch)+1||"•"):"•",t:smE(g.ch),s:g.items.length+" प्रश्न",b:g.items.length,on:`mistGo(${i})`})}).join("");
+    body=`<div class="list">${body}</div>`;
+  }else{
+    const G=jvGroupSrc(items);jvG=G.map(g=>({f:{t:"src",k:g.k}}));let last="";
+    const KN={mock:"🎯 Full Mock Tests",subject:"📚 Full Subject Tests",chapter:"📘 Chapter-wise PYQ"},IC={mock:"🎯",subject:"📚",chapter:"📘"},CL={mock:"#7c3aed",subject:"#16a34a",chapter:"#1457d9"};
+    sub=`${items.length} प्रश्न · ${G.length} स्रोत`;
+    body=G.map((g,i)=>{const h=g.s.k!==last?`<h3 class="mgh">${KN[g.s.k]||""}</h3>`:"";last=g.s.k;
+      const ttl=g.s.k==="chapter"?smE(g.s.ch||g.s.n):smE(g.s.k==="mock"?cleanTitle({title:g.s.n,exams:g.s.ex||[]}):g.s.n);
+      const ex=g.s.k==="mock"&&g.s.ex&&g.s.ex.length?g.s.ex.map(exShort).join(" · "):(g.s.k==="chapter"?g.s.sub:g.s.sub||"");
+      return h+R({c:CL[g.s.k]||"#64748b",i:IC[g.s.k]||"•",t:ttl,s:smE(ex||"")+(g.s.legacy?" (पुराना रिकॉर्ड)":""),b:g.items.length,on:`mistGo(${i})`})}).join("");
+    body=`<div class="list">${body}</div>`;
+  }
+  view(hdr(BACK,"",T.title)+`<main class="pg">${seg}<div class="sub">${sub}</div>${body}</main>`,"mist",false,back);
+}
+let jvTK={keys:[],sfx:""};
+function mistTest(){startMistakeTest(jvS.kind,{keys:jvTK.keys,sfx:jvTK.sfx})}
+function startMistakeTest(kind,o){
+  o=o||{};const T=JVM[kind];let items=mistItems(kind);
+  if(o.keys){const s=new Set(o.keys);items=items.filter(x=>s.has(x.key))}
+  if(!items.length)return toast("अभी इसमें कोई प्रश्न नहीं है");
+  const nm=T.test+(o.sfx?" · "+o.sfx:""),sid="mistake-"+kind+(o.sfx?"-"+String(o.sfx).replace(/[^A-Za-z0-9\u0900-\u097F]+/g,"").slice(0,24):"");
+  mode="test";label=nm;
+  CFG={mark:1,neg:NEG,dur:0,kind:"mistake",ctx:"mistake",mkd:kind,t:{id:sid,title:nm,kind:"mistake",marks_per_q:1,neg_marking:NEG}};
+  Q=sortList(items.map(x=>x.q),"new");sortDir="new";
+  Q.forEach(q=>{TESTQ[q.question]=q});
+  ret=()=>mistList(kind,jvS.vw,jvS.f);
+  if(o.fresh)clearProg();
+  const sp=o.fresh?null:progGet();
+  if(sp&&Array.isArray(sp.qs))return resumeAsk(sp);
+  tintro();
+}
+/* Mistake Analysis ke andar prashn REVIEW format me khulta hai (practice me nahi) */
+function jvPick(it,kind,pref){
+  const L=[];
+  [kind,"w","r","s"].forEach((k,idx)=>{(it.all[k]||[]).forEach(s=>L.push({s:s,pri:idx===0?0:1}))});
+  if(pref){const m=L.find(o=>jvSrcKey(o.s)===pref);if(m)return{p:m.s.p==null?null:m.s.p,found:true,src:m.s}}
+  L.sort((a,b)=>a.pri-b.pri||(b.s.ts||0)-(a.s.ts||0));
+  if(L.length)return{p:L[0].s.p==null?null:L[0].s.p,found:true,src:L[0].s};
+  const H=store.get("jk_hist");
+  for(let i=0;i<H.length;i++){const h=H[i];if(!h||!Array.isArray(h.qs))continue;const k=h.qs.indexOf(it.q.question);if(k>=0&&h.p)return{p:h.p[k]==null?null:h.p[k],found:true,src:null}}
+  return{p:null,found:false,src:null};
+}
+function mistOpen(i){
+  const L=jvL.items;if(!L||!L[i])return;jvL.i=i;
+  const it=L[i],q=it.q,kind=jvS.kind,pf=jvPick(it,kind,jvL.pref),p=pf.p;
+  const sv=new Set(store.get("pyq_saved")).has(q.question);
+  let ban;
+  if(p==null&&!pf.found)ban=`<div class="mst mu">ℹ️ आपका चुना हुआ उत्तर पुराने रिकॉर्ड में सेव नहीं है।${kind==="w"?" यह प्रश्न गलत प्रश्नों की सूची में है।":""}</div>`;
+  else if(p==null)ban=`<div class="mst mu">⚪ आपने यह प्रश्न छोड़ा था (कोई उत्तर नहीं दिया)</div>`;
+  else if(p===q.answer)ban=`<div class="mst ok">✅ आपका उत्तर सही था</div>`;
+  else ban=`<div class="mst bad">❌ आपका उत्तर गलत था — आपने ${"ABCD"[p]} चुना था</div>`;
+  const srcs=it.srcs.length?it.srcs.slice(0,4):[],legacy=!it.srcs.length;
+  const srcBlock=`<div class="msrc"><b>📍 यह प्रश्न कहाँ से आया</b>${legacy?`<div>📘 ${smE(jvLegacy(it).sub)} › ${smE(jvLegacy(it).ch)}<br><small>(पुराना रिकॉर्ड — टेस्ट का नाम उपलब्ध नहीं)</small></div>`
+    :srcs.map(s=>`<div>${jvSrcLabel(s)}${s.p!=null?` · आपका उत्तर: <b>${"ABCD"[s.p]}</b> ${s.p===q.answer?"✅":"❌"}`:s.p===null&&s.a&&String(s.a).charAt(0)==="h"?" · छोड़ा":""}</div>`).join("")}</div>`;
+  const opts=q.options.map((o,k)=>{const c=k===q.answer?"correct":(k===p?"wrong":"");
+    const tg=[];if(k===p)tg.push("आपका उत्तर");if(k===q.answer)tg.push("सही उत्तर");
+    return`<div class="opt ${c}"><span class="l">${"ABCD"[k]}</span><span class="t">${o}</span>${tg.length?`<em class="ot ${k===q.answer?"gd":"bd"}">${tg.join(" · ")}</em>`:""}</div>`}).join("");
+  view(hdr(BACK,`<button class="ib" id="msv" onclick="mistSave()">${BM(sv)}</button>`,"प्रश्न समीक्षा")+`<main class="pg">
+  <div class="prog"><span class="mrk">${JVM[kind].ic} ${JVM[kind].hi}</span><div class="bar"><div style="width:${(i+1)/L.length*100}%"></div></div><span><b>${i+1}</b> / ${L.length}</span></div>
+  <div class="card">${ban}${srcBlock}<p class="q" style="margin-top:12px">${q.question}</p>${opts}
+  <div class="exp" style="display:block"><div class="exh"><h4>व्याख्या</h4></div><div class="exr"><b>सही उत्तर: ${"ABCD"[q.answer]}. ${q.options[q.answer]}</b>${VERIFIED_CHAPTERS.indexOf(q.chapter)>=0?VB:""}</div>${q.explanation?`<p>${q.explanation}</p>`:`<p style="color:var(--mute)">इस प्रश्न की व्याख्या उपलब्ध नहीं है।</p>`}</div>
+  ${kind==="r"?`<button class="btn ghost" style="width:100%;margin-top:12px" onclick="mistUnreview()">🚩 Review सूची से हटाएँ</button>`:""}</div>
+  <div class="nav"><button class="btn ghost" onclick="mistOpen(${i-1})" ${i===0?"disabled":""}>← पिछला</button><button class="btn" onclick="mistOpen(${i+1})" ${i===L.length-1?"disabled":""}>अगला →</button></div></main>`,"",false,()=>mistList(kind,jvS.vw,jvS.f));
+}
+function mistSave(){
+  const it=jvL.items[jvL.i];if(!it)return;const q=it.q,s=new Set(store.get("pyq_saved"));
+  if(s.has(q.question))s.delete(q.question);else s.add(q.question);
+  store.set("pyq_saved",[...s]);
+  const M=jvGet("jk_qsrc"),e=M[q.question]||(M[q.question]={});
+  if(s.has(q.question)){const base=(e.w&&e.w[0])||(e.r&&e.r[0])||null;if(base){e.s=[Object.assign({},base,{a:"v"+Date.now()})]}}else delete e.s;
+  jvSet("jk_qsrc",M);
+  const b=document.getElementById("msv");if(b)b.innerHTML=BM(s.has(q.question));toast(s.has(q.question)?"सेव किया":"सेव हटाया");
+}
+function mistUnreview(){
+  const it=jvL.items[jvL.i];if(!it)return;
+  store.set("jk_review",store.get("jk_review").filter(t=>t!==it.q.question));
+  const M=jvGet("jk_qsrc");if(M[it.q.question])delete M[it.q.question].r;jvSet("jk_qsrc",M);
+  toast("Review सूची से हटाया");mistList(jvS.kind,jvS.vw,jvS.f);
+}
+function startSet(keys,l){
+  ret=mistakes;const s=new Set(keys||[]),seen=new Set();
+  const src=QS.concat(Object.values(TESTQ),Array.from(TQALL().values())).filter(q=>{if(!s.has(q.question)||seen.has(q.question))return false;seen.add(q.question);return true});
+  start(()=>true,l,0,"practice",src);
+}
+
+/* ---------- Result history (Activity) fix: test ke prashn hamesha mil jayein ---------- */
+function jvItems(h){
+  const qs=Array.isArray(h.qs)?h.qs:[],p=h.p||[],t=h.t||[],rv=h.rv||[],out=[];let miss=0;
+  qs.forEach((tx,k)=>{const q=tx&&(qFind(tx)||(h.qo||[]).find(o=>o.question===tx));
+    if(q)out.push({q:q,p:p[k]==null?null:p[k],t:t[k]||0,rv:rv[k]});else miss++});
+  return{out:out,miss:miss,total:qs.length||(h.p||[]).length};
+}
+function jvOrder(h,list){
+  const P=h.p||[];
+  const c=[list,sortList(list.slice(),"new"),sortList(list.slice(),"old")];
+  for(let i=0;i<c.length;i++){const L=c[i];if(L.length!==P.length)continue;let r=0,w=0,s=0;
+    P.forEach((pk,k)=>{if(pk==null)s++;else if(pk===L[k].answer)r++;else w++});
+    if(r===h.r&&w===h.w&&s===h.s)return L}
+  return null;
+}
+async function jvRecover(h){
+  let x=h.tid?TL.find(y=>String(y.id)===String(h.tid)):null;
+  if(!x&&h.k){
+    if(!TL.length){try{await tstLoad()}catch(e){}}
+    const n=(h.p||[]).length;
+    let c=TL.filter(y=>y.kind===h.k&&y.title===h.n&&(!y.q_count||!n||y.q_count===n));
+    if(c.length>1&&Array.isArray(h.ex)&&h.ex.length){const c2=c.filter(y=>examsOf(y).map(exShort).some(e=>h.ex.indexOf(e)>=0));if(c2.length)c=c2}
+    if(c.length===1)x=c[0];
+  }
+  if(!x)return null;
+  const res=await jvLoadTest(x);if(!res.list.length)return null;
+  res.list.forEach(q=>{TESTQ[q.question]=q});
+  return{x:x,list:res.list};
+}
+async function histOpen(i){
+  const H=store.get("jk_hist"),h=H[i];
+  if(!h){jvBackTo=0;return toast("इस टेस्ट का रिकॉर्ड नहीं मिला")}
+  let it=jvItems(h);
+  if(it.miss>0||!it.out.length){
+    view(hdr(BACK,"","रिज़ल्ट")+'<main class="pg"><div class="card cs"><small>रिज़ल्ट लोड हो रहा है…</small></div></main>',"",false,home);
+    try{
+      const rc=await jvRecover(h);
+      if(rc){
+        const again=jvItems(h);
+        if(again.out.length&&again.miss===0)it=again;
+        else{const L=jvOrder(h,rc.list);
+          if(L){const p=h.p||[],t=h.t||[],rv=h.rv||[];it={out:L.map((q,k)=>({q:q,p:p[k]==null?null:p[k],t:t[k]||0,rv:rv[k]})),miss:0,total:L.length}}
+          else if(again.out.length>it.out.length)it=again}
+      }
+    }catch(e){}
+  }
+  jvShowHist(h,it);
+}
+function histOpenTs(ts){const H=store.get("jk_hist"),i=H.findIndex(h=>h&&h.ts===ts);if(i>=0)histOpen(i)}
+function jvShowHist(h,it){
+  const out=it.out;
+  Q=out.map(x=>x.q);state=out.map(x=>({picked:x.p,time:x.t,review:!!x.rv}));
+  CFG=h.k?{mark:h.mk||1,neg:h.ng==null?NEG:h.ng,dur:0,kind:h.k,ctx:h.cx||"test",mkd:h.mkd,t:h.tid?{id:h.tid,title:h.n,kind:h.k}:undefined}:Object.assign(CFG0(),{ctx:h.cx||"chapter"});
+  mode=h.m;label=h.n;finished=true;cur=0;const bt=jvBackTo;jvBackTo=0;ret=bt?()=>histOpenTs(bt):home;
+  let tt=0;(h.t||[]).forEach(v=>{tt+=v||0});
+  window.__w=Q.filter((q,k)=>state[k].picked!==null&&state[k].picked!==q.answer).map(q=>q.question);
+  window.__r=Q.filter((q,k)=>state[k].review).map(q=>q.question);
+  RS={r:h.r,w:h.w,s:h.s,t:tt,sc:h.sc!=null?h.sc:h.r,an:h.an,ts:h.ts,h:h,fromHist:1,gone:Math.max(0,(it.total||0)-out.length)};
+  result();
+}
+/* ===================== RESULT DASHBOARD ===================== */
+let jvBackTo=0,jvRT={tab:"all",n:20},jvW=[];
+const fmtM=n=>+(+n).toFixed(2);
+const jvPct=(a,b)=>b>0?+(a/b*100).toFixed(1):0;
+function jvQMeta(q){
+  const S=SUBJECTS.find(z=>z.name===q.subject);let sub="",ch="",si=-1,ci=-1;
+  if(S){sub=S.name;si=SUBJECTS.indexOf(S);ci=S.chapters.indexOf(q.chapter);if(ci>=0)ch=q.chapter}
+  if(!sub&&q.tsub){sub=q.tsub;si=SUBJECTS.findIndex(z=>z.name===sub)}
+  if(!ch&&q.tch){ch=q.tch;ci=si>=0?SUBJECTS[si].chapters.indexOf(ch):-1}
+  return{sub:sub,ch:ch,si:si,ci:ci};
+}
+function jvAttempts(){
+  const h=RS.h;if(!h)return[];
+  const same=x=>x&&x.m===h.m&&!!x.k===!!h.k&&String(x.tid||"")===String(h.tid||"")&&x.n===h.n&&(x.cx||"")===(h.cx||"");
+  const L=store.get("jk_hist").map((x,i)=>({x:x,i:i})).filter(o=>same(o.x));
+  L.sort((a,b)=>a.x.ts-b.x.ts);L.forEach((o,k)=>{o.no=k+1});return L;
+}
+function jvGroups(){
+  const test=mode==="test",mk=CFG.mark,ng=CFG.neg;
+  const build=f=>{const m=new Map();
+    Q.forEach((q,i)=>{const k=f(jvQMeta(q));if(!k)return;let g=m.get(k);if(!g){g={n:k,t:0,r:0,w:0,s:0};m.set(k,g)}
+      const st=state[i];g.t++;if(st.picked===null)g.s++;else if(st.picked===q.answer)g.r++;else g.w++});
+    const a=Array.from(m.values());
+    a.forEach(g=>{g.acc=(g.r+g.w)?Math.round(g.r/(g.r+g.w)*100):null;g.marks=test?fmtM(g.r*mk-g.w*mk*ng):null;g.max=test?fmtM(g.t*mk):null});return a};
+  let g=build(m=>m.sub);if(g.length>=2)return{kind:"subject",g:g};
+  g=build(m=>m.ch);if(g.length>=2)return{kind:"chapter",g:g};
+  return{kind:"",g:[]};
+}
+function jvInsights(grp,r,w,s){
+  const n=r+w+s,lines=[];jvW=[];
+  if(Q.length<5||n<5)return lines;
+  const att=r+w;
+  if(grp.kind==="subject"){
+    const ok=grp.g.filter(g=>g.t>=4&&g.r+g.w>=3);
+    ok.filter(g=>g.acc>=70).sort((a,b)=>b.acc-a.acc).slice(0,2).forEach(g=>lines.push(["✅",`<b>${smE(g.n)}</b> में आपका प्रदर्शन अच्छा रहा (${g.acc}% सटीकता)।`]));
+    ok.filter(g=>g.acc<50).sort((a,b)=>a.acc-b.acc).slice(0,2).forEach(g=>{lines.push(["⚠️",`<b>${smE(g.n)}</b> में सुधार की ज़रूरत है — ${g.w} प्रश्न गलत हुए (${g.acc}% सटीकता)।`]);
+      const si=SUBJECTS.findIndex(z=>z.name===g.n);if(si>=0&&SUBJECTS[si].chapters.some(c=>qc(SUBJECTS[si].name,c)>0))jvW.push({si:si,ci:-1,l:g.n})})
+  }
+  const T=new Map();
+  Q.forEach((q,i)=>{const m=jvQMeta(q);if(!m.ch)return;const k=m.sub+"||"+m.ch;let g=T.get(k);if(!g){g={m:m,t:0,r:0,w:0};T.set(k,g)}
+    const st=state[i];g.t++;if(st.picked!==null){if(st.picked===q.answer)g.r++;else g.w++}});
+  const wt=Array.from(T.values()).filter(g=>g.w>=2||(g.w>=1&&g.t>=2&&g.r/(g.r+g.w)<.5)).sort((a,b)=>b.w-a.w).slice(0,3);
+  if(wt.length){
+    lines.push(["📌",`सबसे ज़्यादा गलतियाँ: ${wt.map(g=>`<b>${smE(g.m.ch)}</b> (${g.w})`).join(", ")}। इन टॉपिक्स की अतिरिक्त प्रैक्टिस उपयोगी रहेगी।`]);
+    wt.forEach(g=>{const m=g.m;if(m.si>=0&&m.ci>=0&&qc(SUBJECTS[m.si].name,SUBJECTS[m.si].chapters[m.ci])>0)jvW.unshift({si:m.si,ci:m.ci,l:m.ch})})
+  }
+  if(s/n>=.25)lines.push(["⏱️",`${s} प्रश्न (${Math.round(s/n*100)}%) छोड़े गए। जिन प्रश्नों में आप निश्चित नहीं थे, उन्हें Review में देखकर अगली बार कोशिश करें।`]);
+  if(!lines.length&&att>=5){
+    const acc=Math.round(r/att*100);
+    lines.push(acc>=75?["🌟","बहुत बढ़िया! आपकी सटीकता अच्छी है। गलत प्रश्नों को एक बार Review ज़रूर करें।"]:acc>=50?["📈","आपका प्रदर्शन ठीक रहा। गलत प्रश्नों का Review करके सटीकता और बढ़ा सकते हैं।"]:["📚","सटीकता बढ़ाने के लिए गलत प्रश्नों का Review करें और संबंधित प्रश्नों की प्रैक्टिस करें।"]);
+  }
+  const seen=new Set();jvW=jvW.filter(x=>{const k=x.si+"|"+x.ci;if(seen.has(k))return false;seen.add(k);return true}).slice(0,3);
+  return lines;
+}
+function jvDonut(r,w,s){
+  const n=r+w+s,R=52,C=2*Math.PI*R;let off=0;
+  const seg=(v,c)=>{if(!v)return"";const l=v/n*C,o=`<circle class="dseg" cx="70" cy="70" r="${R}" fill="none" stroke="${c}" stroke-width="16" stroke-dasharray="${l.toFixed(2)} ${(C-l).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}"/>`;off+=l;return o};
+  return`<svg viewBox="0 0 140 140" class="donut" role="img" aria-label="सही ${r}, गलत ${w}, छोड़े ${s}"><g transform="rotate(-90 70 70)"><circle cx="70" cy="70" r="${R}" fill="none" stroke="var(--line)" stroke-width="16"/>${seg(r,"#16a34a")}${seg(w,"#dc2626")}${seg(s,"#94a3b8")}</g><text x="70" y="66" text-anchor="middle" class="dn1">${n}</text><text x="70" y="84" text-anchor="middle" class="dn2">प्रश्न</text></svg>`;
+}
+function rsFiltered(){
+  const t=jvRT.tab;
+  return Q.map((q,i)=>({q:q,i:i,st:state[i]})).filter(o=>t==="all"?true:t==="correct"?o.st.picked!==null&&o.st.picked===o.q.answer:t==="wrong"?o.st.picked!==null&&o.st.picked!==o.q.answer:o.st.picked===null);
+}
+function jvRevCard(o){
+  const q=o.q,p=o.st.picked,m=jvQMeta(q),ok=p!==null&&p===q.answer;
+  const stc=p===null?"mu":ok?"ok":"bad",stt=p===null?"⚪ छोड़ा गया":ok?"✅ सही":"❌ गलत";
+  const meta=(m.sub||m.ch)?`<div class="rqm">${m.sub?`<span>📚 ${smE(m.sub)}</span>`:""}${m.ch?`<span>📖 ${smE(m.ch)}</span>`:""}</div>`:"";
+  const opts=q.options.map((x,k)=>{const c=k===q.answer?"correct":k===p?"wrong":"";const tg=[];if(k===p)tg.push("आपका उत्तर");if(k===q.answer)tg.push("सही उत्तर");
+    return`<div class="opt ${c}"><span class="l">${"ABCD"[k]}</span><span class="t">${x}</span>${tg.length?`<em class="ot ${k===q.answer?"gd":"bd"}">${tg.join(" · ")}</em>`:""}</div>`}).join("");
+  return`<div class="rq"><div class="rqh"><b>प्रश्न ${o.i+1}</b><span class="rqs ${stc}">${stt}</span></div>${meta}<p class="q">${q.question}</p>${opts}
+  ${p===null?`<div class="mst mu" style="margin:8px 0 0">आपने इस प्रश्न का उत्तर नहीं दिया। सही उत्तर: <b>${"ABCD"[q.answer]}</b></div>`:""}
+  ${q.explanation?`<div class="exp" style="display:block"><div class="exh"><h4>व्याख्या</h4></div><p>${q.explanation}</p></div>`:""}</div>`;
+}
+function jvQAHtml(){
+  const L=rsFiltered(),cnt=t=>t==="all"?Q.length:Q.filter((q,i)=>{const p=state[i].picked;return t==="correct"?p!==null&&p===q.answer:t==="wrong"?p!==null&&p!==q.answer:p===null}).length;
+  const tabs=[["all","All Questions"],["correct","Correct"],["wrong","Wrong"],["un","Unattempted"]];
+  const show=L.slice(0,jvRT.n);
+  return`<div class="rtabs" role="tablist">${tabs.map(t=>`<button role="tab" class="${jvRT.tab===t[0]?"on":""}" onclick="rsTab('${t[0]}')">${t[1]}<i>${cnt(t[0])}</i></button>`).join("")}</div>
+  ${L.length?show.map(jvRevCard).join("")+(L.length>show.length?`<button class="btn ghost" style="width:100%" onclick="rsMore()">और दिखाएँ (${L.length-show.length} बाकी)</button>`:""):`<div class="card cs"><div class="csi">${jvRT.tab==="wrong"?"🎉":"📭"}</div><p>${jvRT.tab==="wrong"?"कोई गलत प्रश्न नहीं — शानदार!":"इस श्रेणी में कोई प्रश्न नहीं है।"}</p></div>`}`;
+}
+function rsTab(t,scroll){jvRT={tab:t,n:20};const e=document.getElementById("rsqa");if(e)e.innerHTML=jvQAHtml();if(scroll!==false){const h=document.getElementById("rsqh");if(h)h.scrollIntoView({behavior:"smooth",block:"start"})}}
+function rsMore(){jvRT.n+=20;const e=document.getElementById("rsqa");if(e)e.innerHTML=jvQAHtml()}
+function rsGoReview(){rsTab("all")}
+function rsPracticeWrong(){
+  const wq=Q.filter((q,i)=>state[i].picked!==null&&state[i].picked!==q.answer);
+  if(!wq.length)return toast("इस टेस्ट में कोई गलत प्रश्न नहीं है");
+  document.querySelectorAll(".rsheet").forEach(e=>e.remove());
+  const d=document.createElement("div");d.className="rsheet";
+  d.innerHTML=`<div class="rsc"><h3>❌ Wrong Questions (${wq.length})</h3><p>कैसे देखना चाहेंगे?</p>
+  <button class="btn ghost" id="rsm1">📖 Review Mode<small>अपना उत्तर, सही उत्तर और व्याख्या देखें</small></button>
+  <button class="btn" id="rsm2">✍️ Practice Mode<small>इन्हीं प्रश्नों को दोबारा हल करें (मूल रिज़ल्ट नहीं बदलेगा)</small></button>
+  <button class="btn ghost" id="rsm3" style="margin-top:4px">रद्द करें</button></div>`;
+  d.onclick=e=>{if(e.target===d)d.remove()};document.body.appendChild(d);
+  d.querySelector("#rsm1").onclick=()=>{d.remove();rsTab("wrong")};
+  d.querySelector("#rsm3").onclick=()=>d.remove();
+  d.querySelector("#rsm2").onclick=()=>{d.remove();ret=()=>result();startFresh(wq,"गलत प्रश्न अभ्यास · "+jvDisp(label,CFG.kind,(CFG.t&&examsOf(CFG.t))||(RS.h&&RS.h.ex)||[]),"practice",{ctx:"set"})};
+}
+function rsImprove(i){const x=jvW[i];if(!x)return;ret=()=>result();if(x.ci>=0)chapterModes(x.si,x.ci);else pyqChapters(x.si)}
+function rsPrev(i){jvBackTo=RS.ts;histOpen(i)}
+function result(){
+  const h=RS.h||null,r=RS.r,w=RS.w,s=RS.s,test=mode==="test",n=(r+w+s)||Q.length,att=r+w,sc=RS.sc;
+  const mk=CFG.mark,ng=CFG.neg,tot=test?fmtM(n*mk):n,obt=test?sc:r,pc=jvPct(obt,tot),pcc=Math.max(0,Math.min(100,pc));
+  const neg=test&&ng>0&&w>0?fmtM(w*mk*ng):0,gain=test?fmtM(r*mk):r;
+  const acc=att>0?Math.round(r/att*100)+"%":"N/A";
+  const disp=jvDisp(label,CFG.kind,(CFG.t&&examsOf(CFG.t))||(h&&h.ex)||[]);
+  const when=RS.ts?new Date(RS.ts).toLocaleString("en-IN",{day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit",hour12:true}):"";
+  const A=jvAttempts(),cur=A.find(o=>o.x.ts===RS.ts),no=cur?cur.no:RS.an||1;
+  const exs=h&&Array.isArray(h.ex)&&h.ex.length?h.ex:(CFG.t&&CFG.kind==="mock"?examsOf(CFG.t).map(exShort):[]);
+  const typeTag=CFG.kind==="mock"?"Full Mock Test":CFG.kind==="subject"?"Subject Full Test":CFG.kind==="mistake"?"Mistake Test":CFG.ctx==="set"?"Practice Set":"Chapter-wise";
+  let cpath="";if(!CFG.kind&&Q.length){const ms=Q.map(jvQMeta);if(ms[0].sub&&ms[0].ch&&ms.every(m=>m.sub===ms[0].sub&&m.ch===ms[0].ch))cpath=`${ms[0].sub} › ${ms[0].ch}`}
+  const grp=Q.length?jvGroups():{kind:"",g:[]},ins=Q.length?jvInsights(grp,r,w,s):[];
+  const fresh=!RS.fromHist;
+  const cards=[["correct","✅","सही उत्तर",r,"ok"],["wrong","❌","गलत उत्तर",w,"bad"],["un","➖","छोड़े गए",s,"mu"],["","🎯","सटीकता",acc,"ac"]];
+  const header=`<section class="rsh1${fresh?" fresh":""}"><div class="rsok"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <small class="rst">Test Completed</small><h2>${smE(disp)}</h2>
+    <div class="rsmeta"><span>${typeTag}</span><span>${test?"Test Mode":"Practice Mode"}</span>${A.length>1?`<span>प्रयास ${no}</span>`:""}${cpath?`<span>${smE(cpath)}</span>`:""}</div>
+    ${exs.length?`<div class="exc" style="margin:8px 0 0;justify-content:center">${exs.map(e=>`<span class="exl">${smE(e)}</span>`).join("")}</div>`:""}
+    ${when?`<div class="rsdt">🗓️ ${when}</div>`:""}
+    <div class="rsbig"><div class="rsring" style="--p:${pcc}"><b>${pc}%</b><small>Score</small></div>
+      <div class="rsmk"><div><small>प्राप्त अंक</small><b>${fmtM(obt)}</b></div><div><small>कुल अंक</small><b>${tot}</b></div></div></div>
+    ${test?"":`<div class="rsdt" style="margin-top:6px">Practice Mode में अंक = सही उत्तर</div>`}</section>`;
+  const cardHtml=`<section class="rscards">${cards.map(c=>`<button class="rsc1 ${c[4]}" ${c[0]&&Q.length?`onclick="rsTab('${c[0]}')"`:"disabled"} aria-label="${c[2]}"><span class="ci">${c[1]}</span><b>${c[3]}</b><small>${c[2]}</small></button>`).join("")}</section>`;
+  const actions=`<section class="rsact"><button class="btn rsprim" onclick="rsGoReview()" ${Q.length?"":"disabled"}>📖 Review Answers</button>
+    <div class="rsa2"><button class="btn ghost" onclick="rsPracticeWrong()" ${w&&Q.length?"":"disabled"}>❌ Practice Wrong (${w})</button><button class="btn ghost" onclick="retestResult()" ${Q.length||(h&&h.tid)?"":"disabled"}>🔁 Retest</button></div>
+    <button class="rshome" onclick="home()">🏠 Back to Home</button></section>`;
+  const analysis=`<section class="card rsec"><h3>📊 Score Analysis</h3>${n>0?`<div class="rsan">${jvDonut(r,w,s)}<ul class="rsleg"><li><i style="background:#16a34a"></i>सही <b>${r}</b></li><li><i style="background:#dc2626"></i>गलत <b>${w}</b></li><li><i style="background:#94a3b8"></i>छोड़े <b>${s}</b></li></ul></div>`:""}
+    <div class="rsmx"><div><small>कुल अंक</small><b>${tot}</b></div>${test?`<div><small>सही उत्तरों से</small><b style="color:var(--ok)">+${gain}</b></div>`:""}${neg?`<div><small>Negative marking</small><b style="color:var(--bad)">−${neg}</b></div>`:""}<div><small>प्राप्त अंक</small><b>${fmtM(obt)}</b></div></div>
+    ${neg?`<p class="legend" style="margin:8px 0 0">${w} गलत × ${fmtM(mk*ng)} अंक = −${neg}</p>`:""}
+    ${RS.t?`<p class="legend" style="margin:8px 0 0">कुल समय: <b>${fmt(RS.t)}</b> · औसत प्रति प्रश्न: <b>${fmt(Math.round(RS.t/Math.max(1,n)))}</b></p>`:""}</section>`;
+  const subj=grp.g.length?`<section class="card rsec"><h3>${grp.kind==="subject"?"📚 Subject-wise Performance":"📖 Chapter-wise Performance"}</h3><div class="rsub">${grp.g.map(g=>`<div class="rsr"><div class="rsrt"><b>${smE(g.n)}</b><span>${g.acc===null?"N/A":g.acc+"%"}</span></div>
+    <div class="rsbar"><div class="b1" style="width:${g.r/g.t*100}%"></div><div class="b2" style="width:${g.w/g.t*100}%"></div></div>
+    <div class="rsrs"><span>कुल ${g.t}</span><span>✅ ${g.r}</span><span>❌ ${g.w}</span><span>➖ ${g.s}</span>${g.marks!==null?`<span>अंक ${g.marks}/${g.max}</span>`:""}</div></div>`).join("")}</div></section>`:"";
+  const insH=ins.length?`<section class="card rsec"><h3>💡 Performance Insights</h3><ul class="rsins">${ins.map(l=>`<li><span>${l[0]}</span><p>${l[1]}</p></li>`).join("")}</ul>
+    ${jvW.length?`<div class="rsimp"><button class="btn" onclick="rsImprove(0)">🎯 Improve Weak Topics</button>${jvW.length>1?jvW.map((x,i)=>`<button class="rsch" onclick="rsImprove(${i})">${smE(x.l)}</button>`).join(""):""}</div>`:""}</section>`:"";
+  const prevL=A.filter(o=>o.x.ts!==RS.ts).sort((a,b)=>b.x.ts-a.x.ts);
+  const prevH=A.length>1?`<section class="card rsec"><h3>🕘 Previous Attempts</h3><div class="rsprev">${prevL.map(o=>{const x=o.x,mm=x.mk||1,tt=x.m==="test"?fmtM((x.r+x.w+x.s)*mm):(x.r+x.w+x.s);
+    return`<button onclick="rsPrev(${o.i})"><span class="pn">#${o.no}</span><span class="pd"><b>${jvDate(x.ts)}</b><small>✅ ${x.r} · ❌ ${x.w}</small></span><span class="ps"><b>${x.sc}/${tt}</b><small>${jvPct(x.sc,tt)}%</small></span><i>›</i></button>`}).join("")}</div></section>`:"";
+  const gone=RS.gone?`<div class="mst mu">ℹ️ ${RS.gone} प्रश्न अब उपलब्ध नहीं हैं, इसलिए नीचे नहीं दिख रहे। स्कोर सेव किया हुआ है।</div>`:"";
+  const qa=`<section class="card rsec" id="rsqs"><h3 id="rsqh">📝 Question Analysis</h3>${gone}${Q.length?`<div id="rsqa">${jvQAHtml()}</div>`:`<div class="mst mu">ℹ️ इस प्रयास का प्रश्न-वार विवरण उपलब्ध नहीं है (सिर्फ़ स्कोर सेव है)।</div>`}</section>`;
+  jvRT={tab:"all",n:20};
+  const order=CFG.kind==="subject"||CFG.kind==="mock"||grp.kind?[analysis,subj,insH,prevH,qa]:[analysis,insH,prevH,qa];
+  view(hdr(RS.fromHist?BACK:"","","रिज़ल्ट")+`<main class="pg rsdash">${header}${cardHtml}${actions}${order.join("")}</main>`,"",false,RS.fromHist?()=>(ret||home)():null);
+  if(fresh&&!window.__rsPlayed){}
+}
+
+function retestResult(){
+  const h=RS.h||{},tid=h.tid||(CFG.t&&CFG.t.id)||"";
+  if(tid&&!/^mistake-/.test(String(tid))){
+    const x=TL.find(y=>String(y.id)===String(tid));
+    if(x)return retestTest(x.id);
+  }
+  if(!Q.length)return toast("इस टेस्ट के प्रश्न अब उपलब्ध नहीं हैं");
+  if(RS.gone&&!confirm("कुछ प्रश्न अब उपलब्ध नहीं हैं। बचे हुए "+Q.length+" प्रश्नों से Retest शुरू करें?"))return;
+  const isM=/^mistake-/.test(String(tid))||h.cx==="mistake"||CFG.kind==="mistake";
+  const cfg=isM?{mark:1,neg:NEG,dur:0,kind:"mistake",ctx:"mistake",mkd:h.mkd||CFG.mkd||"w",t:{id:tid||"mistake-w",title:label,kind:"mistake",marks_per_q:1,neg_marking:NEG}}
+    :(CFG.kind?{mark:CFG.mark,neg:CFG.neg,dur:0,kind:CFG.kind,ctx:"test",t:{id:tid||"",title:label,kind:CFG.kind,marks_per_q:CFG.mark,neg_marking:CFG.neg,exams:[],exam:""}}:{ctx:h.cx==="set"?"set":"chapter"});
+  Q.forEach(q=>{TESTQ[q.question]=q});
+  startFresh(Q.slice(),label,mode,cfg);
+}
+
+/* ---------- NEW indicator (Home / Tests) ---------- */
+let NEWSNAP={};
+const jvSeen=()=>jvGet("jkx_seen_v1");
+const jvCat=c=>TL.filter(x=>x.kind===c);
+function newBaseline(){
+  const S=jvSeen();let d=0;
+  if(!S.pyq&&QS.some(q=>q.id)){S.pyq=QS.filter(q=>q.id).map(q=>q.id);d=1}
+  if(TLOK)["mock","subject"].forEach(c=>{if(!S[c]){S[c]=jvCat(c).map(x=>String(x.id));d=1}});
+  if(d)jvSet("jkx_seen_v1",S);
+}
+function newIds(cat){
+  const S=jvSeen();if(!S[cat])return[];const s=new Set(S[cat]);
+  return cat==="pyq"?QS.filter(q=>q.id&&!s.has(q.id)).map(q=>q.id):jvCat(cat).filter(x=>!s.has(String(x.id))).map(x=>String(x.id));
+}
+const newCount=cat=>{newBaseline();return newIds(cat).length};
+function newOpen(cat,merge){
+  newBaseline();const ids=newIds(cat);
+  const sn=(merge||!ids.length)&&NEWSNAP[cat]?NEWSNAP[cat]:{ids:new Set(),ch:new Set(),sub:new Set()};
+  ids.forEach(i=>sn.ids.add(i));
+  if(cat==="pyq")QS.forEach(q=>{if(sn.ids.has(q.id)){sn.ch.add(q.subject+"||"+q.chapter);sn.sub.add(q.subject)}});
+  else jvCat(cat).forEach(x=>{if(sn.ids.has(String(x.id)))sn.sub.add(x.subject||"")});
+  NEWSNAP[cat]=sn;
+  if(ids.length){const S=jvSeen();S[cat]=(S[cat]||[]).concat(ids);jvSet("jkx_seen_v1",S)}
+}
+function nb(cat){const n=newCount(cat);return n?`<span class="nbadge" data-nb="1">NEW${cat==="pyq"?" +"+n:n>1?" · "+n:""}</span>`:""}
+const nbTxt=cat=>{const n=newCount(cat);return n?"NEW"+(cat==="pyq"?" +"+n:n>1?" "+n:""):""};
+function newRefresh(){
+  document.querySelectorAll(".tiles2 button[data-cat]").forEach(b=>{const o=b.querySelector(".nbadge");if(o)o.remove();const h=nb(b.dataset.cat);if(h)b.insertAdjacentHTML("afterbegin",h)});
+}
+function homeExtras(){
+  NEWSNAP={};jvBackfill();newBaseline();newRefresh();
+  if(Date.now()-(window.__tlAt||0)>30000){window.__tlAt=Date.now();
+    tstLoad().then(()=>{if(document.querySelector(".tiles2")){newBaseline();newRefresh()}}).catch(()=>{})}
+  ntCheck();
+}
+
+/* ---------- Notification popup (user-wise tracking) ---------- */
+const jvNT={rows:[],ts:0,noSrv:false,pulled:{}};
+const ntUid=()=>{try{return(window.JKAuth&&JKAuth.uid&&JKAuth.uid())||"anon"}catch(e){return"anon"}};
+function ntState(){const o=jvGet("jkx_nt_"+ntUid());return{pop:o.pop||[],read:o.read||[],base:!!o.base}}
+const ntSave=st=>jvSet("jkx_nt_"+ntUid(),st);
+const ntCached=()=>{try{const a=JSON.parse(localStorage.getItem("jkx_nt_cache")||"[]");return Array.isArray(a)?a:[]}catch(e){return[]}};
+async function ntFetch(force){
+  if(!force&&jvNT.rows.length&&Date.now()-jvNT.ts<45000)return jvNT.rows;
+  const r=await fetch(SM_BASE+"/rest/v1/app_notifications?select=id,icon,title,body,created_at&is_active=eq.true&order=created_at.desc&limit=100",{cache:"no-store",headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}});
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  const d=await r.json();if(!Array.isArray(d))throw new Error("bad");
+  jvNT.rows=d;jvNT.ts=Date.now();try{localStorage.setItem("jkx_nt_cache",JSON.stringify(d.slice(0,60)))}catch(e){}
+  return d;
+}
+async function ntAuth(){
+  try{if(!(window.JKAuth&&JKAuth.isLoggedIn()))return null;await JKAuth.refresh();const s=JKAuth.getSession();return s&&s.access_token&&s.uid?s:null}catch(e){return null}
+}
+async function ntPush(ids,flags){
+  if(jvNT.noSrv||!ids.length)return;const s=await ntAuth();if(!s)return;
+  try{
+    const now=new Date().toISOString();
+    const r=await fetch(SM_BASE+"/rest/v1/notification_seen?on_conflict=user_id,notification_id",{method:"POST",headers:{apikey:SM_KEY,Authorization:"Bearer "+s.access_token,"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(ids.map(id=>Object.assign({user_id:s.uid,notification_id:String(id),updated_at:now},flags)))});
+    if(r.status===404||r.status===400)jvNT.noSrv=true;
+  }catch(e){}
+}
+async function ntPull(){
+  const uid=ntUid();if(jvNT.noSrv||jvNT.pulled[uid]||uid==="anon")return;
+  const s=await ntAuth();if(!s)return;
+  try{
+    const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),4000);
+    const r=await fetch(SM_BASE+"/rest/v1/notification_seen?select=notification_id,popup_seen,read&limit=1000",{headers:{apikey:SM_KEY,Authorization:"Bearer "+s.access_token},signal:ac.signal});
+    clearTimeout(tm);
+    if(r.status===404||r.status===400){jvNT.noSrv=true;return}
+    if(!r.ok)return;
+    const d=await r.json();jvNT.pulled[uid]=1;
+    if(Array.isArray(d)&&d.length){const st=ntState(),P=new Set(st.pop),R=new Set(st.read);
+      d.forEach(x=>{const id=String(x.notification_id);if(x.popup_seen)P.add(id);if(x.read){R.add(id);P.add(id)}});
+      st.pop=Array.from(P);st.read=Array.from(R);ntSave(st)}
+  }catch(e){}
+}
+function ntUnread(){
+  const st=ntState();if(!st.base)return 0;const R=new Set(st.read);
+  return(jvNT.rows.length?jvNT.rows:ntCached()).filter(r=>!R.has(String(r.id))).length;
+}
+const ntDot=()=>ntUnread()>0?'<span class="bdot"></span>':"";
+function paintBell(){const b=document.querySelector(".bell");if(!b)return;const d=b.querySelector(".bdot");if(d)d.remove();if(ntUnread()>0)b.insertAdjacentHTML("beforeend",'<span class="bdot"></span>')}
+function ntMarkRead(ids){
+  const st=ntState(),P=new Set(st.pop),R=new Set(st.read),add=[];
+  ids.forEach(id=>{id=String(id);if(!R.has(id)){R.add(id);add.push(id)}P.add(id)});
+  st.pop=Array.from(P);st.read=Array.from(R);st.base=true;ntSave(st);
+  if(add.length)ntPush(add,{popup_seen:true,read:true});
+  paintBell();
+}
+async function ntCheck(){
+  if(!document.querySelector(".greet"))return;
+  let rows;
+  try{rows=await ntFetch()}catch(e){rows=ntCached()}
+  if(!rows||!rows.length){paintBell();return}
+  await ntPull();
+  if(!document.querySelector(".greet"))return;
+  const st=ntState(),ids=rows.map(r=>String(r.id));
+  if(!st.base){   /* pehli baar: purane notifications ka popup nahi dikhana */
+    st.pop=ids.slice();st.read=ids.slice();st.base=true;ntSave(st);paintBell();return;
+  }
+  const P=new Set(st.pop),fresh=rows.filter(r=>!P.has(String(r.id)));
+  paintBell();
+  if(!fresh.length)return;
+  if(document.querySelector(".mdl,.ntp"))return;
+  const n=fresh[0];
+  fresh.forEach(r=>P.add(String(r.id)));st.pop=Array.from(P);ntSave(st);   /* dikhate hi "seen" — dobara nahi aayega */
+  ntPush(fresh.map(r=>r.id),{popup_seen:true});
+  ntShow(n,fresh.length-1);
+}
+function ntShow(n,extra){
+  document.querySelectorAll(".ntp").forEach(e=>e.remove());
+  const d=document.createElement("div");d.className="ntp";d.setAttribute("role","dialog");d.setAttribute("aria-label","नई सूचना");
+  d.innerHTML=`<div class="ntpc"><button class="ntx" aria-label="बंद करें">✕</button><div class="ntph"><span class="nti">${smE(n.icon||"🔔")}</span><div><small>नई सूचना</small><h3>${smE(n.title)}</h3></div></div><p>${jvTxt(n.body,150).replace(/&lt;/g,"&lt;")}</p>${extra>0?`<small class="ntm">+ ${extra} और नई सूचना${extra>1?"एँ":""}</small>`:""}<div class="ntb"><button class="btn ghost ntc">बंद करें</button><button class="btn nts">See More →</button></div></div>`;
+  const close=()=>{d.classList.add("out");setTimeout(()=>d.remove(),180)};
+  d.onclick=e=>{if(e.target===d)close()};
+  d.querySelector(".ntx").onclick=close;d.querySelector(".ntc").onclick=close;
+  d.querySelector(".nts").onclick=()=>{d.remove();notifs()};
+  document.body.appendChild(d);
+}
+async function ntRender(N,nh){
+  let rows=[];try{rows=await ntFetch(true)}catch(e){rows=ntCached()}
+  const el=document.getElementById("ntl");if(!el)return;
+  if(!rows||!rows.length)return;
+  const rd=new Set(ntState().read);
+  const items=rows.map(r=>({i:smE(r.icon||"🔔"),t:smE(r.title)+(rd.has(String(r.id))?"":' <span class="nbadge inl">NEW</span>'),p:smE(r.body).replace(/\n/g,"<br>")+(r.created_at?`<br><small class="ntt">${jvDate(r.created_at)}</small>`:"")}));
+  el.innerHTML=nh(items.concat(N));
+  ntMarkRead(rows.map(r=>r.id));
+}
+
+/* ---------- Sync me history ke naye fields (tid, k, mk, ng ...) + test ke prashn ka text ---------- */
+function jvPackHist(h,idOf){
+  const qi=h.qs?h.qs.map(x=>idOf[x]||null):null;
+  const d={n:h.n,r:h.r,w:h.w,s:h.s,m:h.m,sc:h.sc,ts:h.ts,qi:qi,p:h.p,t:h.t,rv:h.rv};
+  ["tid","k","mk","ng","an","ex","cx","mkd"].forEach(f=>{if(h[f]!=null)d[f]=h[f]});
+  if(h.qs&&qi.some(x=>!x))d.qx=h.qs.map((x,i)=>qi[i]?null:x);
+  return{data:d};
+}
+function jvUnpackHist(d,textOf){
+  const e={n:d.n,r:d.r,w:d.w,s:d.s,m:d.m,sc:d.sc,ts:d.ts};
+  ["tid","k","mk","ng","an","ex","cx","mkd"].forEach(f=>{if(d[f]!=null)e[f]=d[f]});
+  if(d.qi){e.qs=d.qi.map((id,i)=>textOf[id]||(d.qx&&d.qx[i])||null);e.p=d.p;e.t=d.t;e.rv=d.rv}
+  return e;
+}
+
 </script>
 </body>
 </html>
