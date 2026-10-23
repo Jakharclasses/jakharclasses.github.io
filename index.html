@@ -985,7 +985,7 @@ function home(){
    <button style="background:#7c3aed" data-cat="mock" onclick="mockList('home')">${nb("mock")}<span>🎯</span><b>Full Mock Test</b><small>All Subjects Combined</small></button>
    <button style="background:#f59e0b" onclick="mistakes()"><span>🔍</span><b>Mistake Analysis</b><small>गलतियाँ सुधारें</small></button>
    <button style="background:#e11d1d" onclick="youtube()"><span class="yti">${YT}</span><b>YouTube</b><small>Videos &amp; PDF</small></button>
-   <button class="dvt" style="background:linear-gradient(135deg,#0f766e,#14b8a6)" onclick="dvDocs()"><span>📑</span><b>Lab Assistant Geography DV Documents</b><small>PDF · Forms · Updates</small></button></div>
+   <button class="dvt" style="background:linear-gradient(135deg,#be123c,#f43f5e)" onclick="location.href='rank-analyzer.html'"><span class="nbadge">NEW</span><span>📊</span><b>Rank Analysis करें</b><small>Lab Assistant · रैंक व कटऑफ़</small></button></div>
   <button class="seemore" onclick="seeMore()">See More &nbsp;→</button>
   <div class="sh"><h3>हाल की गतिविधि</h3><a onclick="goTab('tests')">सभी देखें →</a></div>
   <div class="card act">${H.length?H.slice(0,3).map(actRow).join(""):"<small>अभी कोई टेस्ट नहीं दिया — ऊपर से शुरू करें।</small>"}</div></main>`,"home");homeExtras();
@@ -1475,7 +1475,7 @@ function dvMore(){
 }
 async function dvDocs(keep){
   clearInterval(tick);DV_IO=null;
-  view(hdr(BACK,"","DV Documents")+`<main class="pg"><div class="dvh"><h2>Lab Assistant Geography DV Documents</h2><p>Important PDFs, document verification forms, and the latest administrative updates.</p></div><div id="dvroot"><div class="card cs"><small>लोड हो रहा है…</small></div></div></main>`,"",false,home);
+  view(hdr(BACK,"","DV Documents")+`<main class="pg"><div class="dvh"><h2>Lab Assistant Geography DV Documents</h2><p>Important PDFs, document verification forms, and the latest administrative updates.</p></div><div id="dvroot"><div class="card cs"><small>लोड हो रहा है…</small></div></div></main>`,"",false,seeMore);
   if(!(keep===true&&DVS.ok)){
     try{
       const H={headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}},B=SM_BASE+"/rest/v1/";
@@ -1521,6 +1521,7 @@ async function dvView(i){
 function seeMore(){
   clearInterval(tick);
   view(hdr(BACK,"","See More")+`<main class="pg"><div class="sqg">
+  ${SQ({c:"#0f766e",i:"📑",t:"Lab Assistant Geography DV Documents",s:"PDF · Forms · Updates",on:"dvDocs()"})}
   ${SQ({c:"#0891b2",i:"📖",t:"Study Material & PDF",s:"स्टडी मटेरियल और PDF",b:"Coming Soon",soon:1,on:"smSoon('Study Material & PDF')"})}
   ${SQ({c:"#1457d9",i:"🎓",t:"Courses",s:"अपनी तैयारी के लिए Courses",b:"Coming Soon",soon:1,on:"smSoon('Courses')"})}
   ${SQ({c:"#e8590c",i:"🧭",t:"Prepare According to Your Exam",s:"अपनी परीक्षा के अनुसार तैयारी",b:EXAMS.length+" परीक्षाएँ",on:"examList()"})}
@@ -1796,6 +1797,20 @@ function scoreLegend(r,w,sc){
 
 document.documentElement.classList.toggle("dark",store.get("jk_theme")[0]==="dark");
 splash();
+</script>
+<script>/* Rank Analyzer से जुड़ाव:
+ (1) "← JAKHAR ऐप" (index.html#home) और लॉगिन-गेट (index.html#login) पर स्प्लैश छोड़कर सीधे होम/लॉगिन खुले।
+ (2) Rank Analyzer के शेयर-लिंक से आया बिना-लॉगिन विद्यार्थी: लॉगिन होते ही (home() चलते ही) वापस उसी लिंक पर भेजें। */
+(function(){
+ function pend(){try{var p=JSON.parse(localStorage.getItem("jk_after_login")||"null");
+  if(p&&p.u&&/^rank-analyzer\.html(#[A-Za-z0-9_=\-]*)?$/.test(p.u)&&Date.now()-p.t<3600000)return p.u;localStorage.removeItem("jk_after_login")}catch(e){}return ""}
+ if(typeof home==="function"){var _home=home;
+  home=function(){var u=window.JKAuth&&JKAuth.isLoggedIn()?pend():"";
+   if(u){try{localStorage.removeItem("jk_after_login")}catch(e){}location.replace(u);return}
+   return _home.apply(this,arguments)}}
+ window.addEventListener("load",function(){try{var h=location.hash;
+  if(h==="#home"||h==="#login"){var g=document.getElementById("gs");if(g)g.click();try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}}}catch(e){}});
+})();
 </script>
 <script>
 /* Background refresh: Supabase se questions la kar cache me rakhta hai (agli baar app khulne par use hoga). Fail ho to chup-chaap ignore. */
