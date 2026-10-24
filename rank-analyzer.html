@@ -1925,14 +1925,16 @@ const RB_BK=["OPEN","EWS","OBC","MBC","SC","ST"],RB_BKN={OPEN:"GEN (सामा
 function rbSubOf(c){const sc=String(c.subcat||"").toUpperCase(),f=c.gender==="FEMALE",o=["ALL",f?"F":"M"];
  if(f&&/^WID/.test(sc))o.push("WID");else if(f&&/^DIV/.test(sc))o.push("DIV");
  rbHg(c).forEach(g=>o.push(g));return o}
-const RB_SUBN={ALL:"GEN (सामान्य)",M:"पुरुष",F:"FEM (महिला — आरक्षित महिला पद सहित)",WID:"WID. (विधवा)",DIV:"DIV. (परित्यक्ता)"};Object.keys(RB_HQN).forEach(k=>RB_SUBN[k]=RB_HQN[k]);Object.assign(RB_SUBN,{EXM:"EX (भूतपूर्व सैनिक)",SP:"SP (खिलाड़ी)",BLV:"BLV (दृष्टिबाधित)",HI:"HI (श्रवणबाधित)",LDCP:"LD/CP/ACID/DW (अस्थि-दिव्यांग)",MIMD:"MIMD (ID/MI/SLD/Autism)"});
+const RB_SUBN={ALL:"GEN (सामान्य)",M:"पुरुष",F:"FEM (महिला)",WID:"WID. (विधवा)",DIV:"DIV. (परित्यक्ता)"};Object.keys(RB_HQN).forEach(k=>RB_SUBN[k]=RB_HQN[k]);Object.assign(RB_SUBN,{EXM:"EX (भूतपूर्व सैनिक)",SP:"SP (खिलाड़ी)",BLV:"BLV (दृष्टिबाधित)",HI:"HI (श्रवणबाधित)",LDCP:"LD/CP/ACID/DW (अस्थि-दिव्यांग)",MIMD:"MIMD (ID/MI/SLD/Autism)"});
 const RB_SUBO=["ALL","F","WID","DIV","EXM","SP","BLV","HI","LDCP","MIMD"];
 /* एक परिदृश्य से: pool→dept→bucket→sub→{rank,marks} (अंतिम चयनित = सबसे बड़ी रैंक) */
-function rbLastMap(r,pool){const W=r[pool],M={},RSV=new Set();W.res.forEach((v)=>{if(v.rs===1&&!v.q&&!/·(Q|LB)/.test(String(v.b)))RSV.add(v.p+"|"+String(v.b).split("·")[0])}); /* P14 (24-10-2026): महिला (FEM) पंक्ति केवल तब, जब उस (पद, वर्ग) में आरक्षित महिला सीट पर सच में चयन हुआ; वरना महिलाएँ GEN पंक्ति में ही हैं और अलग "आख़िरी महिला" अंक भ्रामक (GEN से ऊँचा) दिखता है */
+function rbLastMap(r,pool){const W=r[pool],M={}; /* P17 (24-10-2026): FEM पंक्ति हर वर्ग में लौटाई (आधिकारिक 2022 परिणाम की तरह). FEM = महिला के लिए आवश्यक अंतिम अंक: आरक्षित महिला सीट सहित अंतिम चयनित महिला, पर कभी GEN (मेरिट) कटऑफ़ से ऊँची नहीं — आरक्षित महिला सीट न लगी हो तो FEM = GEN */
  W.res.forEach((v,roll)=>{const c=rbCandOf(roll);if(!c)return;const b=String(v.b).split("·")[0];
   const hq=!!v.q||/·(Q|LB)/.test(String(v.b)),rs=v.rs||0; /* S06: क्षैतिज-कोटा (Q/LB) और आरक्षित महिला पद 'मेरिट' पंक्ति में नहीं गिने जाते */
-  rbSubOf(c).forEach(sb=>{if(!hq){if(sb==="ALL"&&rs)return;if(sb==="F"&&(rs===2||!RSV.has(v.p+"|"+b)))return}else if(sb==="ALL"||sb==="M"||sb==="F"||sb==="WID"||sb==="DIV"||(v.q&&v.g&&sb!==v.g))return; /* P8: क्षैतिज कोटे से चुना अभ्यर्थी बहु-फ़्लैग होने पर भी केवल उसी समूह की पंक्ति में (R6.2) */
-   const k=v.p+"|"+b+"|"+sb,o=M[k];if(!o||c.rank>o.rank)M[k]={rank:c.rank,marks:c.marks}})});return M}
+  rbSubOf(c).forEach(sb=>{if(!hq){if(sb==="ALL"&&rs)return;if(sb==="F"&&rs===2)return}else if(sb==="ALL"||sb==="M"||sb==="F"||sb==="WID"||sb==="DIV"||(v.q&&v.g&&sb!==v.g))return; /* P8: क्षैतिज कोटे से चुना अभ्यर्थी बहु-फ़्लैग होने पर भी केवल उसी समूह की पंक्ति में (R6.2) */
+   const k=v.p+"|"+b+"|"+sb,o=M[k];if(!o||c.rank>o.rank)M[k]={rank:c.rank,marks:c.marks}})});
+ Object.keys(M).forEach(k=>{if(!/\|ALL$/.test(k))return;const fk=k.slice(0,-3)+"F",a=M[k];if(!M[fk]||a.rank>M[fk].rank)M[fk]={rank:a.rank,marks:a.marks}}); /* FEM = max(अंतिम महिला, GEN की अंतिम) — यानी GEN से ऊँची नहीं; महिला न चुनी हो तब भी GEN के बराबर */ /* P17: FEM कभी GEN से ऊँची नहीं */
+ return M}
 let _rbCM=null,_rbCMsrc=null;function rbCandOf(roll){if(_rbCMsrc!==CANDS||!_rbCM){_rbCM=new Map(CANDS.map(c=>[c.roll,c]));_rbCMsrc=CANDS}return _rbCM.get(roll)} /* P16: रोल→उम्मीदवार नक्शा (linear find की जगह) */
 const _rbCutCache={};
 function rbCutData(){const key=[RB_X.abs,RB_X.hq].join("|");if(_rbCutCache[key])return _rbCutCache[key];
@@ -1971,7 +1973,7 @@ function rbCutHTML(c){const detail=(t,b,o)=>'<details class="acc"'+(o?' open':''
    if(!rows)return"";
    return detail(esc(RB_NAME[id].replace(" (TSP)","")),rbNoSeat(id)+"<div class='sc cut1'><table><tr><th>श्रेणी</th><th>उप-श्रेणी</th><th>अंतिम रैंक (अनुमान)</th><th>अंतिम अंक</th><th>संभावित बॉर्डरलाइन</th></tr>"+rows+"</table></div>",di===0&&pool==="ns")}).join("");
   return "<h3>"+title+"</h3><p class='mu'>"+note+"</p>"+dep};
- return "<div class='box wa'>ये अनुमानित आँकड़े हैं, आधिकारिक कटऑफ़ नहीं। रैंक/अंक का दायरा चार परिदृश्यों (सामान्य / TSP अलग पूल × लैब बालक सहित-रहित) का न्यूनतम–अधिकतम है। 'संभावित बॉर्डरलाइन' = बोर्ड की DV-अनुपस्थित सूची के सभी उम्मीदवार हटाने पर चयन कितनी रैंक तक पहुँच सकता है (वेटिंग लिस्ट नहीं)। 'GEN (सामान्य)' पंक्ति में केवल मेरिट से चुने गए उम्मीदवार गिने गए हैं (महिला-आरक्षित व क्षैतिज पदों के चयन छोड़कर); महिला-आरक्षित, विधवा/परित्यक्ता और क्षैतिज (पूर्व सैनिक/खिलाड़ी/दिव्यांग) पदों के चयन उनकी अपनी पंक्तियों में अलग दिखते हैं, इसलिए वे सामान्य कटऑफ़ को नीचे नहीं खींचते। छोटे विभागों में कुल महिला पद डेटा में दर्ज नहीं हैं; वहाँ केवल दर्ज विधवा/परित्यक्ता पद लागू किए गए हैं। आपकी श्रेणी की पंक्तियाँ चिह्नित हैं।</div>"+
+ return "<div class='box wa'>ये अनुमानित आँकड़े हैं, आधिकारिक कटऑफ़ नहीं। रैंक/अंक का दायरा चार परिदृश्यों (सामान्य / TSP अलग पूल × लैब बालक सहित-रहित) का न्यूनतम–अधिकतम है। 'संभावित बॉर्डरलाइन' = बोर्ड की DV-अनुपस्थित सूची के सभी उम्मीदवार हटाने पर चयन कितनी रैंक तक पहुँच सकता है (वेटिंग लिस्ट नहीं)। 'GEN (सामान्य)' पंक्ति में केवल मेरिट से चुने गए उम्मीदवार गिने गए हैं (महिला-आरक्षित व क्षैतिज पदों के चयन छोड़कर); महिला-आरक्षित, विधवा/परित्यक्ता और क्षैतिज (पूर्व सैनिक/खिलाड़ी/दिव्यांग) पदों के चयन उनकी अपनी पंक्तियों में अलग दिखते हैं, इसलिए वे सामान्य कटऑफ़ को नीचे नहीं खींचते। छोटे विभागों में कुल महिला पद डेटा में दर्ज नहीं हैं; वहाँ केवल दर्ज विधवा/परित्यक्ता पद लागू किए गए हैं। FEM पंक्ति = महिला के लिए आवश्यक अंतिम अंक (आरक्षित महिला पद सहित); यह GEN कटऑफ़ से ऊपर नहीं जाती, और जहाँ आरक्षित महिला सीट लगी ही नहीं वहाँ GEN के बराबर रहती है। आपकी श्रेणी की पंक्तियाँ चिह्नित हैं।</div>"+
   mk("ns",RB_NS,"गैर-अनुसूचित क्षेत्र (NTSP)","विभाग-वरीयता क्रम (अनुमान): माध्यमिक → संस्कृत → कृषि → PHED → FSL।")+
   mk("ts",RB_S,"अनुसूचित क्षेत्र (TSP)","TSP पूल के पद, उम्मीदवारों की TSP-पात्रता के आधार पर।")+(function(){try{return rbHzHTML()}catch(e){console.error(e);return""}})()}
 try{rules10Fill()}catch(e){console.error(e)}
