@@ -631,50 +631,6 @@ const approved=id=>CFG.rules.some(r=>r.id===id&&r.status==="approved");
 function sciPosts(){return CFG.posts.slice()}
 function totalPostsByCat(){const t={};sciPosts().forEach(p=>Object.entries(p.cat||{}).forEach(([c,n])=>t[c]=(t[c]||0)+n));return t}
 function totalPosts(){return sciPosts().reduce((s,p)=>s+(p.total||0),0)}
-function analyze(c){
- const r={c,limits:[],pending:[]};
- r.totalRank=c.rank;
- r.dupRank=CANDS.filter(x=>x.rank===c.rank).length>1;
- // कुल मेरिट में आगे के उम्मीदवार (सूची के अनुसार)
- r.aheadTotal=CANDS.filter(x=>x.rank<c.rank).length;
- // कैटेगरी स्थिति: सूची में समान कैटेगरी वालों की गिनती (तभी "कैटेगरी रैंक" कहें जब R1 स्वीकृत हो)
- const sameCat=CANDS.filter(x=>x.category===c.category);
- r.catPos=sameCat.filter(x=>x.rank<=c.rank).length;
- r.catAhead=r.catPos-1;
- r.catRankOfficial=approved("R1");
- if(!r.catRankOfficial)r.pending.push("कैटेगरी रैंक की गणना का नियम (R1) अभी स्वीकृत नहीं – नीचे की संख्या सूची-आधारित गिनती मात्र है");
- const tcat=totalPostsByCat();
- r.catPosts=tcat[c.category];
- r.totalPosts=totalPosts();
- if(r.catPosts===undefined)r.limits.push("इस कैटेगरी के पद डेटा में उपलब्ध नहीं");
- if(!approved("R2"))r.pending.push("कैटेगरी माइग्रेशन नियम (R2) लंबित");
- if(!approved("R3"))r.pending.push("क्षैतिज आरक्षण नियम (R3) लंबित");
- if(!approved("R4")){r.limits.push("विभागीय वरीयता उपलब्ध/स्वीकृत नहीं – विभागवार आवंटन तय नहीं किया जा सकता")}
- // कुल-पद बनाम कैटेगरी स्थिति (संख्यात्मक तुलना, आवंटन नहीं)
- r.numericWithin=(r.catPosts!==undefined)?(r.catPos<=r.catPosts):null;
- // अंतिम स्थिति: केवल VERIFIED डेटा + सब स्वीकृत नियम होने पर ही मजबूत स्टेटस
- const allRules=["R1","R2","R3","R4"].every(approved);
- if(CFG.dataStatus!=="VERIFIED"||r.dupRank){r.status="विश्वसनीय निष्कर्ष के लिए डेटा अपर्याप्त है।"}
- else if(!allRules){r.status="चयन की स्थिति कुछ शर्तों पर निर्भर है।"}
- else if(r.numericWithin===true){r.status="केवल संख्यात्मक तुलना: वर्ग की स्थिति वर्ग के पदों के भीतर है। असली स्थिति के लिए ऊपर का स्तर (A/B/W/D) देखें।"}
- else if(r.numericWithin===false){r.status="केवल संख्यात्मक तुलना: वर्ग की स्थिति वर्ग के पदों से बाहर है। असली स्थिति के लिए ऊपर का स्तर (A/B/W/D) देखें।"}
- else r.status="विश्वसनीय निष्कर्ष के लिए डेटा अपर्याप्त है।";
- return r;
-}
-
-/* ============ AUTO COMMENT (केवल गणना के परिणाम को हिंदी में लिखता है) ============ */
-const DISC="यह विश्लेषण आधिकारिक चयन की गारंटी नहीं है।";
-function comments(r){
- const c=r.c, dv=`डेटा: ${CFG.dataStatus} (${CFG.dataVersion}), नियम संस्करण: ${CFG.version}`;
- const cat=r.catPosts!==undefined?`${c.category} कैटेगरी के कुल ${r.catPosts} पद`:`${c.category} कैटेगरी के पद डेटा उपलब्ध नहीं`;
- const catLine=`सूची में ${c.category} कैटेगरी में आपकी स्थिति ${r.catPos} (आपसे आगे ${r.catAhead})`;
- return{
- short:`${c.name} जी, रैंक ${c.rank} (${c.category}) के लिए उपलब्ध डेटा के आधार पर: ${r.status} ${DISC}`,
- detail:`नाम: ${c.name}\nरैंक: ${c.rank} | कैटेगरी: ${c.category}\n${catLine}\n${cat}\nकुल पद: ${r.totalPosts}\nस्थिति: ${r.status}\nशर्तें/लंबित: ${r.pending.concat(r.limits).join("; ")||"—"}\n${dv}\n${DISC}`,
- admin:`[ADMIN] roll=${c.roll} rank=${c.rank} cat=${c.category} catPos=${r.catPos} catPosts=${r.catPosts??"NA"} status="${r.status}" | ${dv} | pending=${r.pending.length} limits=${r.limits.length}`,
- safe:`रैंक ${c.rank} (${c.category}): ${r.status} ${DISC}`};
-}
-
 /* ============ UI ============ */
 const $=id=>document.getElementById(id), esc=s=>String(s??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
 function statusCard(){
@@ -689,26 +645,7 @@ function search(){
  if(m.length>1){$("pick").innerHTML="<p>एक से अधिक रिकॉर्ड मिले, सही अभ्यर्थी चुनें:</p>"+m.map(x=>`<div class="row"><span>#${x.rank} ${esc(x.name)} s/o ${esc(x.father)} (${esc(x.roll)}, ${esc(x.category)}, ${x.marks})</span><button class="s" onclick="show('${esc(x.roll)}')">चुनें</button></div>`).join("");return}
  show(m[0].roll);
 }
-function show(roll){
- const c=CANDS.find(x=>String(x.roll)===String(roll));if(!c)return;$("pick").innerHTML="";
- const r=analyze(c), cm=comments(r);
- const deptRows=!CFG.posts.length?`<tr><td colspan="4" class="warn">विभागवार पद अभी लोड नहीं हुए (नोटिफिकेशन लंबित)</td></tr>`:CFG.posts.map(p=>`<tr><td>${esc(p.dept)}</td><td>${p.total}</td><td>${p.cat[c.category]??"—"}</td><td class="warn">${approved("R4")?"गणना लागू":"वरीयता/नियम लंबित – तय नहीं"}</td></tr>`).join("");
- $("out").innerHTML=`<div class="card"><h2>${esc(c.name)}</h2>
- <div class="sc"><table>
- <tr><th>रोल नंबर</th><td>${esc(c.roll)}</td><th>कुल रैंक</th><td>${c.rank}</td></tr>
- <tr><th>कैटेगरी</th><td>${esc(c.category)} ${esc(c.subcat||"")}</td><th>प्राप्तांक</th><td>${c.marks!=null?c.marks:"—"}</td></tr>
- <tr><th>कुल मेरिट में आगे</th><td>${r.aheadTotal}</td><th>सूची में कैटेगरी स्थिति</th><td>${r.catPos} (आगे ${r.catAhead})${r.catRankOfficial?"":" *"}</td></tr>
- <tr><th>लिंग</th><td>${c.gender==="MALE"?"पुरुष":"महिला"}</td><th>उप-श्रेणी / TSP</th><td>${esc(c.subcat||"—")} / ${c.tsp?"YES":"—"}</td></tr>
- <tr><th>स्रोत</th><td>2x सूची, पेज ${c.page||"—"}</td><th>PDF पेज</th><td>${c.page||"—"}</td></tr></table></div>
- <h2 style="margin-top:12px">विभागवार पद</h2><div class="sc"><table><tr><th>विभाग</th><th>कुल पद</th><th>${esc(c.category)} पद</th><th>स्थिति</th></tr>${deptRows}</table></div>
- <p><b>अंतिम आकलन:</b> ${esc(r.status)}</p>
- ${r.pending.concat(r.limits).length?`<p class="warn"><b>शर्तें/सीमाएँ:</b></p><ul>${r.pending.concat(r.limits).map(x=>`<li class="warn">${esc(x)}</li>`).join("")}</ul>`:""}
- ${r.dupRank?`<p class="err">इस रैंक के एक से अधिक रिकॉर्ड हैं – डेटा जाँचें।</p>`:""}
- <p class="mu">गणना: कुल मेरिट में आगे = सूची में कम रैंक वाले रिकॉर्ड; कैटेगरी स्थिति = सूची में समान कैटेगरी वाले (rank ≤ आपकी)। * = नियम R1 स्वीकृत नहीं, इसे आधिकारिक कैटेगरी रैंक न मानें। डेटा: ${esc(CFG.dataStatus)} ${esc(CFG.dataVersion)} • नियम संस्करण ${esc(CFG.version)} • तारीख ${new Date().toLocaleDateString("hi-IN")}</p>
- <div class="dis">यह रिपोर्ट उपलब्ध सत्यापित डेटा और निर्धारित भर्ती नियमों के आधार पर तैयार किया गया विश्लेषण है। विश्लेषण में कुछ आवश्यक अनुमान लगे हो सकते हैं, और उम्मीदवारों की वास्तविक विभाग-वरीयता, कुछ श्रेणी-विशेष विवरण और अन्य जानकारी हमारे पास उपलब्ध नहीं है; इसलिए वास्तविक कटऑफ या चयन परिणाम इस विश्लेषण से भिन्न हो सकता है। विवरण पेज के नीचे "अनुमान और अनुपलब्ध डेटा" में है। यह आधिकारिक चयन सूची या नियुक्ति की गारंटी नहीं है। अंतिम चयन संबंधित सक्षम प्राधिकारी और लागू आधिकारिक प्रक्रिया के अधीन होगा।</div></div>
- <div class="card"><h2>कमेंट / रिमार्क</h2>
- ${[["short","Short YouTube Comment"],["detail","Detailed Analysis"],["admin","Admin Remark"],["safe","Privacy-Safe Reply (नाम नहीं)"]].map(([k,l])=>`<b>${l}</b><pre id="c_${k}">${esc(cm[k])}</pre><button class="s" onclick="cp('c_${k}')">कॉपी</button>`).join("<br><br>")}</div>`;
-}
+function show(roll){} /* P13: पुराना सरल रिपोर्ट-रेंडर हटाया; असली show() आगे नई परिभाषा से */
 function cp(id){navigator.clipboard&&navigator.clipboard.writeText($(id).textContent).then(()=>$("msg").textContent="कॉपी हो गया")}
 function loadCsv(){
  try{
@@ -791,7 +728,7 @@ const REG=[
 function renderExtra(){
  const tr=Object.keys(X.tsp);
  const yes=CANDS.filter(c=>c.tsp).length;
- const inList=tr.filter(r=>CANDS.some(c=>String(c.roll)===r)).length;
+ const _rs=new Set(CANDS.map(c=>String(c.roll))),inList=tr.filter(r=>_rs.has(r)).length; /* P16: O(n×m) खोज की जगह Set */
  $("tspchk").innerHTML="TSP सूची (Annexure-2): "+tr.length+" उम्मीदवार • merit list में TSP=YES: "+yes+" • दोनों में मिलान: "+inList+". "+((inList===tr.length&&yes===tr.length)?"<span class='ok'>पूर्ण मेल</span>":"<span class='warn'>मेल अधूरा, जाँचें</span>");
  $("cuttab").innerHTML=cut2xHTML();
  renderHor();
@@ -800,26 +737,12 @@ function renderExtra(){
  renderPref();
 }
 function renderPref(){
- try{v4Refresh()}catch(e){}
  try{postsSummary();renderHor();if(window.vdRender)vdRender()}catch(e){}
  $("pref").innerHTML="<table><tr><th>क्रम</th><th>विभाग (अनुमान)</th><th></th></tr>"+PREF.map((d,i)=>"<tr><td>"+(i+1)+"</td><td>"+esc(d)+"</td><td><button class='s' onclick='mv("+i+",-1)'>↑</button> <button class='s' onclick='mv("+i+",1)'>↓</button></td></tr>").join("")+"</table>";
 }
 function mv(i,d){const j=i+d;if(j<0||j>=PREF.length)return;const t=PREF[i];PREF[i]=PREF[j];PREF[j]=t;renderPref()}
 function savePref(){try{localStorage.setItem("labPref",JSON.stringify({order:PREF,fsl:$("fslopt").value,label:"C-assumption"}));$("prefmsg").textContent="सुरक्षित (इसी ब्राउज़र में, अनुमान के रूप में)"}catch(e){$("prefmsg").textContent="इस ब्राउज़र में सुरक्षित नहीं हो सका"}}
 function resetPref(){PREF=PREF_DEFAULT.slice();$("fslopt").value="A";renderPref();$("prefmsg").textContent="डिफ़ॉल्ट क्रम"}
-const _show=show;
-show=function(roll){
- _show(roll);
- const c=CANDS.find(x=>String(x.roll)===String(roll));if(!c||!$("out"))return;
- const tr=X.tsp[String(c.roll)];
- const row=(area)=>X.cut.find(r=>r[0]===area&&r[1]===c.category&&r[2]==="GEN");
- const open=X.cut.find(r=>r[0]==="non-scheduled"&&r[1]==="GEN"&&r[2]==="GEN");
- const f=(r)=>r&&r[3]&&r[3]!=="NA"?r[3]:"उपलब्ध नहीं";
- let h="<div class='card'><h2>TSP और आधिकारिक कटऑफ (तथ्य, चयन नहीं)</h2><p>TSP सूची (Annexure-2) में: "+(tr?"<b>हाँ</b>, TSP सूची क्रम "+tr:"नहीं")+".</p><p>आपके अंक: <b>"+c.marks+"</b></p><p>गैर-अनुसूचित, खुली (GEN) पंक्ति का DV-कटऑफ: "+f(open)+" • आपकी श्रेणी ("+esc(c.category)+") की GEN पंक्ति: "+f(row("non-scheduled"));
- if(tr)h+=" • अनुसूचित क्षेत्र, आपकी श्रेणी की GEN पंक्ति: "+f(row("scheduled"));
- h+="</p><p class='mu'>ये केवल DV-शॉर्टलिस्ट के कटऑफ हैं, अंतिम चयन नहीं। उप-श्रेणी (महिला, पूर्व सैनिक आदि) की अलग पंक्तियाँ कटऑफ तालिका में हैं। वरीयता और छूट के डेटा के बिना चयन की स्थिति निर्धारित नहीं की जा सकती।</p></div>";
- $("out").insertAdjacentHTML("beforeend",h);
-};
 renderExtra();
 </script>
 <script>
@@ -864,265 +787,14 @@ try{const s=JSON.parse(localStorage.getItem("labCorr")||"[]");if(s&&s.length){CO
 
 
 <script>
-/* ===== ENGINE: M1-ख (खुली सूची पहले) • Mode B / B1 • केवल वर्ग-स्तर (क्षैतिज परत और विभाग-आवंटन अभी नहीं) ===== */
-const ENG_LABEL="परिदृश्य, चयन सूची नहीं — M1-ख, Mode B (B1: <160 अंक वाले ही निश्चित छूट-धारक, बाकी ने शुल्क के अलावा छूट नहीं ली)। क्षैतिज आरक्षण और विभाग-आवंटन शामिल नहीं; वास्तविक चयन स्थिति सत्यापन बिना पुष्ट नहीं।";
-const ENG_CATS=["EWS","OBC","MBC","SC","ST"];
-function engSeats(area){const t={};CFG.posts.filter(p=>p.area===area).forEach(p=>Object.keys(p.cat||{}).forEach(k=>{t[k]=(t[k]||0)+(+p.cat[k]||0)}));return t}
-function engRun(area,mult,mode){ // area: "गैर अनुसूचित" | "अनुसूचित"; mult: 1 = पद, 2 = शॉर्टलिस्ट-जाँच
- mult=mult||1;const S=engSeats(area),sched=area==="अनुसूचित";
- const L=CANDS.filter(c=>!sched||c.tsp).slice().sort((a,b)=>a.rank-b.rank);
- const st=new Map(),res={area,mult,seats:S,open:{},cats:{},status:st,n:L.length};
- const certain=c=>c.marks<160; // B1
- const nOpen=(S.GEN||0)*mult,open=[];
- for(const c of L){if(open.length>=nOpen)break;if(mode==="M3"?c.category!=="GEN":certain(c))continue;open.push(c);st.set(String(c.roll),{t:"OPEN",pos:open.length})}
- const last=open[open.length-1];
- const oc={};open.forEach(c=>oc[c.category]=(oc[c.category]||0)+1);
- res.open={n:open.length,seats:nOpen,cutMarks:last&&last.marks,cutRank:last&&last.rank,byCat:oc};
- ENG_CATS.forEach(k=>{const n=(S[k]||0)*mult,got=[];
-  for(const c of L){if(got.length>=n)break;if(c.category!==k||st.has(String(c.roll)))continue;got.push(c);st.set(String(c.roll),{t:"CAT",cat:k,pos:got.length})}
-  const l=got[got.length-1];res.cats[k]={seats:n,n:got.length,cutMarks:l&&l.marks,cutRank:l&&l.rank}});
- res.unfilled={SAH:S.SAH||0}; // सहरिया: merit list में पहचान नहीं, पद अपूरित गिने
- return res}
-function engCand(c){ // उम्मीदवार का परिणाम
- const out=[];[["गैर अनुसूचित",true],["अनुसूचित",!!c.tsp]].forEach(([a,ok])=>{if(!ok)return;
-  const r=engRun(a,1),s=r.status.get(String(c.roll));
-  let t,d;if(!s){t="बाहर (इस परिदृश्य में)";d=""}
-  else if(s.t==="OPEN"){t="खुली सूची में";d="खुली सूची क्रम "+s.pos+"/"+r.open.seats}
-  else{t=s.cat+" वर्ग-सूची में";d=s.cat+" सूची क्रम "+s.pos+"/"+r.cats[s.cat].seats}
-  out.push({area:a,t,d,r})});return out}
-/* Mode A / M2: छूट किसने ली, यह अज्ञात। दो सीमा-परिदृश्य: M3 (कोई माइग्रेशन नहीं, विज्ञापन-शाब्दिक) और M1-ख/B1 (अधिकतम माइग्रेशन)। दोनों में चयन = पक्का; एक में = निर्धारित नहीं; किसी में नहीं = बाहर। */
-function engA(c){const o=[];[["गैर अनुसूचित",true],["अनुसूचित",!!c.tsp]].forEach(([a,ok])=>{if(!ok)return;const k=String(c.roll),b=engRun(a,1).status.get(k),m=engRun(a,1,"M3").status.get(k);o.push([a,b&&m?"पक्का (दोनों सीमा-परिदृश्यों में चयन)":(b||m)?"निर्धारित नहीं (एक परिदृश्य में चयन, दूसरे में नहीं)":"बाहर (दोनों परिदृश्यों में)"])});return o}
-function engACard(c){return "<p><b>Mode A (केवल सत्यापित पात्रता; छूट का डेटा नहीं):</b></p>"+engA(c).map(x=>"<p>"+esc(x[0])+" क्षेत्र: "+esc(x[1])+"</p>").join("")}
-function engM4(){ // बोर्ड की DV-शॉर्टलिस्ट (≈2x) से मिलान, गैर-अनुसूचित GEN पंक्तियाँ
- const r=engRun("गैर अनुसूचित",2),rows=[];
- const off=k=>{const x=X.cut.find(q=>q[0]==="non-scheduled"&&q[1]===k&&q[2]==="GEN");const v=x&&parseFloat(x[3]);return isNaN(v)?null:v};
- rows.push(["खुली (GEN)",off("GEN"),r.open.cutMarks,r.open.cutRank]);
- ENG_CATS.forEach(k=>rows.push([k,off(k),r.cats[k].cutMarks,r.cats[k].cutRank]));return rows}
-function engCard(c){
- const R=engCand(c);
- return "<div class='card'><h2>गणना-इंजन परिणाम <span class='warn'>[परिदृश्य]</span></h2><p class='warn'>"+esc(ENG_LABEL)+"</p>"+
- R.map(x=>"<p><b>"+esc(x.area)+" क्षेत्र:</b> "+esc(x.t)+(x.d?" ("+esc(x.d)+")":"")+"</p>").join("")+
- engACard(c)+"<p class='mu'>सहरिया (SAH) पद पहचान-डेटा के बिना अपूरित गिने गए। TSP उम्मीदवार दोनों क्षेत्रों में गिने गए; दोनों में आने पर वरीयता का नियम अनसुलझा है।</p></div>"}
-function engM4Card(){
- const rows=engM4();
- return "<div class='card'><h2>M4 जाँच-मिलान: बोर्ड कटऑफ बनाम इंजन (पदों का 2 गुना) <span class='mu'>[A बनाम परिदृश्य]</span></h2><div class='sc'><table><tr><th>पंक्ति</th><th>बोर्ड कटऑफ [A]</th><th>इंजन कटऑफ अंक</th><th>इंजन कुल-मेरिट रैंक</th><th>अंतर</th></tr>"+
- rows.map(r=>"<tr><td>"+r[0]+"</td><td>"+(r[1]??"—")+"</td><td>"+(r[2]??"—")+"</td><td>"+(r[3]??"—")+"</td><td>"+((r[1]!=null&&r[2]!=null)?(r[2]-r[1]).toFixed(4):"—")+"</td></tr>").join("")+
- "</table></div><p class='mu'>बोर्ड की शॉर्टलिस्ट का 2x-सूत्र नोटिस में नहीं है, इसलिए मिलान केवल जाँच है। अंतर शून्य न हो तो पद्धति/मान्यता में अंतर है।</p></div>"}
-const _show2=show;
-show=function(roll){_show2(roll);const c=CANDS.find(x=>String(x.roll)===String(roll));if(c&&$("out"))$("out").insertAdjacentHTML("beforeend",engCard(c))};
-/* क्षैतिज डेटा की स्थिति (नियम 12: अनुपलब्ध डेटा स्पष्ट दिखे)। केवल फ़ाइल में दर्ज मान; कोई अनुमान नहीं। */
-
-/* क्षैतिज डेटा (विज्ञापन 05/2026 पृ.5-11 + संशोधित विज्ञप्ति पृ.2-3; डैश = 0)। हर पंक्ति का जोड़ पद फ़ाइल से मिलाया गया। */
-function engHCard2(){
- const T={"गैर अनुसूचित":[["GEN",379,112,82,26,4],["EWS",99,18,17,1,0],["OBC",206,54,40,13,1],["MBC",48,7,7,0,0],["SC",153,41,29,12,0],["ST",122,36,28,8,0],["सहरिया",4,1,1,0,0]],"अनुसूचित":[["GEN",55,16,13,3,0],["SC",4,0,0,0,0],["ST",109,26,17,9,0]]};
- let h="<div class='card'><h2>क्षैतिज आरक्षण: महिला / विधवा / परित्यक्ता (विज्ञान पूल) </h2><p class='mu'>महिला = सामान्य महिला + विधवा + परित्यक्ता (अतिरिक्त नहीं)। जोड़ सभी विभागों का (माध्यमिक, कृषि, संस्कृत, FSL तीनों, PHED); विभाग-वार विवरण CSV में।</p>";
- for(const a in T){h+="<p><b>"+a+" क्षेत्र</b></p><div class='sc'><table><tr><th>वर्ग</th><th>कुल पद</th><th>महिला</th><th>सामान्य महिला</th><th>विधवा</th><th>परित्यक्ता</th></tr>"+T[a].map(r=>"<tr><td>"+r.join("</td><td>")+"</td></tr>").join("")+"</table></div>"}
- return h+"<p class='warn'>खिलाड़ी (2%): केवल कुल संख्या प्रकाशित — माध्यमिक NS 12, S 1; FSL कनिष्ठ 1; कॉलेज NS 2; बाकी 0। वर्ग-वार या महिला/पुरुष बँटवारा नोटिस में नहीं है।</p></div>"}
-document.querySelector("main").insertAdjacentHTML("beforeend",engM4Card()+engHCard2());
-</script>
-<script>
-/* ===== ENGINE 2: क्षैतिज महिला/विधवा/परित्यक्ता परत • पूल-स्तर परिदृश्य (विभाग-वार नहीं) ===== */
-/* कोटा [महिला, विधवा, परित्यक्ता] = विज्ञान-पूल का जोड़ (lab_assistant_women_by_category.csv; विज्ञापन 05/2026 + संशोधित विज्ञप्ति) */
-const ENG_W={"गैर अनुसूचित":{GEN:[112,26,4],EWS:[18,1,0],OBC:[54,13,1],MBC:[7,0,0],SC:[41,12,0],ST:[36,8,0]},"अनुसूचित":{GEN:[16,3,0],SC:[0,0,0],ST:[26,9,0]}};
-const ENG_HLABEL="परिदृश्य, चयन सूची नहीं — पूल-स्तर क्षैतिज परत (विभाग-वार नहीं; वरीयता डेटा नहीं)। M1-ख: महिला पहले खुली सूची में समायोजित। M1-क: महिला अपने ही वर्ग में गिनी (2008 परिपत्र 6.2 की HANDOFF वाली व्याख्या; परिपत्र का पाठ इस session में नहीं पढ़ा)। विधवा→परित्यक्ता→सामान्य महिला क्रम (पैरा 5)।";
-function engHRun(area,mode){
- const S=engSeats(area),Q=ENG_W[area],KA=mode==="KA",sched=area==="अनुसूचित";
- const L=CANDS.filter(c=>!sched||c.tsp).slice().sort((a,b)=>a.rank-b.rank);
- const W=c=>c.gender==="FEMALE",WD=c=>c.subcat==="WID",DV=c=>c.subcat==="DIV",ok=c=>c.marks>=160,byR=(a,b)=>a.rank-b.rank;
- function fix(sel,pool,q,ext,cnt,canRm){
-  const n=()=>sel.filter(cnt).length+ext,av=f=>sel.filter(f).length+pool.filter(f).length;
-  const wV=Math.min(q[1],av(WD)),wD=Math.min(q[2]+(q[1]-wV),av(DV));let add=0;
-  const step=f=>{const i=pool.findIndex(f);if(i<0)return false;
-   const r=n()<q[0]?sel.filter(c=>!cnt(c)&&canRm(c)).pop():sel.filter(c=>cnt(c)&&!WD(c)&&!DV(c)&&canRm(c)).pop();
-   if(!r)return false;sel.splice(sel.indexOf(r),1);sel.push(pool.splice(i,1)[0]);sel.sort(byR);add++;return true};
-  while(sel.filter(WD).length<wV&&step(WD));
-  while(sel.filter(DV).length<wD&&step(DV));
-  while(n()<q[0]&&step(W));
-  return {add,women:n(),need:q[0],wantV:wV,wantD:wD}}
- const st=new Map(),res={area,mode,st,cats:{}};
- const O=[];for(const c of L){if(O.length>=(S.GEN||0))break;if(ok(c))O.push(c)}
- const inO=new Set(O),cntO=KA?(c=>W(c)&&c.category==="GEN"):W,rmO=KA?(c=>c.category==="GEN"&&!W(c)):(()=>true);
- const fo=fix(O,L.filter(c=>!inO.has(c)&&ok(c)&&W(c)&&(!KA||c.category==="GEN")),Q.GEN,0,cntO,rmO);
- const O2=new Set(O);O.forEach((c,i)=>st.set(String(c.roll),{t:"OPEN",pos:i+1}));
- const last=a=>a[a.length-1];
- res.open={seats:S.GEN||0,n:O.length,women:fo.women,need:fo.need,add:fo.add,cut:last(O)&&last(O).marks,cutRank:last(O)&&last(O).rank};
- ENG_CATS.forEach(k=>{
-  const R=L.filter(c=>c.category===k&&!O2.has(c)),n=S[k]||0,sel=R.slice(0,n),pool=R.slice(n).filter(W);
-  const ext=KA?O.filter(c=>c.category===k&&W(c)).length:0;
-  const f=fix(sel,pool,Q[k]||[0,0,0],ext,W,()=>true);
-  sel.forEach((c,i)=>st.set(String(c.roll),{t:"CAT",cat:k,pos:i+1}));
-  res.cats[k]={seats:n,n:sel.length,women:f.women,need:f.need,add:f.add,cut:last(sel)&&last(sel).marks,cutRank:last(sel)&&last(sel).rank}});
- return res}
-function engHCand(c){const o=[];[["गैर अनुसूचित",true],["अनुसूचित",!!c.tsp]].forEach(([a,ok])=>{if(!ok)return;
- const v=engRun(a,1).status.get(String(c.roll)),kh=engHRun(a,"KHA").st.get(String(c.roll)),ka=engHRun(a,"KA").st.get(String(c.roll));
- const t=s=>!s?"बाहर":s.t==="OPEN"?"खुली सूची ("+s.pos+")":s.cat+" वर्ग-सूची ("+s.pos+")";
- o.push("<p><b>"+esc(a)+":</b> केवल वर्ग-स्तर: "+t(v)+" | M1-ख + क्षैतिज: "+t(kh)+" | M1-क + क्षैतिज: "+t(ka)+"</p>")});return o.join("")}
-function engHCandCard(c){return "<div class='card'><h2>क्षैतिज परत के बाद <span class='warn'>[परिदृश्य]</span></h2><p class='warn'>"+esc(ENG_HLABEL)+"</p>"+engHCand(c)+"</div>"}
-function engHSumCard(){
- const area="गैर अनुसूचित",v=engRun(area,1),a=engHRun(area,"KHA"),b=engHRun(area,"KA");
- const f=x=>x==null?"—":(+x).toFixed(4),rows=[["खुली (GEN)",v.open,a.open,b.open]].concat(ENG_CATS.map(k=>[k,v.cats[k],a.cats[k],b.cats[k]]));
- const diff=(x,y)=>{let n=0;const X=x.st||x.status,Y=y.st||y.status;X.forEach((s,k)=>{const t=Y.get(k);if(!t||t.t!==s.t||t.cat!==s.cat)n++});return n};
- return "<div class='card'><h2>क्षैतिज महिला परत: कटऑफ और बदलाव (गैर अनुसूचित, पूल) <span class='warn'>[परिदृश्य]</span></h2><p class='warn'>"+esc(ENG_HLABEL)+"</p><div class='sc'><table><tr><th>सूची</th><th>पद</th><th>महिला कोटा</th><th>केवल वर्ग-स्तर कटऑफ</th><th>M1-ख कटऑफ (महिला)</th><th>M1-क कटऑफ (महिला)</th></tr>"+
- rows.map(r=>"<tr><td>"+r[0]+"</td><td>"+r[1].seats+"</td><td>"+r[2].need+"</td><td>"+f(r[1].cutMarks!=null?r[1].cutMarks:r[1].cut)+"</td><td>"+f(r[2].cut)+" ("+r[2].women+")</td><td>"+f(r[3].cut)+" ("+r[3].women+")</td></tr>").join("")+
- "</table></div><p class='mu'>कटऑफ = सूची का अंतिम चयनित। क्षैतिज कोटे की महिला/विधवा/परित्यक्ता सूची में सबसे नीचे आ सकती हैं, इसलिए यह पुरुष/सामान्य कटऑफ से बहुत नीचे दिख सकता है। M1-क में खुली सूची में GEN-वर्ग की महिलाएँ ही गिनी जाती हैं, इसलिए वहाँ GEN महिला कोटा पूरा नहीं हो पाता (कोष्ठक में पाई गई महिलाएँ बनाम कोटा देखें)। चयन-स्थिति बदली: केवल वर्ग-स्तर से M1-ख में "+(diff(v,a)+diff(a,v))+", M1-क में "+(diff(v,b)+diff(b,v))+" प्रविष्टियाँ; M1-ख बनाम M1-क में "+(diff(a,b)+diff(b,a))+" (दोनों दिशा की गिनती)। कुल पद नहीं बढ़े।</p></div>"}
-const _show3=show;
-show=function(roll){_show3(roll);const c=CANDS.find(x=>String(x.roll)===String(roll));if(c&&$("out"))$("out").insertAdjacentHTML("beforeend",engHCandCard(c))};
-document.querySelector("main").insertAdjacentHTML("beforeend",engHSumCard());
-</script>
-<script>
-/* ===== M4 (क्षैतिज परत सहित): बोर्ड के DV-शॉर्टलिस्ट कटऑफ से मिलान • केवल जाँच, नतीजा नहीं ===== */
-function engHMult(area,mode,m){ // engHRun को पदों/कोटे के m-गुना पर चलाता है (मूल सारणियाँ बाद में बहाल)
- const bakS=engSeats,bakW=ENG_W[area],sc={};
- for(const k in bakW)sc[k]=bakW[k].map(x=>x*m);
- try{engSeats=a=>{const t=bakS(a);const o={};for(const k in t)o[k]=t[k]*m;return o};ENG_W[area]=sc;return engHRun(area,mode)}
- finally{engSeats=bakS;ENG_W[area]=bakW}}
-function engM4H(){
- const area="गैर अनुसूचित",by=new Map(CANDS.map(c=>[String(c.roll),c])),out={};
- [1,1.5,2,2.5,3].forEach(m=>["KHA","KA"].forEach(mode=>{
-  const r=engHMult(area,mode,m),g={OPEN:[],EWS:[],OBC:[],MBC:[],SC:[],ST:[]};
-  r.st.forEach((s,k)=>g[s.t==="OPEN"?"OPEN":s.cat].push(by.get(k)));
-  const o={};for(const k in g){const L=g[k].sort((a,b)=>a.rank-b.rank),lo=p=>{const x=L.filter(p);return x.length?x[x.length-1].marks:null};
-   o[k]={nonW:lo(c=>c.gender!=="FEMALE"),fem:lo(c=>c.gender==="FEMALE"&&c.subcat!=="WID"&&c.subcat!=="DIV"),wid:lo(c=>c.subcat==="WID"),div:lo(c=>c.subcat==="DIV")}}
-  out[mode+m]=o}));return out}
-function engM4HCard(){
- const R=engM4H(),f=x=>x==null?"—":(+x).toFixed(4),B={wid:172.9701,div:163.6372};
- let h="<div class='card'><h2>M4 (क्षैतिज महिला परत सहित): बोर्ड कटऑफ से मिलान <span class='warn'>[A बनाम परिदृश्य]</span></h2><p class='warn'>केवल जाँच। बोर्ड का 2x-सूत्र नोटिस में नहीं है; कोई मान्यता अंतर बंद करने के लिए नहीं जोड़ी गई। गैर अनुसूचित, विज्ञान पूल, पद और महिला कोटा दोनों m-गुना।</p>";
- h+="<p><b>1) विधवा/परित्यक्ता कटऑफ (बोर्ड की GEN पंक्ति: विधवा "+B.wid+", परित्यक्ता "+B.div+")</b></p><div class='sc'><table><tr><th>m (गुना)</th><th>M1-ख: खुली-सूची विधवा</th><th>M1-ख: परित्यक्ता</th><th>M1-क: विधवा</th><th>M1-क: परित्यक्ता</th></tr>"+
- [1,1.5,2,2.5,3].map(m=>{const a=R["KHA"+m].OPEN,b=R["KA"+m].OPEN,mk=(x,y)=>f(x)+(x!=null&&Math.abs(x-y)<1e-4?" ✔":"");return "<tr><td>"+m+"</td><td>"+mk(a.wid,B.wid)+"</td><td>"+mk(a.div,B.div)+"</td><td>"+mk(b.wid,B.wid)+"</td><td>"+mk(b.div,B.div)+"</td></tr>"}).join("")+"</table></div>";
- const X=R.KHA2,Y=R.KA2,bd=[["खुली (GEN)","OPEN",262.8126],["EWS","EWS",242.6329],["OBC","OBC",254.8349],["MBC","MBC",234.0491],["SC (GEN)","SC",222.5747],["ST","ST",202.7718]];
- h+="<p><b>2) 2x पर पुरुष/सामान्य कटऑफ</b> (अंतिम गैर-महिला चयनित)</p><div class='sc'><table><tr><th>पंक्ति</th><th>बोर्ड [A]</th><th>M1-ख</th><th>अंतर</th><th>M1-क</th><th>अंतर</th></tr>"+
- bd.map(r=>"<tr><td>"+r[0]+"</td><td>"+r[2]+"</td><td>"+f(X[r[1]].nonW)+"</td><td>"+(X[r[1]].nonW-r[2]).toFixed(2)+"</td><td>"+f(Y[r[1]].nonW)+"</td><td>"+(Y[r[1]].nonW-r[2]).toFixed(2)+"</td></tr>").join("")+"</table></div>";
- return h+"<p class='mu'><b>पढ़ने का तरीका:</b> ✔ = बोर्ड के आँकड़े से हूबहू मिलान। M1-ख में विधवा और परित्यक्ता दोनों के कटऑफ बोर्ड से मिलते हैं (परित्यक्ता 1.5x से, विधवा सभी m पर); M1-क में नहीं। यह M1-ख के पक्ष में एक संकेत है, पर प्रमाण नहीं: बोर्ड की पंक्ति में यह साफ़ नहीं कि 'GEN' का मतलब खुली सूची है। पुरुष/सामान्य कटऑफ 2x पर लगभग 0.6 से 3.4 अंक के अंतर पर हैं, पर हूबहू नहीं; सही गुणक अज्ञात है।</p></div>"}
-document.querySelector("main").insertAdjacentHTML("beforeend",engM4HCard());
-</script>
-<script>
-/* ===== प्रभावी स्थिति (नियम 10) और अंतिम कटऑफ का अनुमानित दायरा (नियम 11) • परिदृश्य, चयन सूची नहीं ===== */
-const _effCache={};
-function effRun(area){return _effCache[area]||(_effCache[area]=engHRun(area,"KHA"))}
-function effCand(c){ // मूल रैंक बनाम M1-ख + क्षैतिज में प्रभावी स्थिति
- const o=[];[["गैर अनुसूचित",true],["अनुसूचित",!!c.tsp]].forEach(([a,ok])=>{if(!ok)return;
-  const r=effRun(a),S=engSeats(a),k=String(c.roll),s=r.st.get(k);
-  const L=CANDS.filter(x=>a==="अनुसूचित"?x.tsp:true);
-  const ahead=L.filter(x=>x.rank<c.rank);let nOpen=0,nCat=0,nOut=0,nLow=0;
-  ahead.forEach(x=>{const t=r.st.get(String(x.roll));if(!t){if(x.marks<160)nLow++;else nOut++}else if(t.t==="OPEN")nOpen++;else nCat++});
-  let line;
-  if(s&&s.t==="OPEN")line="चयनित — खुली सूची, क्रम "+s.pos+"/"+r.open.seats;
-  else if(s)line="चयनित — "+s.cat+" वर्ग-सूची, क्रम "+s.pos+"/"+(S[s.cat]||0);
-  else{const q=L.filter(x=>x.category===c.category&&x.rank<c.rank&&(r.st.get(String(x.roll))||{}).t!=="OPEN").length+1,seats=S[c.category]||0;
-   line="चयन से बाहर — अपनी वर्ग-कतार में प्रभावी स्थिति "+q+" (वर्ग के पद "+seats+(seats?"; "+(q-seats>0?(q-seats)+" स्थान पीछे":"भीतर, पर महिला/क्षैतिज समायोजन से बाहर"):"")+")"}
-  o.push("<p><b>"+esc(a)+":</b> मूल रैंक "+c.rank+" → "+esc(line)+"<br><span class='mu'>आपसे ऊपर "+ahead.length+" उम्मीदवार: खुली सूची में "+nOpen+", वर्ग-सूचियों में "+nCat+", बाहर "+nOut+", 160 से कम अंक (छूट-धारक) "+nLow+"। केवल आरक्षित गिनकर रैंक घटाना नहीं, पूरा सिमुलेशन।</span></p>")});
- return "<div class='card'><h2>प्रभावी स्थिति (मूल रैंक बनाम सिमुलेशन) <span class='warn'>[परिदृश्य: M1-ख + क्षैतिज]</span></h2>"+o.join("")+"<p class='mu'>विभाग-वरीयता और छूट का डेटा नहीं है, इसलिए यह पूल-स्तर की स्थिति है, पक्का चयन नहीं।</p></div>"}
-function effRange(){ // हर सूची का अंतिम चयनित अंक: चार परिदृश्यों का न्यूनतम-अधिकतम
- const a="गैर अनुसूचित",P=[["B1 केवल वर्ग",engRun(a,1)],["M3 माइग्रेशन नहीं",engRun(a,1,"M3")]],H=[["M1-ख+क्षैतिज",engHRun(a,"KHA")],["M1-क+क्षैतिज",engHRun(a,"KA")]];
- const g=(r,k)=>k==="GEN"?(r.open.cutMarks!=null?r.open.cutMarks:r.open.cut):(r.cats[k].cutMarks!=null?r.cats[k].cutMarks:r.cats[k].cut);
- return ["GEN"].concat(ENG_CATS).map(k=>{const v=P.concat(H).map(([n,r])=>[n,g(r,k)]),m=v.map(x=>x[1]).filter(x=>x!=null);return [k,Math.min(...m),Math.max(...m),v]})}
-function effRangeCard(){
- const f=x=>(+x).toFixed(4);
- return "<div class='card'><h2>अंतिम चयन कटऑफ: अनुमानित दायरा (गैर अनुसूचित, पूल) <span class='warn'>[परिदृश्य, सटीक कटऑफ नहीं]</span></h2><p class='warn'>DV-शॉर्टलिस्ट कटऑफ अंतिम कटऑफ नहीं है। विभाग-वरीयता, DV में अस्वीकृति, छूट का डेटा उपलब्ध नहीं, इसलिए केवल दायरा दिया है।</p><div class='sc'><table><tr><th>सूची</th><th>कम से कम</th><th>अधिकतम</th><th>चार परिदृश्यों के मान</th></tr>"+
- effRange().map(r=>"<tr><td>"+r[0]+"</td><td>"+f(r[1])+"</td><td>"+f(r[2])+"</td><td class='mu'>"+r[3].map(x=>esc(x[0])+" "+f(x[1])).join(" | ")+"</td></tr>").join("")+"</table></div><p class='mu'>'कम से कम' वह अंक है जिस पर सूची का अंतिम चयनित उम्मीदवार सबसे नीचे आया; महिला/विधवा/परित्यक्ता परत से खुली सूची का अंतिम अंक काफ़ी नीचे जा सकता है। यह एक अंक-संख्या नहीं, अनिश्चितता का दायरा है।</p></div>"}
-const _show4=show;
-show=function(roll){_show4(roll)}; /* S2: पुराने इंजन का "प्रभावी स्थिति" कार्ड (effCand) हटाया — सटीक रैंक अब मुख्य जानकारियाँ में */
-document.querySelector("main").insertAdjacentHTML("beforeend",effRangeCard());
-
-/* ===== अंतिम कटऑफ मॉड्यूल (RULEBOOK भाग 1,4अ,6,7 लागू) • परिदृश्य, बोर्ड का नतीजा नहीं ===== */
-const FX={EXM:{GEN:57,EWS:8,OBC:24,SC:17,ST:10,MBC:0},SP:12,DE:34,LA:0,LAT:0}; // LA/LAT: मेरिट से कटने वाले लैब बालक/सेवक पद। पद 107 (Non-TSP)/20 (TSP) हैं, पर सूची में लैब-बालक उम्मीदवार नहीं (0), इसलिए रिक्त मानकर नियम से उसी वर्ग की मेरिट को लौटे (कटौती 0)
-function laAlloc(area){const ns=area==="गैर अनुसूचित",n=ns?FX.LA:FX.LAT,p=CFG.posts.find(x=>x.id===(ns?"SE-NS":"SE-S")),o={};FC.forEach(k=>o[k]=0);if(!p||!n)return o;const tt=FC.reduce((s,k)=>s+(p.cat[k]||0),0);if(!tt)return o;const q=FC.map(k=>{const x=n*(p.cat[k]||0)/tt;return[k,Math.floor(x),x-Math.floor(x)]});let r=n-q.reduce((s,a)=>s+a[1],0);q.slice().sort((a,b)=>b[2]-a[2]).forEach(a=>{if(r>0){a[1]++;r--}});q.forEach(a=>o[a[0]]=a[1]);return o} // D1,D2: रूलबुक की मान्यताएँ (NS)
-const FC=["GEN","EWS","OBC","MBC","SC","ST"],isDE=c=>/^(LD\/CP|BLV|HI)/.test(c.subcat||""),isSP=c=>/SP/.test(c.subcat||"");
-const FOPT={fill:false};let FR=null;
-function fRun(area,me){const ns=area==="गैर अनुसूचित",S=engSeats(area),Q=Object.assign({},ENG_W[area]),E=ns?FX.EXM:{};FC.forEach(k=>{if(!Q[k])Q[k]=[0,0,0]});
- const L=CANDS.filter(c=>(ns||c.tsp)).sort((a,b)=>a.rank-b.rank);
- const st=new Map(),cut={},cnt={},tk=new Set(),ok=c=>c.marks>=160||c.subcat;
- const LAm=laAlloc(area),la=k=>LAm[k]||0;
- const tr=[];function take(n,g,p){let pos=0,ah=0;if(me&&!tk.has(me)&&p(me)){for(const c of L){if(c.rank>me.rank)break;if(tk.has(c))ah++;else if(p(c))pos++}}let a=0;for(const c of L){if(a>=n)break;if(tk.has(c)||!p(c))continue;tk.add(c);st.set(String(c.roll),g);a++;cnt[g]=(cnt[g]||0)+1;cut[g]=c.marks}if(pos)tr.push({g,n,pos,ah,sel:st.get(String(me.roll))===g,cut:cut[g]});return a}
- const gw=k=>(Q[k]?Q[k][0]-Q[k][1]-Q[k][2]:0),os=k=>(S[k]||0)-(Q[k]?Q[k][0]:0),sd={};
- take(os("GEN")-(E.GEN||0)-la("GEN"),"खुली सूची",c=>c.marks>=160&&!c.subcat);
- const wo=[...tk].filter(c=>c.gender==="FEMALE"&&c.marks>=160).length;
- take(E.GEN||0,"GEN-पूर्व सैनिक",c=>c.subcat==="EXM");take(Q.GEN[1],"GEN-विधवा",c=>c.subcat==="WID");take(Q.GEN[2],"GEN-परित्यक्ता",c=>c.subcat==="DIV");
- if(ns){const f=(g,p,n)=>take(n,g,p);
-  const b=new Set(tk);f("खिलाड़ी (SP)",c=>isSP(c),FX.SP);f("दिव्यांग (DE)",c=>isDE(c)&&!isSP(c),FX.DE);L.forEach(c=>{if(tk.has(c)&&!b.has(c)){sd[c.category]=(sd[c.category]||0)+1}})}
- take(gw("GEN")-wo,"GEN-महिला (सब वर्ग)",c=>c.gender==="FEMALE"&&ok(c)&&!/WID|DIV/.test(c.subcat||""));
- FC.slice(1).forEach(k=>{const v=take(E[k]||0,k+"-पूर्व सैनिक",c=>c.category===k&&c.subcat==="EXM");
-  const m=os(k)-(E[k]||0)-la(k)-(sd[k]||0)+(FOPT.fill?(E[k]||0)-v:0);
-  take(m,k+" खुली/मेरिट",c=>c.category===k&&ok(c)&&!/WID|DIV/.test(c.subcat||""));
-  take(gw(k),k+"-महिला",c=>c.category===k&&c.gender==="FEMALE"&&!/WID|DIV/.test(c.subcat||""));
-  take(Q[k][1],k+"-विधवा",c=>c.category===k&&c.subcat==="WID");take(Q[k][2],k+"-परित्यक्ता",c=>c.category===k&&c.subcat==="DIV")});
- return{st,cut,cnt,n:L.length,tr}}
-function fAll(){const o={};["गैर अनुसूचित","अनुसूचित"].forEach(a=>{o[a]=fRun(a)});FR=o;
- }
-function fLevel(c){const R=FR["गैर अनुसूचित"],k=String(c.roll);
- if(R.st.has(k))return["A","A • चयन-क्षेत्र में",R.st.get(k)];
- return["D","D • चयन-स्तर से दूर",""]}
-function fSummary(){const R=FR["गैर अनुसूचित"],gs=Object.keys(R.cnt);
- const f=x=>x==null?"—":x.toFixed(4),tspn=g=>CANDS.filter(c=>c.tsp&&R.st.get(String(c.roll))===g).length;
- return"<table><tr><th>कोटा</th><th>चयनित</th><th><b>अंतिम कटऑफ़</b></th><th>इनमें TSP-पात्र</th></tr>"+
- gs.map(g=>"<tr><td>"+esc(g)+"</td><td>"+(R.cnt[g]||0)+"</td><td><b>"+f(R.cut[g])+"</b></td><td>"+tspn(g)+"</td></tr>").join("")+"</table>"}
-function fRender(){fAll();const R=FR["गैर अनुसूचित"],lv={A:0};CANDS.forEach(c=>{const l=fLevel(c)[0];if(lv[l]!==undefined)lv[l]++});
- $("fsum").innerHTML=fSummary();$("fcount").innerHTML="चयन-क्षेत्र में (A): <b>"+lv.A+"</b> • कुल उम्मीदवार "+CANDS.length;fTable()}
-function fTable(){const q=$("fq").value.trim().toLowerCase(),lf=$("flv").value,cf=$("fcat").value,pg=+$("fpg").value||0;
- const rows=CANDS.filter(c=>(!cf||c.category===cf)&&(!q||String(c.rank)===q||String(c.roll)===q||c.name.toLowerCase().includes(q))).map(c=>[c,fLevel(c)]).filter(x=>!lf||x[1][0]===lf);
- const P=200,pages=Math.ceil(rows.length/P);$("fpgi").textContent=rows.length+" उम्मीदवार • पेज "+(pg+1)+"/"+(pages||1);
- $("ftab").innerHTML="<table><tr><th>रैंक</th><th>रोल</th><th>नाम</th><th>वर्ग</th><th>अंक</th><th>स्तर</th><th>चयन-कोटा</th><th>TSP</th></tr>"+rows.slice(pg*P,pg*P+P).map(([c,l])=>"<tr><td>"+c.rank+"</td><td>"+esc(c.roll)+"</td><td>"+esc(c.name)+"</td><td>"+c.category+(c.subcat?" "+esc(c.subcat):"")+"</td><td>"+c.marks+"</td><td class='"+(l[0]==="A"?"ok":"err")+"'>"+esc(l[1])+"</td><td>"+esc(l[2]||"—")+"</td><td>"+(c.tsp?"हाँ":"")+"</td></tr>").join("")+"</table>"}
-function fPage(d){$("fpg").value=Math.max(0,(+$("fpg").value||0)+d);fTable()}
-function fStu(c){const NS="गैर अनुसूचित",k=String(c.roll);
- const r=fRun(NS,c);
- return{r,s:r.st.get(k)}}
-const DEPT=[["माध्यमिक शिक्षा","SE"],["संस्कृत शिक्षा","SK"],["कृषि","AG"],["जन स्वास्थ्य अभियांत्रिकी (PHED)","PH"],["राज्य विधि विज्ञान (FSL)","FS"]],FSL_ORD=["FS-PH","FS-LA","FS-JR"];
-const seatCat=(g,c)=>/^(खिलाड़ी|दिव्यांग)/.test(g)?c.category:/^(खुली|GEN)/.test(g)?"GEN":g.split(/[ -]/)[0];
-function fDept(area,run){const S=engSeats(area),ns=area==="गैर अनुसूचित",LAm=laAlloc(area),la=k=>LAm[k]||0;
- const by=new Map(CANDS.map(c=>[String(c.roll),c])),posts=CFG.posts.filter(p=>p.area===area),rem={};
- posts.forEach(p=>{rem[p.id]={};FC.forEach(k=>rem[p.id][k]=(p.cat[k]||0)-(p.id===(ns?"SE-NS":"SE-S")?la(k):0))});
- const sel=[...run.st.entries()].map(([r,g])=>{const c=by.get(r);return{c,g,sc:seatCat(g,c)}}).sort((a,b)=>a.c.rank-b.c.rank),out=new Map();
- for(const s of sel){let got=null;for(const[dn,pf]of DEPT){let ps=posts.filter(p=>p.id.startsWith(pf+"-"));if(pf==="FS")ps=FSL_ORD.map(i=>ps.find(p=>p.id===i)).filter(Boolean);
-  for(const p of ps){if(rem[p.id][s.sc]>0){rem[p.id][s.sc]--;got={dn,post:p.post||p.id};break}}if(got)break}out.set(String(s.c.roll),got)}
- return{out,sel,posts,la}}
-function fAhead(c,r){const o={open:0,hor:0,mine:0,other:0,inel:0,pool:0};
- CANDS.forEach(x=>{if(x.rank>=c.rank)return;const g=r.st.get(String(x.roll));
-  if(g){const sc=seatCat(g,x);if(g==="खुली सूची")o.open++;else if(/^(GEN-|खिलाड़ी|दिव्यांग)/.test(g))o.hor++;else if(sc===c.category)o.mine++;else o.other++}
-  else if(x.marks<160&&!x.subcat)o.inel++;else o.pool++});return o}
-function stuHTML(c){const NS="गैर अनुसूचित",x=fStu(c),k=String(c.roll),lv=x.s?"A":"D";
- const V={A:["✅ चयन-क्षेत्र में","ok","इस गणना में आपका चयन बन रहा है।"],
- D:["🔴 अभी चयन-स्तर से दूर","err","इस गणना में आपका चयन नहीं बन रहा।"]}[lv];
- const T=x.r.tr,ah=fAhead(c,x.r);let best=null;
- const rows=T.map((t,i)=>{const K=t.pos-Math.max(0,t.n);if(!t.sel&&t.n>0&&(!best||K<best.K))best={g:t.g,K};
-  return"<tr><td>"+(i+1)+"</td><td><b>"+esc(t.g)+"</b></td><td>"+Math.max(0,t.n)+"</td><td>"+t.pos+"<br><span class='mu'>(आपसे आगे "+t.ah+" पहले ही चुने जा चुके)</span></td><td>"+(t.cut!=null?t.cut.toFixed(2):"—")+"</td><td class='"+(t.sel?"ok":"err")+"'>"+(t.n<=0?"इस कोटे में पद नहीं":t.sel?"✅ यहाँ चयन":"❌ "+K+" स्थान बाहर")+"</td></tr>"}).join("");
- const dp=fDept(NS,x.r),mine=dp.sel.find(s=>s.c===c),cat=mine?mine.sc:c.category,got=dp.out.get(k),prev=new Set();let done=false;
- const dr=DEPT.map(([dn,pf])=>{const ps=dp.posts.filter(p=>p.id.startsWith(pf+"-")),seats=Math.max(0,ps.reduce((s,p)=>s+(p.cat[cat]||0),0)-(pf==="SE"?dp.la(cat):0));
-  const pool=dp.sel.filter(s=>s.sc===cat&&!prev.has(String(s.c.roll))),al=pool.filter(s=>{const g=dp.out.get(String(s.c.roll));return g&&g.dn===dn});
-  al.forEach(s=>prev.add(String(s.c.roll)));const rk=al.map(s=>s.c.rank),pos=mine?pool.findIndex(s=>s.c===c)+1:0,here=got&&got.dn===dn;
-  let res=!mine?"—":here?"<b class='ok'>✅ आपको यहाँ पद</b>":done?"<span class='mu'>पहले ही मिल चुका</span>":"<span class='err'>⛔ सीटें भर चुकी थीं</span>";if(here)done=true;
-  return"<tr><td><b>"+esc(dn)+"</b></td><td>"+seats+"</td><td>"+(rk.length?rk.length+" चुने — रैंक "+Math.min(...rk)+" से "+Math.max(...rk)+"<br><span class='mu'>(आख़िरी चयन रैंक "+Math.max(...rk)+")</span>":"कोई नहीं")+"</td><td>"+(pos||"—")+"</td><td>"+res+"</td></tr>"}).join("");
- let tsp="";if(c.tsp){const g=fRun("अनुसूचित",c).st.get(k);tsp="<p class='mu'>आप TSP (अनुसूचित क्षेत्र) में भी पात्र हैं। वहाँ की सूची में: "+(g?"<b class='ok'>चयन ("+esc(g)+")</b>":"चयन नहीं")+". इस विश्लेषण में आपको गैर-अनुसूचित में गिना गया है; दोनों में चयन पर DV में वरीयता देनी होती है।</p>"}
- const final=mine&&got?"<p style='font-size:16px'>अनुमानित विभाग: <b>"+esc(got.dn)+"</b> — "+esc(got.post)+"</p>":mine?"<p class='warn'>आप चयनित सूची में हैं, पर इस परिदृश्य में आपकी श्रेणी का कोई पद नहीं बचा।</p>":"";
- return"<div class='card'><h2>"+esc(c.name)+"</h2><p class='mu'>पिता: "+esc(c.father||"—")+" • रोल "+esc(c.roll)+" • कुल रैंक <b>"+c.rank+"</b> • वर्ग <b>"+c.category+(c.subcat?" ("+esc(c.subcat)+")":"")+"</b> • अंक <b>"+c.marks+"</b> • "+(c.gender==="FEMALE"?"महिला":"पुरुष")+"</p>"+
- "<div class='vd "+V[1]+"'><div style='font-size:19px;font-weight:700'>"+V[0]+"</div><p>"+V[2]+"</p>"+final+"</div>"+
- "<h2>चरण 1: आपकी रैंक की गिनती कैसे हुई</h2><p>कुल रैंक <b>"+c.rank+"</b> है, यानी आपसे आगे <b>"+(c.rank-1)+"</b> उम्मीदवार हैं। इन्होंने कहाँ जगह ली:</p><div class='sc'><table>"+
- [["खुली (General) सूची में, सब वर्गों से",ah.open],["GEN के क्षैतिज/महिला कोटों में",ah.hor],["आपके वर्ग ("+c.category+") की सूचियों में",ah.mine],["दूसरे वर्गों की सूचियों में",ah.other],["अंक 160 से कम (बिना छूट-श्रेणी), चयन-पात्र नहीं",ah.inel],["पात्र, पर पद पूरे होने से चयन-सूची में नहीं",ah.pool]].map(r=>"<tr><td>"+r[0]+"</td><td><b>"+r[1]+"</b></td></tr>").join("")+"</table></div>"+
- "<h2>चरण 2: सूची-दर-सूची सफ़र</h2>"+(rows?"<div class='sc'><table><tr><th>क्रम</th><th>सूची / कोटा</th><th>पद</th><th>इस सूची में आपकी पोज़िशन</th><th>सूची का कटऑफ़</th><th>नतीजा</th></tr>"+rows+"</table></div><p class='mu'>सबसे पहले खुली सूची भरती है (सब वर्ग मेरिट पर), फिर क्षैतिज और GEN-महिला, फिर आपके वर्ग की सूची। पिछले चरण में चुना गया उम्मीदवार आगे की सूची से हट जाता है। \"K स्थान बाहर\" = आप इस सूची की अंतिम चयनित पोज़िशन से K स्थान पीछे हैं।</p>":"<p class='warn'>इस रैंक/अंक पर कोई कोटा लागू नहीं (160 से कम अंक, बिना छूट-श्रेणी)।</p>")+
- "<h2>चरण 3: विभाग-वार स्थिति ("+esc(cat)+" श्रेणी के पद)</h2><div class='sc'><table><tr><th>विभाग (वरीयता क्रम)</th><th>"+esc(cat)+" के पद</th><th>चयनित कौन (रैंक सीमा)</th><th>आपकी पोज़िशन</th><th>नतीजा</th></tr>"+dr+"</table></div><p class='mu'>सब उम्मीदवारों ने एक ही वरीयता क्रम (माध्यमिक → संस्कृत → कृषि → PHED → FSL) भरी मानी गई है; मेरिट में पहले वाले को पहले विभाग में पद मिलता है, और सीटें भरने पर अगला विभाग आता है। प्रयोगशाला बालक/सेवक के पद (Non-TSP 107, TSP 20) में सूची का कोई उम्मीदवार नहीं माना गया; वे रिक्त मानकर नियम से उसी वर्ग की मेरिट को लौटाए गए हैं। असली वरीयता भरी जानकारी आने पर यह बदल सकता है।</p>"+
- "<span id='s4'></span>"+tsp+
- "<div class='dis'>यह अनुमानित परिदृश्य है, बोर्ड का नतीजा या चयन की गारंटी नहीं। विभाग-वरीयता और छूट-डेटा उपलब्ध नहीं; ये मान्यताएँ हैं। सभी उम्मीदवार DV में उपस्थित माने गए हैं।</div></div>"}
-
-document.querySelector("main").querySelector("#statusCard").insertAdjacentHTML("beforebegin",
-"<div class='card'><h2>अंतिम कटऑफ़ + हर छात्र का स्तर <span class='warn'>[परिदृश्य, बोर्ड का नतीजा नहीं]</span></h2>"+
-"<p class='mu'>रूलबुक के क्रम पर: खुली सूची (सब वर्ग) → GEN क्षैतिज (पूर्व सैनिक, विधवा, परित्यक्ता, खिलाड़ी, दिव्यांग) → GEN-महिला (सब वर्गों की) → हर वर्ग (मेरिट सीट = खुले पद − क्षैतिज), फिर वर्ग की महिला/क्षैतिज। मान्यताएँ: लैब बालक/सेवक का कोई उम्मीदवार नहीं (107/20 पद रिक्त होकर मेरिट को लौटे), TSP-पात्र सब NTSP में, एक समान विभाग-वरीयता (पूल-स्तर); यह पुराना अनुमान-खंड है, मुख्य गणना में क्षैतिज पद R6.1 से भरते/लौटते/अग्रेषित होते हैं (विकल्प नीचे)। 2024 में ~28 रिक्तियाँ अनसुलझी रहीं, इसलिए कटऑफ़ दायरे में पढ़ें।</p>"+
-"<p id='fcount'></p><div class='sc' id='fsum'></div>"+
-"<h2 style='margin-top:12px'>छात्र-वार स्तर</h2><div class='row'><input id='fq' placeholder='रैंक / रोल / नाम' oninput=\"$('fpg').value=0;fTable()\"><select id='flv' onchange=\"$('fpg').value=0;fTable()\"><option value=''>सभी स्तर</option><option value='A'>A चयन-क्षेत्र में</option><option value='D'>D दूर</option></select><select id='fcat' onchange=\"$('fpg').value=0;fTable()\"><option value=''>सभी वर्ग</option>"+FC.map(k=>"<option>"+k+"</option>").join("")+"</select><input id='fpg' type='hidden' value='0'></div>"+
-"<div class='row'><button class='s' onclick='fPage(-1)'>← पिछला</button><span id='fpgi' class='mu'></span><button class='s' onclick='fPage(1)'>अगला →</button></div><div class='sc' id='ftab'></div>"+
-"<div class='dis'>स्तर A/D कटऑफ़ के आधार पर हैं (सभी उम्मीदवार DV में उपस्थित माने गए), चयन की गारंटी नहीं। विभाग-वरीयता, छूट-डेटा और लैब बालक/सेवक उम्मीदवारों की सूची उपलब्ध नहीं; ये सब मान्यताएँ हैं।</div></div>");
-const _show5=show;show=function(roll){_show5(roll);const c=CANDS.find(x=>String(x.roll)===String(roll));if(c&&$("out")){const l=fLevel(c),S=FR["अनुसूचित"];let sx="";if(c.tsp){const k=String(c.roll);sx="<p>अनुसूचित क्षेत्र (TSP) में: "+(S.st.has(k)?"A चयन-क्षेत्र में":"D दूर")+" (डिफ़ॉल्ट मान्यता: गिनती NTSP में)</p>"}
- $("out").insertAdjacentHTML("afterbegin","<div class='card'><h2>अंतिम कटऑफ़ विश्लेषण <span class='warn'>[परिदृश्य]</span></h2><p><b>स्तर:</b> "+esc(l[1])+"</p><p>चयन-कोटा: "+esc(l[2]||"—")+"</p>"+sx+"<p class='mu'>गारंटी नहीं।</p></div>")}};
-fRender();
-
-
+/* P13 (24-10-2026): पुराने इंजन (ENGINE 2, अंतिम कटऑफ़ fRun, v2/v3 पैच, eng/eff कार्ड) हटाए गए। केवल लाइव हिस्से बचे: show(), खोज-कार्ड का पाठ, स्कोरकार्ड (PK/eligMin/scoreHTML) */
 document.head.insertAdjacentHTML("beforeend","<style>.vd{padding:14px;border-radius:10px;border:2px solid var(--bd);margin:8px 0}.vd.ok{border-color:var(--ok)}.vd.warn{border-color:var(--wa)}.vd.err{border-color:var(--er)}</style>");
 show=function(roll){const c=CANDS.find(x=>String(x.roll)===String(roll));if(c&&$("out")){$("pick").innerHTML="";$("out").innerHTML=stuHTML(c);$("out").scrollIntoView&&$("out").scrollIntoView({behavior:"auto"})}};
-(function(){const m=document.querySelector("main"),h=m.querySelector("h1"),sub=m.querySelector("h1+.mu"),sCard=$("q").closest(".card"),fCard=$("fsum").closest(".card"),out=$("out");
+(function(){const m=document.querySelector("main"),h=m.querySelector("h1"),sub=m.querySelector("h1+.mu"),sCard=$("q").closest(".card"),out=$("out");
  sCard.querySelector("h2").textContent="अपनी रैंक डालें → चयन-विश्लेषण देखें";$("q").placeholder="अपनी रैंक (जैसे 1500)";
- fCard.querySelector("h2").innerHTML="अंतिम कटऑफ़ और सभी छात्रों का स्तर <span class='warn'>[परिदृश्य]</span>";
  sCard.querySelector("h2").insertAdjacentHTML("afterend","<p class='mu'>अपनी रैंक लिखें और <b>विश्लेषण करें</b> दबाएँ। आपकी रैंक की गिनती, हर सूची में आपकी पोज़िशन और विभाग-वार स्थिति नीचे खुल जाएगी।</p>");$("q").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
  const keep=[h,sub,sCard,out],det=document.createElement("details");det.innerHTML="<summary><b>⚙ एडमिन / तकनीकी डेटा (पुराने कार्ड, सत्यापन, कटऑफ़ तालिकाएँ)</b></summary>";
  [...m.children].filter(e=>!keep.includes(e)).forEach(e=>det.appendChild(e));keep.forEach(e=>m.appendChild(e));m.appendChild(det)})();
-
 /* ===== v2 PATCH (additive): स्कोरकार्ड, वर्ग/लिंग-वार रैंक, रिक्ति तालिका, एकल Estimated Final Cutoff ===== */
 const PK=(function(){const m=new Map(),all={},cat={},cg={},g={};
  CANDS.slice().sort((a,b)=>a.rank-b.rank).forEach(c=>{const a=c.category,b=a+"|"+c.gender;
@@ -1151,210 +823,9 @@ function scoreHTML(c){const fmt=n=>Number(n).toLocaleString("en-IN"),p=PK.m.get(
   t("मेरिट-लिस्ट पृष्ठ",c.page!=null?c.page:"—",{sm:1})].join("");
  return "<div class='card'><h2>स्कोरकार्ड — "+esc(c.name)+"</h2><div class='scg'>"+tiles+"</div>"+
   "<p class='mu'>रैंक मेरिट सूची के वास्तविक डेटा से गिनी गई है, आधिकारिक रैंक नहीं। आपसे ऊपर "+fmt(c.rank-1)+" अभ्यर्थी हैं; अंक बराबर होने पर मेरिट सूची का क्रम माना गया है। कैटेगरी रैंक और कैटेगरी-लिंग रैंक ऊपर <b>मुख्य जानकारियाँ</b> में है। जो जानकारी मेरिट सूची में नहीं है, वह नहीं दिखाई गई।</p></div>"}
-const _stuV1=stuHTML;stuHTML=function(c){return scoreHTML(c)+_stuV1(c)};
-
-/* एकल अनुमानित अंतिम कटऑफ: हर वर्ग की मुख्य (ऊर्ध्वाधर) मेरिट-सीट का अंतिम चयनित अंक. क्षैतिज सूचियाँ अलग. */
-const MAINL={GEN:"खुली सूची",EWS:"EWS खुली/मेरिट",OBC:"OBC खुली/मेरिट",MBC:"MBC खुली/मेरिट",SC:"SC खुली/मेरिट",ST:"ST खुली/मेरिट"};
-function estCut(){const R=FR["गैर अनुसूचित"],o={};FC.forEach(k=>{o[k]={main:R.cut[MAINL[k]],n:R.cnt[MAINL[k]]||0,
-  fem:R.cut[k==="GEN"?"GEN-महिला (सब वर्ग)":k+"-महिला"],hor:[]}});
- Object.keys(R.cut).forEach(g=>{if(/पूर्व सैनिक|विधवा|परित्यक्ता|खिलाड़ी|दिव्यांग/.test(g)){const k=/^(GEN|EWS|OBC|MBC|SC|ST)-/.test(g)?g.split("-")[0]:"सभी";(o[k]||(o[k]={hor:[]})).hor.push([g,R.cut[g],R.cnt[g]])}});return o}
-function checkOBC(E){const w=[];FC.slice(1).forEach(k=>{if(E[k].main>E.GEN.main)w.push(k+" की मुख्य मेरिट-कटऑफ़ (" +E[k].main.toFixed(2)+") खुली सूची से ऊँची है — जाँच ज़रूरी")});return w}
-function estCard(){const E=estCut(),f=x=>x==null?"—":(+x).toFixed(2),W=checkOBC(E);
- return "<div class='card'><h2>Estimated Final Cutoff (एकल अनुमान, गैर-अनुसूचित पूल)</h2><p class='mu'>आधार: असली मेरिट-डेटा + पदों का वर्गवार बँटवारा + खुली-सूची माइग्रेशन + क्षैतिज/महिला परत; सभी उम्मीदवार DV में उपस्थित माने गए हैं। यह 2x/DV-शॉर्टलिस्ट कटऑफ़ से अलग है और चयन की गारंटी नहीं।</p><div class='sc'><table><tr><th>वर्ग</th><th>Estimated Final Cutoff (मुख्य मेरिट सीट)</th><th>चयनित (मुख्य सीट)</th><th>महिला-सूची का अंतिम अंक (अलग)</th></tr>"+
- FC.map(k=>"<tr><td>"+k+(k==="GEN"?" (खुली सूची, सब वर्ग)":"")+"</td><td><b>"+f(E[k].main)+"</b></td><td>"+E[k].n+"</td><td>"+f(E[k].fem)+"</td></tr>").join("")+"</table></div>"+
- "<h3>क्षैतिज सूचियाँ (वर्ग-कटऑफ़ से तुलना न करें — ये अतिरिक्त पद नहीं, वर्ग के पदों के भीतर हैं)</h3><div class='sc'><table><tr><th>सूची</th><th>अंतिम चयनित अंक</th><th>चयनित</th></tr>"+
- Object.values(E).flatMap(x=>x.hor).filter((r,i,a)=>a.findIndex(q=>q[0]===r[0])===i).map(r=>"<tr><td>"+esc(r[0])+"</td><td>"+f(r[1])+"</td><td>"+r[2]+"</td></tr>").join("")+"</table></div>"+
- (W.length?"<p class='err'>"+W.join("; ")+"</p>":"<p class='ok'>जाँच: कोई भी आरक्षित वर्ग की मुख्य मेरिट-कटऑफ़ खुली सूची से ऊपर नहीं है।</p>")+
- "<p class='mu'><b>सीमाएँ:</b> विभाग-वरीयता का असली डेटा नहीं (एक समान वरीयता मानी), यह पुराना अनुमान-खंड है; अधूरे क्षैतिज पद यहाँ खाली माने गए, जबकि मुख्य गणना में वे R6.1 के अनुसार लौटते/अग्रेषित होते हैं; लैब बालक/सेवक के 107/20 पद रिक्त होकर मेरिट को लौटे। इसलिए सटीक कटऑफ़ निर्धारित नहीं; ±कुछ अंकों का अंतर संभव है।</p></div>"}
-
-/* रिक्ति तालिका: क्षैतिज को अलग समझाया, कुल में दोबारा नहीं जोड़ा */
-function vacCard(){const K=["GEN","EWS","OBC","MBC","SC","ST","SAH"],P=prefSorted(CFG.posts.slice());
- const rows=P.map(p=>"<tr><td>"+esc(p.dept)+"<br><span class='mu'>"+esc(p.post||"")+"</span></td><td>"+esc(p.area)+"</td><td><b>"+p.total+"</b></td>"+K.map(k=>"<td>"+(p.cat[k]!=null?p.cat[k]:"—")+"</td>").join("")+"</tr>").join("");
- const W=ENG_W["गैर अनुसूचित"],wr=Object.keys(W).map(k=>"<tr><td>"+k+"</td><td>"+W[k][0]+"</td><td>"+W[k][1]+"</td><td>"+W[k][2]+"</td></tr>").join("");
- return "<div class='card'><h2>रिक्ति तालिका (विभाग-वार, वर्ग-वार)</h2><div class='sc'><table><tr><th>विभाग</th><th>क्षेत्र</th><th>कुल पद</th>"+K.map(k=>"<th>"+k+"</th>").join("")+"</tr>"+rows+"</table></div>"+
- "<p class='mu'>NTSP = 'गैर अनुसूचित', TSP = 'अनुसूचित' क्षेत्र। वर्ग-वार संख्याओं का योग कुल पद के बराबर है।</p><h3>क्षैतिज आरक्षण (गैर-अनुसूचित, वर्ग के पदों के <u>भीतर</u>; कुल में दोबारा नहीं जोड़ा)</h3><div class='sc'><table><tr><th>वर्ग</th><th>कुल महिला पद</th><th>जिनमें विधवा</th><th>जिनमें परित्यक्ता</th></tr>"+wr+"</table></div>"+
- "<p class='mu'>पूर्व सैनिक, खिलाड़ी (SP) और दिव्यांग (DE) भी वर्ग-पदों के भीतर हैं; यहाँ की अनुमान-मान्यताएँ: पूर्व सैनिक "+JSON.stringify(FX.EXM)+", खिलाड़ी "+FX.SP+", दिव्यांग "+FX.DE+" (रूलबुक की मान्यता)।</p></div>"}
-(function(){const m=document.querySelector("main"),det=m.querySelector("details");const h=estCard()+vacCard();det?det.insertAdjacentHTML("beforebegin",h):m.insertAdjacentHTML("beforeend",h)})();
-
-/* ===== v3 PATCH: विभाग-वार कटऑफ़/स्थिति, क्षैतिज-रिक्ति वापसी, महिला-कोटा नेटिंग, DV/अपात्र/जॉइनिंग कारक, पैराग्राफ़ विश्लेषण ===== */
-const NSA="गैर अनुसूचित";
-FOPT.fill=true;FOPT.wnet=true;const FX2={inel:0,nj:0,sg:0};
-const hB=(c,s)=>(Math.imul((parseInt(c.roll)||1)^s,2246822519)>>>0)/4294967296;
-const ex2=c=>(FX2.inel&&hB(c,0x9e37)<FX2.inel/100)||(FX2.nj&&hB(c,0x85eb)<FX2.nj/100)||(FX2.sg&&hB(c,0xc2b2)<FX2.sg/100);
-fRun=function(area,me){const ns=area===NSA,S=engSeats(area),Q=Object.assign({},ENG_W[area]),E=ns?FX.EXM:{},FL=FOPT.fill,WN=FOPT.wnet;FC.forEach(k=>{if(!Q[k])Q[k]=[0,0,0]});
- const L=CANDS.filter(c=>(ns||c.tsp)&&(c===me||!ex2(c))).sort((a,b)=>a.rank-b.rank);
- const st=new Map(),cut={},cnt={},gf={},tk=new Set(),ok=c=>c.marks>=160||c.subcat;
- const LAm=laAlloc(area),la=k=>LAm[k]||0;
- const tr=[];function take(n,g,p){let pos=0,ah=0;if(me&&!tk.has(me)&&p(me)){for(const c of L){if(c.rank>me.rank)break;if(tk.has(c))ah++;else if(p(c))pos++}}let a=0;for(const c of L){if(a>=n)break;if(tk.has(c)||!p(c))continue;tk.add(c);st.set(String(c.roll),g);a++;cnt[g]=(cnt[g]||0)+1;if(c.gender==="FEMALE")gf[g]=(gf[g]||0)+1;cut[g]=c.marks}if(pos)tr.push({g,n,pos,ah,sel:st.get(String(me.roll))===g,cut:cut[g]});return a}
- const gw=k=>(Q[k]?Q[k][0]-Q[k][1]-Q[k][2]:0),os=k=>(S[k]||0)-(Q[k]?Q[k][0]:0),sd={},sdp={};
- if(ns){L.filter(isSP).slice(0,FX.SP).forEach(c=>sdp[c.category]=(sdp[c.category]||0)+1);L.filter(c=>isDE(c)&&!isSP(c)).slice(0,FX.DE).forEach(c=>sdp[c.category]=(sdp[c.category]||0)+1)}
- const exG=Math.min(E.GEN||0,L.filter(c=>c.subcat==="EXM").length),fG=FL?(E.GEN||0)-exG:0;
- const openP=c=>c.marks>=160&&!c.subcat;
- take(os("GEN")-(E.GEN||0)-la("GEN")-(sdp.GEN||0)+fG,"खुली सूची",openP);
- const wo=[...tk].filter(c=>c.gender==="FEMALE"&&c.marks>=160).length;
- take(E.GEN||0,"GEN-पूर्व सैनिक",c=>c.subcat==="EXM");const gvw=take(Q.GEN[1],"GEN-विधवा",c=>c.subcat==="WID"),gvd=take(Q.GEN[2],"GEN-परित्यक्ता",c=>c.subcat==="DIV");
- if(ns){const b=new Set(tk);take(FX.SP,"खिलाड़ी (SP)",c=>isSP(c));take(FX.DE,"दिव्यांग (DE)",c=>isDE(c)&&!isSP(c));L.forEach(c=>{if(tk.has(c)&&!b.has(c)){sd[c.category]=(sd[c.category]||0)+1}})}
- const gq=gw("GEN")+(FL?(Q.GEN[1]-gvw)+(Q.GEN[2]-gvd):0);
- const gl=take(Math.max(0,gq-wo),"GEN-महिला (सब वर्ग)",c=>c.gender==="FEMALE"&&ok(c)&&!/WID|DIV/.test(c.subcat||""));
- if(WN&&gq-gl>0&&gq>0)take(Math.min(gq,gq-gl),"खुली सूची",openP); // महिला-पद जो मेरिट से पूरे हुए/खाली रहे: खुली मेरिट को लौटे
- FC.slice(1).forEach(k=>{const v=take(E[k]||0,k+"-पूर्व सैनिक",c=>c.category===k&&c.subcat==="EXM");
-  const vw=take(Q[k][1],k+"-विधवा",c=>c.category===k&&c.subcat==="WID"),vd=take(Q[k][2],k+"-परित्यक्ता",c=>c.category===k&&c.subcat==="DIV");
-  const mp=c=>c.category===k&&ok(c)&&!/WID|DIV/.test(c.subcat||""),ML=k+" खुली/मेरिट";
-  take(os(k)-(E[k]||0)-la(k)-(sd[k]||0)+(FL?(E[k]||0)-v:0),ML,mp);
-  const wq=gw(k)+(FL?(Q[k][1]-vw)+(Q[k][2]-vd):0),wm=WN?(gf[ML]||0):0;
-  const wl=take(Math.max(0,wq-wm),k+"-महिला",c=>c.category===k&&c.gender==="FEMALE"&&!/WID|DIV/.test(c.subcat||""));
-  if(WN&&wq-wl>0)take(wq-wl,ML,mp)}); // वही वर्ग: नेट महिला-पद मेरिट को
- return{st,cut,cnt,gf,n:L.length,tr}};
-
-/* विभाग-आँकड़े */
-const isWL=g=>/महिला/.test(g),isML=g=>g==="खुली सूची"||/खुली\/मेरिट/.test(g);
-function deptStats(dp){const S={};DEPT.forEach(([dn,pf])=>{const ps=dp.posts.filter(p=>p.id.startsWith(pf+"-")),seats={};FC.forEach(k=>{seats[k]=Math.max(0,ps.reduce((s,p)=>s+(p.cat[k]||0),0)-(pf==="SE"?dp.la(k):0))});
- S[dn]={pf,seats,tot:FC.reduce((s,k)=>s+seats[k],0),n:0,nc:{},lastM:{},lastA:{},main:null,wom:null}});
- dp.sel.forEach(s=>{const o=dp.out.get(String(s.c.roll));if(!o)return;const x=S[o.dn],r=[s.c.rank,s.c.marks];x.n++;x.nc[s.sc]=(x.nc[s.sc]||0)+1;
-  if(isML(s.g)){x.lastM[s.sc]=r;x.lastA[s.sc]=r;x.main=r}else if(isWL(s.g)){x.lastA[s.sc]=r;x.wom=r}});return S}
-const DC={};function dm(){const k=JSON.stringify(FX2)+FOPT.fill+FOPT.wnet;if(DC[k])return DC[k];const r=fRun(NSA),dp=fDept(NSA,r);return DC[k]={r,dp,S:deptStats(dp)}}
-const fm=x=>x==null?"—":(+x).toFixed(2);
-function deptCard(){const M=dm(),S=M.S,P=(x)=>x.n===0?"उपलब्ध नहीं":(x.tot-x.n>0?"अनंतिम (पद खाली रहे)":"अनुमानित");
- const t1=DEPT.map(([dn])=>{const x=S[dn];return"<tr><td><b>"+esc(dn)+"</b></td><td>"+x.tot+"</td><td>"+x.n+"</td><td>"+(x.tot-x.n)+"</td><td><b>"+(x.main?fm(x.main[1])+" (रैंक "+x.main[0]+")":"—")+"</b></td><td>"+(x.wom?fm(x.wom[1]):"—")+"</td><td>"+P(x)+"</td></tr>"}).join("");
- const t2=DEPT.map(([dn])=>{const x=S[dn];return"<tr><td>"+esc(dn)+"</td>"+FC.map(k=>"<td>"+(x.seats[k]?(x.nc[k]||0)+"/"+x.seats[k]+"<br><span class='mu'>"+(x.lastM[k]?fm(x.lastM[k][1]):"—")+"</span>":"—")+"</td>").join("")+"</tr>"}).join("");
- return"<div class='card'><h2>विभाग-वार Estimated Final Cutoff</h2><p class='mu'>विभाग और वरीयता क्रम मौजूदा सत्यापित डेटा से (माध्यमिक → संस्कृत → कृषि → PHED → FSL)। मेरिट में ऊपर वाले को पहले विभाग में पद मिलता है, पद भरने पर अगला विभाग। कटऑफ़ = उस विभाग में अंतिम अनुमानित चयनित (मुख्य मेरिट सीट) के अंक; सभी उम्मीदवार DV में उपस्थित माने गए हैं।</p><div class='sc'><table><tr><th>विभाग</th><th>कुल पद</th><th>भरे (अनुमान)</th><th>खाली</th><th>Estimated Cutoff</th><th>महिला-सूची अंतिम अंक</th><th>स्थिति</th></tr>"+t1+"</table></div>"+
- "<h3>वर्ग-वार (भरे/पद, नीचे अंतिम मेरिट-अंक)</h3><div class='sc'><table><tr><th>विभाग</th>"+FC.map(k=>"<th>"+k+"</th>").join("")+"</tr>"+t2+"</table></div>"+
- "<p class='mu'>जहाँ पद खाली रहते हैं वहाँ कटऑफ़ अनंतिम है, क्योंकि उम्मीदवार-पूल (तथा असली वरीयता/जॉइनिंग डेटा) पूरा नहीं है।</p></div>"}
-
-/* उम्मीदवार-वार विभाग विश्लेषण */
-function candDept(c){const k=String(c.roll),r=fRun(NSA,c),dp=fDept(NSA,r),S=deptStats(dp),mine=dp.sel.find(s=>s.c===c),got=mine?dp.out.get(k):null,cat=mine?mine.sc:c.category,fem=c.gender==="FEMALE",gi=got?DEPT.findIndex(d=>d[0]===got.dn):-1;
- const rows=DEPT.map(([dn,pf],i)=>{const x=S[dn],seats=x.seats[cat]||0,last=(fem?x.lastA:x.lastM)[cat]||x.lastM[cat],
-  ahead=dp.sel.filter(s=>s.sc===cat&&s.c.rank<c.rank&&(dp.out.get(String(s.c.roll))||{}).dn===dn).length;
-  return{dn,seats,filled:x.nc[cat]||0,ahead,last,main:x.main,here:gi===i,after:gi>=0&&i>gi,left:seats-(x.nc[cat]||0)}});return{c,r,dp,S,mine,got,cat,rows}}
-function narr(c){const el=c.marks>=eligMin(c)||c.subcat,A=candDept(c),gl=c.gender==="FEMALE"?"महिला":"पुरुष",p=PK.m.get(String(c.roll));
- let t="<p>आपकी कुल रैंक <span class='hl'>"+c.rank+"</span> है और आप <b>"+c.category+" "+gl+"</b> वर्ग में "+p.cat+"वें स्थान पर हैं ("+c.category+" की "+gl+" उम्मीदवारों में "+p.catG+"वें)। "+(el?"":"<b>आपके अंक न्यूनतम सीमा ("+eligMin(c)+") से कम हैं, इसलिए चयन-सूची में गिनती नहीं बनती।</b> ")+
- "सबसे पहले सब वर्गों की खुली मेरिट देखी जाती है; फिर आपके वर्ग की सीटें, फिर महिला/विधवा/परित्यक्ता जैसे क्षैतिज आरक्षण (ये वर्ग के पदों के भीतर हैं, अलग से नहीं जुड़ते), और अंत में विभाग-वरीयता से तय होता है कि पद किस विभाग में मिले।</p>";
- const first=A.r.tr[0];if(first&&first.g==="खुली सूची")t+="<p>खुली मेरिट में खुली सूची के "+Math.max(0,first.n)+" पद हैं और आपसे पहले "+first.ah+" उम्मीदवार चुने जा चुके हैं; "+(A.r.st.get(String(c.roll))==="खुली सूची"?"आप खुली मेरिट में ही चयनित हैं।":"आप खुली सूची में नहीं आ पाए, इसलिए अपने वर्ग/क्षैतिज कोटे में देखा गया।")+"</p>";
- A.rows.forEach((x,i)=>{const nm=esc(x.dn);let s="";
-  if(!el)s="आप पात्रता-अंक से नीचे हैं, इसलिए इस विभाग में गिने नहीं गए।";
-  else if(!x.seats)s="इस विभाग में आपकी श्रेणी ("+A.cat+") का कोई पद नहीं है, इसलिए यहाँ चयन संभव नहीं।";
-  else if(x.here)s="इस विभाग में "+A.cat+" के "+x.seats+" पद हैं, आपसे आगे इसी श्रेणी के "+x.ahead+" उम्मीदवार यहीं चुने गए, और आपका चयन यहाँ बन रहा है"+(x.last?" (अनुमानित कटऑफ़ "+fm(x.last[1])+", अंतिम रैंक "+x.last[0]+")":"")+"।";
-  else if(x.after)s="आपको ऊपर की वरीयता वाले विभाग में पद मिल चुका है, इसलिए यहाँ आपको दोबारा नहीं गिना गया।";
-  else{s="यहाँ "+A.cat+" के "+x.seats+" पद हैं, जिनमें अनुमान से "+x.filled+" भरे। ";if(x.last){const K=c.rank-x.last[0];s+="अंतिम चयनित रैंक "+x.last[0]+" (अंक "+fm(x.last[1])+") है; आपकी रैंक "+(K>0?K+" स्थान पीछे":(-K)+" स्थान आगे")+" और आपके अंक "+(c.marks>=x.last[1]?fm(c.marks-x.last[1])+" ऊपर":fm(x.last[1]-c.marks)+" नीचे")+" हैं। "+(K>0?"इस विभाग में चयन की संभावना कम है।":"पर ऊपर की वरीयता/कोटे में इस विभाग का पद पहले से भर चुका माना गया।")}else s+="इस विभाग में कटऑफ़ निकालने लायक चयन अनुमान में नहीं बने, इसलिए स्थिति उपलब्ध नहीं।";if(x.left>0)s+=" (अनुमान में "+x.left+" पद खाली हैं—पूल की सीमा के कारण; असली परिणाम अलग हो सकता है।)"}
-  t+="<p>"+(i===0?"<b>"+nm+":</b> ":"इसके बाद <b>"+nm+"</b>: ")+s+"</p>"});
- const lk=A.got?"<b>"+esc(A.got.dn)+"</b> ("+esc(A.got.post)+")":"इस परिदृश्य में कोई विभाग तय नहीं";
- return"<div class='card'><h2>आपका विश्लेषण (सरल भाषा में)</h2>"+t+"<p>उपलब्ध डेटा के अनुसार सबसे संभावित विभाग: "+lk+"। यह गारंटी नहीं है।</p>"+
- "<p class='mu'>दो अलग कारक: (1) DV में अपात्र, (2) चयन के बाद जॉइन न करना। (1), (2) और सेकंड-ग्रेड विज्ञान में चयन का सत्यापित डेटा उपलब्ध नहीं है; इन्हें नीचे के कार्ड से अलग प्रतिशत देकर परखा जा सकता है (अभी: अपात्र "+FX2.inel+"%, जॉइन न करना "+FX2.nj+"%, सेकंड-ग्रेड "+FX2.sg+"%)। एक उम्मीदवार एक ही बार गिना जाता है।</p></div>"}
-const _stuV2=stuHTML;
-stuHTML=function(c){let h=_stuV2(c);
- h=h.replace(/<h2>चरण 3[\s\S]*?(?=<span id='s4'>)/,"");
- const j=h.indexOf("<div class='card'>",10);return h.slice(0,j)+narr(c)+h.slice(j)};
-
-/* TSP, महिला-रिक्ति सत्यापन, सत्यापन-जाँच */
-function tspCard(){const T={};CANDS.filter(c=>c.tsp).forEach(c=>{const k=c.category;(T[k]=T[k]||{MALE:0,FEMALE:0})[c.gender]++});const n=CANDS.filter(c=>c.tsp).length;
- const R=fRun("अनुसूचित");
- return"<div class='card'><h2>TSP-पात्र उम्मीदवार (डेटाबेस से गिनती)</h2><div class='sc'><table><tr><th>वर्ग</th><th>पुरुष</th><th>महिला</th><th>कुल</th></tr>"+Object.keys(T).sort().map(k=>"<tr><td>"+k+"</td><td>"+T[k].MALE+"</td><td>"+T[k].FEMALE+"</td><td>"+(T[k].MALE+T[k].FEMALE)+"</td></tr>").join("")+"<tr><td><b>कुल</b></td><td><b>"+CANDS.filter(c=>c.tsp&&c.gender==="MALE").length+"</b></td><td><b>"+CANDS.filter(c=>c.tsp&&c.gender==="FEMALE").length+"</b></td><td><b>"+n+"</b></td></tr></table></div><p class='mu'>यह गिनती डेटा के TSP-चिह्न से है; पहले का 11–15 का अंदाज़ा इससे मेल नहीं खाता, इसलिए उसे पुष्ट नहीं माना गया। TSP उम्मीदवार NTSP सूची से हटाए नहीं गए; अनुसूचित-क्षेत्र की अलग गणना में अनुमान से "+R.st.size+" चयन बनते हैं। दोनों में चयन पर DV में वरीयता का असली विकल्प उपलब्ध नहीं।</p></div>"}
-
-
-function ctlCard(){return"<div class='card'><h2>परिदृश्य-नियंत्रण (दो कारक + सेकंड-ग्रेड)</h2><div class='row'><label>DV में अपात्र % <input id='v_in' type='number' value='"+FX2.inel+"'></label><label>जॉइन न करने वाले % <input id='v_nj' type='number' value='"+FX2.nj+"'></label><label>सेकंड-ग्रेड विज्ञान में चयन % <input id='v_sg' type='number' value='"+FX2.sg+"'></label></div><div class='row'><button onclick='v2Apply()'>लागू करें</button></div><p class='mu'>इन तीनों का सत्यापित डेटा उपलब्ध नहीं; डिफ़ॉल्ट 0%। चयनित-प्रतिशत रोल पर आधारित छद्म-यादृच्छिक है, असली सूची नहीं।</p></div>"}
-function v2Html(){return ctlCard()+deptCard()+tspCard()}
-function v2Apply(){const g=i=>Math.max(0,Math.min(80,+$(i).value||0));FX2.inel=g("v_in");FX2.nj=g("v_nj");FX2.sg=g("v_sg");fRender();$("v2cards").innerHTML=v2Html();if(window.LASTROLL)show(window.LASTROLL)}
-/*DOM*/
-(function(){const m=document.querySelector("main"),det=m.querySelector("details"),h="<div id='v2cards'>"+v2Html()+"</div>";det?det.insertAdjacentHTML("beforebegin",h):m.insertAdjacentHTML("beforeend",h);
- const _s=show;show=function(r){window.LASTROLL=r;_s(r)}})();
-</script>
-<script>
-/* ===== v4: CUTOFF ENGINE — RULES SPEC (19.10.2026) • केवल NTSP 1x सूची • परिदृश्य, बोर्ड का नतीजा नहीं ===== */
-const V4={FC:["GEN","EWS","OBC","MBC","SC","ST"],ORD:["SE","SK","AG","PH","FS"],
-DN:{SE:"माध्यमिक शिक्षा",SK:"संस्कृत शिक्षा",AG:"कृषि",PH:"PHED",FS:"FSL"},
-/* c = स्पेक के अनुसार [ओपन, सामान्य महिला, विधवा, परित्यक्ता]; fb = मिसमैच वाले विभाग के लिए फ़ाइल के जोड़-मिलते वर्ग-योग (सब ओपन) */
-P:[
-{id:"माध्यमिक शिक्षा",d:"SE",decl:838,c:{GEN:[224,70,23,2],EWS:[56,17,6,1],OBC:[126,36,11,0],MBC:[29,8,3,0],SC:[92,27,9,2],ST:[67,20,7,2]}},
-{id:"संस्कृत शिक्षा",d:"SK",decl:16,c:{GEN:[5,2,0,0],OBC:[3,1,0,0],SC:[3,1,0,0],ST:[0,1,0,0],EWS:[1,0,0,0]},fb:{GEN:[7,0,0,0],EWS:[1,0,0,0],OBC:[3,0,0,0],SC:[1,0,0,0],ST:[4,0,0,0]}},
-{id:"कृषि",d:"AG",decl:32,c:{GEN:[7,2,0,0],OBC:[5,3,0,0],SC:[3,1,0,0],ST:[5,3,0,0],EWS:[3,1,0,0],MBC:[1,1,0,0]},fb:{GEN:[9,0,0,0],EWS:[6,0,0,0],OBC:[3,0,0,0],MBC:[3,0,0,0],SC:[4,0,0,0],ST:[7,0,0,0]}},
-{id:"PHED",d:"PH",decl:13,c:{GEN:[3,1,0,0],SC:[2,0,0,0],ST:[5,0,0,0],EWS:[1,1,0,0]}},
-{id:"FSL फोटो",d:"FS",decl:3,c:{GEN:[1,1,0,0],OBC:[1,0,0,0]}},
-{id:"FSL प्रयोगशाला सहायक (फोटो के अलावा)",d:"FS",decl:41,c:{GEN:[10,1,1,2],OBC:[7,1,1,2],SC:[4,3,0,0],ST:[3,1,1,0],EWS:[2,2,0,0],MBC:[2,0,0,0]},fb:{GEN:[14,0,0,0],EWS:[4,0,0,0],OBC:[9,0,0,0],MBC:[2,0,0,0],SC:[7,0,0,0],ST:[5,0,0,0]}},
-{id:"FSL कनिष्ठ",d:"FS",decl:68,c:{GEN:[17,4,2,1],OBC:[12,3,1,0],SC:[6,2,1,1],ST:[5,2,1,0],EWS:[5,1,1,0],MBC:[2,1,0,0]}}],
-MCAT:{GEN:319,EWS:80,SC:130,ST:96,OBC:173,MBC:40},
-ATT:{GEN:11,OBC:6,SC:5,ST:4,EWS:3,MBC:1},
-EXM:{GEN:55,EWS:17,SC:27,ST:22,OBC:24,MBC:8},
-SP:{GEN:[3,1],OBC:[5,1],SC:[2,0],ST:[2,0],EWS:[1,0],MBC:[1,0]},
-PH:{GEN:[8,2],OBC:[6,2],SC:[4,1],ST:[4,1],EWS:[3,1],MBC:[1,0]},
-o:{tsp:0,att:0,spec:0,mig:0,dv:0},cache:{}};
-const v8thin=(r,q,ph)=>Math.floor(r*q+ph)!==Math.floor((r-1)*q+ph);
-const v4s=a=>a.reduce((x,y)=>x+y,0),v4ps=c=>v4s(Object.values(c).map(v4s))+(c.__sah||0);
-function v4Run(o){
- const key=JSON.stringify(o)+CANDS.length+v5Posts().map(p=>p.id).join("|");if(V4.cache[key])return V4.cache[key];
- const FC=V4.FC,seats=p=>(p.fb&&!o.spec)?p.fb:p.c,T={};FC.forEach(k=>T[k]=[0,0,0,0]);
- V4.P.forEach(p=>{const s=seats(p);for(const k in s)s[k].forEach((v,i)=>T[k][i]+=v)});
- const L=CANDS.filter(c=>!(o.tsp&&c.tsp)&&!(o.dv&&v8thin(c.rank,o.dv/100,0))).sort((a,b)=>a.rank-b.rank);
- const tk=new Set(),st=new Map(),rows=[],R8={};
- const mn=c=>(/^(SC|ST)$/.test(c.category)||c.subcat==="EXM"||isDE(c))?140:160,el=c=>c.marks>=mn(c),F=c=>c.gender==="FEMALE";
- const take=(n,pred,k,type,show)=>{n=Math.max(0,n);const g=[];for(const c of L){if(g.length>=n)break;if(tk.has(c)||!pred(c))continue;tk.add(c);g.push(c);st.set(String(c.roll),{k,type})}
-  if(show){const l=g[g.length-1];rows.push({k,type,n,got:g.length,cut:l&&l.marks,rank:l&&l.rank})}return g};
- FC.forEach(k=>{const[O,GW,WD,DV]=T[k],att=o.att?(V4.ATT[k]||0):0,ex=V4.EXM[k]||0,sp=V4.SP[k]||[0,0],ph=V4.PH[k]||[0,0];
-  const own=c=>c.category===k,gen=k==="GEN";
-  /* v8: GEN open merit में आरक्षित वर्ग का माइग्रेशन-परिदृश्य (o.mig = % आरक्षित उम्मीदवार जिन्होंने अन्य छूट ली मानी गई) */
-  const migOK=c=>!(gen&&c.category!=="GEN"&&o.mig&&v8thin(c.rank,o.mig/100,0.37));
-  const openP=c=>!c.subcat&&(gen?c.marks>=160&&migOK(c):own(c)&&el(c));
-  const e=take(ex,c=>own(c)&&c.subcat==="EXM"&&el(c),k,"पूर्व सैनिक",1);
-  const sM=take(sp[0],c=>own(c)&&isSP(c)&&!F(c)&&el(c),k,"खिलाड़ी (पुरुष)",1),sF=take(sp[1],c=>own(c)&&isSP(c)&&F(c)&&el(c),k,"खिलाड़ी (महिला)",1);
-  const pM=take(ph[0],c=>own(c)&&isDE(c)&&!F(c)&&el(c),k,"दिव्यांग (पुरुष)",1),pF=take(ph[1],c=>own(c)&&isDE(c)&&F(c)&&el(c),k,"दिव्यांग (महिला)",1);
-  const w=take(WD,c=>own(c)&&c.subcat==="WID"&&el(c),k,"विधवा",1),dv=take(DV+WD-w.length,c=>own(c)&&c.subcat==="DIV"&&el(c),k,"परित्यक्ता (विधवा पद सहित)",1);
-  /* v8: चरण — (1) Open Merit पहले (2) उसमें चुनी महिलाओं की गिनती (3) महिला आरक्षण की केवल शेष आवश्यकता (swap: सबसे नीचे के गैर-महिला हटते हैं) */
-  const openN=O-att-ex-sp[0]-ph[0],back=(ex-e.length)+(sp[0]-sM.length)+(ph[0]-pM.length);
-  const gwN=GW-sp[1]-ph[1]+(sp[1]-sF.length)+(ph[1]-pF.length)+(DV+WD-w.length-dv.length);
-  const nTot=Math.max(0,openN+back+gwN),sel=L.filter(c=>!tk.has(c)&&openP(c)).slice(0,nTot);
-  const wPre=[...e,...sM,...pM].filter(F).length,wInOpen=sel.filter(F).length;
-  let need=Math.max(0,gwN-wPre-wInOpen);const inSel=new Set(sel),wp=L.filter(c=>!tk.has(c)&&!inSel.has(c)&&F(c)&&!/WID|DIV/.test(c.subcat||"")&&(gen?c.marks>=160&&migOK(c):own(c)&&el(c))),sw=[];
-  while(need>0&&wp.length){let i=sel.length-1;while(i>=0&&F(sel[i]))i--;if(i<0)break;sel.splice(i,1);sw.push(wp.shift());need--}
-  const fin=(arr,type,n)=>{arr.sort((x,y)=>x.rank-y.rank);arr.forEach(c=>{tk.add(c);st.set(String(c.roll),{k,type})});const l=arr[arr.length-1];rows.push({k,type,n,got:arr.length,cut:l&&l.marks,rank:l&&l.rank})};
-  fin(sel,"खुली मेरिट",sel.length);if(sw.length||need>0)fin(sw,gen?"सामान्य महिला (सभी वर्गों की)":"सामान्य महिला",sw.length+need);
-  (R8[k]=R8[k]||{}).info={openN,back,gwN,wPre,wInOpen,swapped:sw.length,unmet:need}});
- /* विभाग आवंटन (v5): पद-वार और सूची-वार (खुली/महिला/विधवा/परित्यक्ता) शेष पद; क्रम = विभाग वरीयता (PREF) + FSL क्रम */
- const posts=v5Posts(),pc={},dst={};
- V4.ORD.forEach(d=>{dst[d]={};FC.forEach(k=>dst[d][k]={cap:0,n:0,cut:null,rank:null})});
- posts.forEach(p=>{pc[p.id]={};FC.forEach(k=>{const a=(seats(p)[k]||[0,0,0,0]).slice();if(p.d==="SE"&&o.att)a[0]=Math.max(0,a[0]-(V4.ATT[k]||0));
-  pc[p.id][k]={cap:a,left:a.slice(),n:[0,0,0,0],cut:[null,null,null,null],rank:[null,null,null,null],sp:{}};dst[p.d][k].cap+=v4s(a)})});
- const by=new Map(CANDS.map(c=>[String(c.roll),c])),alloc=new Map(),palloc=new Map();
- [...st.entries()].map(([r,s])=>({c:by.get(r),s})).sort((a,b)=>a.c.rank-b.c.rank).forEach(({c,s})=>{
-  const k=s.k;let sl=v4Slot(s.type),hit=posts.find(p=>pc[p.id][k].left[sl]>0);
-  if(!hit){hit=posts.find(p=>pc[p.id][k].left.some(x=>x>0));if(hit)sl=pc[hit.id][k].left.findIndex(x=>x>0)}
-  if(!hit)return;
-  const x=pc[hit.id][k];x.left[sl]--;x.n[sl]++;x.rank[sl]=c.rank;
-  if(v4Main(s.type))x.cut[sl]=c.marks;else{const q=x.sp[s.type]||(x.sp[s.type]={n:0,cut:null});q.n++;q.cut=c.marks}
-  alloc.set(String(c.roll),hit.d);palloc.set(String(c.roll),hit.id);
-  const y=dst[hit.d][k];y.n++;y.cut=c.marks;y.rank=c.rank});
- return V4.cache[key]={R8,T,rows,st,alloc,palloc,dst,pc,posts,N:L.length,sel:st.size}}
-function v4Slot(t){return /^विधवा/.test(t)?2:/^परित्यक्ता/.test(t)?3:(/महिला/.test(t)&&!/^खुली/.test(t))?1:0}
-function v4Main(t){return /^(खुली|सामान्य महिला|विधवा|परित्यक्ता)/.test(t)}
-function v5Posts(){let ord=(typeof PREF!=="undefined"&&PREF?PREF:[]).map(n=>{const d=DEPT.find(x=>x[0]===n);return d&&d[1]}).filter(Boolean);
- V4.ORD.forEach(d=>{if(ord.indexOf(d)<0)ord.push(d)});
- const fid=["FS-PH","FS-LA","FS-JR"],fs=V4.P.filter(p=>p.d==="FS").map((p,i)=>[p,fslRank(fid[i])]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]);
- let r=[];ord.forEach(d=>{r=r.concat(d==="FS"?fs:V4.P.filter(p=>p.d===d))});return r}
-
-function v4Card(){const o=V4.o,R=v4Run(o),f=x=>x==null?"—":(+x).toFixed(2);
- const t1="<table><tr><th>वर्ग</th><th>सूची / कोटा</th><th>पद</th><th>भरे</th><th>अंतिम अंक (कटऑफ़)</th><th>अंतिम रैंक</th></tr>"+R.rows.filter(r=>r.n>0||r.got>0).map(r=>"<tr><td>"+r.k+"</td><td>"+esc(r.type)+"</td><td>"+r.n+"</td><td class='"+(r.got<r.n?"warn":"")+"'>"+r.got+"</td><td><b>"+f(r.cut)+"</b></td><td>"+(r.rank||"—")+"</td></tr>").join("")+"</table>";
- const SL=["खुली मेरिट सूची","सामान्य महिला","विधवा","परित्यक्ता"],rowsD=[];
- R.posts.forEach(p=>V4.FC.forEach(k=>{const x=R.pc[p.id][k];[0,1,2,3].forEach(s=>{if(x.cap[s]>0)rowsD.push({d:p.d,p:p,k:k,s:s,x:x})})}));
- const cnt=g=>rowsD.filter(g).length,nP={};V4.ORD.forEach(d=>nP[d]=R.posts.filter(p=>p.d===d).length);let lst={},vm=" style='vertical-align:middle'";
- const t2="<table><tr><th>विभाग</th><th>पद</th><th>वर्ग</th><th>सूची</th><th>पद संख्या</th><th>भरे (अनुमान)</th><th>अनुमानित 1X कट-ऑफ़ (अंतिम अंक)</th><th>अंतिम रैंक</th><th>विशेष उप-सूची (पूर्व सैनिक/खिलाड़ी/दिव्यांग) अंतिम अंक</th></tr>"+rowsD.map(r=>{
-  const nd=r.d!==lst.d,np=nd||r.p!==lst.p,nk=np||r.k!==lst.k;lst={d:r.d,p:r.p,k:r.k};const x=r.x,n=x.n[r.s],cp=x.cap[r.s];
-  const sp=Object.keys(x.sp).filter(t=>v4Slot(t)===r.s).map(t=>esc(t)+": "+f(x.sp[t].cut)+" ("+x.sp[t].n+")").join("<br>")||"—";
-  return "<tr>"+(nd?"<td rowspan='"+cnt(q=>q.d===r.d)+"'"+(nP[r.d]===1?" colspan='2'":"")+vm+"><b>"+esc(V4.DN[r.d])+"</b></td>":"")+(np&&nP[r.d]>1?"<td rowspan='"+cnt(q=>q.p===r.p)+"'"+vm+">"+esc(r.p.id)+"</td>":"")+(nk?"<td rowspan='"+cnt(q=>q.p===r.p&&q.k===r.k)+"'"+vm+"><b>"+r.k+"</b></td>":"")+"<td>"+SL[r.s]+"</td><td>"+cp+"</td><td class='"+(n<cp?"warn":"")+"'>"+n+"</td><td><b>"+f(x.cut[r.s])+"</b></td><td>"+(x.rank[r.s]||"—")+"</td><td>"+sp+"</td></tr>"}).join("")+"</table>";
- const sel=(id,v,a)=>"<select id='"+id+"'>"+a.map(([x,t])=>"<option value='"+x+"'"+(String(v)===String(x)?" selected":"")+">"+t+"</option>").join("")+"</select>";
- return "<div class='card' id='v4card'><h2>अनुमानित 1X फाइनल कट-ऑफ़ — विभाग-वार (स्पेक 19.10.2026) <span class='warn'>[NTSP 1x सूची • अनुमान, आधिकारिक नहीं]</span></h2>"+
- "<div class='row'>"+sel("v4tsp",o.tsp,[[0,"TSP माइग्रेशन: बंद"],[1,"TSP माइग्रेशन: सभी TSP-पात्र NTSP से बाहर"]])+sel("v4att",o.att,[[0,"लैब बॉय: उम्मीदवार नहीं माने (0)"],[1,"लैब बॉय: 30 उम्मीदवार (सूची आने पर)"]])+sel("v4spec",o.spec,[[0,"मिसमैच विभाग: फ़ाइल के जोड़-मिलते आँकड़े"],[1,"मिसमैच विभाग: स्पेक के आँकड़े जैसे हैं"]])+sel("v4mig",o.mig,[[0,"माइग्रेशन: Primary (सभी पात्र)"],[25,"माइग्रेशन: Limited (25% ने छूट ली)"],[50,"माइग्रेशन: Conservative (50%)"],[100,"माइग्रेशन: बिल्कुल नहीं"]])+sel("v4dv",o.dv,[[0,"DV/अपात्रता: 0%"],[12,"12%"],[25,"25%"],[40,"40%"]])+"<button onclick='v4Apply()'>दोबारा गणना</button></div>"+
- "<p class='mu'>चयनित "+R.sel+" / कुल पद "+(R.T?V4.FC.reduce((s,k)=>s+v4s(R.T[k]),0)-(o.att?30:0):"")+" • पात्र सूची "+R.N+". क्रम: खुली मेरिट (GEN में सब वर्ग) → पूर्व सैनिक (वर्ग-वार) → खिलाड़ी/दिव्यांग (पुरुष=ओपन, महिला=सामान्य महिला) → विधवा→परित्यक्ता→सामान्य महिला → सामान्य महिला (GEN में सब वर्गों की महिलाएँ; बाकी वर्ग की महिला पद नीचे वाली को)। खाली विशेष/महिला पद खुली मेरिट में लौटते हैं। न्यूनतम अंक: सामान्य/OBC/EWS/MBC 160, SC/ST/PH/पूर्व सैनिक 140।</p>"+
- "<h3>अनुमानित 1X फाइनल कट-ऑफ़ — विभाग-वार (Non-TSP सूची)</h3><p class='mu'>हर विभाग/पद की अपनी सूची: उस विभाग के अपने पद, मेरिट-रैंक और विभाग-वरीयता क्रम (अभी: "+R.posts.map(p=>esc(p.id)).join(" → ")+") के अनुसार। कट-ऑफ़ = उस विभाग की उस सूची में अंतिम अनुमानित चयनित उम्मीदवार के अंक; \"—\" = इस परिदृश्य में कोई चयन नहीं। विभाग/पद/वर्ग के नाम केवल मर्ज्ड सेल में हैं; अलग विभागों की पंक्तियाँ आपस में मर्ज नहीं हैं।</p><div class='sc'>"+t2+"</div><details><summary>सभी विभाग मिलाकर वर्ग × सूची चयन-कटऑफ़ (संदर्भ — इसे हर विभाग पर लागू न करें)</summary><div class='sc'>"+t1+"</div></details>"+
- 
- "<p class='mu'><b>TSP/Non-TSP:</b> यह तालिका केवल Non-TSP (गैर-अनुसूचित) 1X सूची की है। स्पेक में TSP सूची के विभाग-वार पद/नियम नहीं दिए गए, इसलिए TSP का अनुमान नहीं बनाया और कोई आँकड़ा गढ़ा नहीं गया।</p><div class='dis'>यह परिदृश्य है, बोर्ड का नतीजा नहीं। लैब अटेंडेंट की असली सूची, विभाग-वरीयता और किसने कौन-सी छूट ली उपलब्ध नहीं; ये मान्यताएँ हैं। पूर्व सैनिक/खिलाड़ी/दिव्यांग के विभाग-वार पद केवल माध्यमिक शिक्षा के दिए गए हैं।</div></div>"}
-function v4Refresh(){const e=$("v4card");if(e)e.outerHTML=v4Card()}
-function v4Apply(){const o=V4.o;o.tsp=+$("v4tsp").value;o.att=+$("v4att").value;o.spec=+$("v4spec").value;o.mig=+$("v4mig").value;o.dv=+$("v4dv").value;$("v4card").outerHTML=v4Card();if(window.LASTROLL)show(window.LASTROLL)}
-function v4Cand(c){const R=v4Run(V4.o),s=R.st.get(String(c.roll)),d=R.alloc.get(String(c.roll)),mn=(/^(SC|ST)$/.test(c.category)||c.subcat==="EXM"||isDE(c))?140:160;
- const cut=t=>{const r=R.rows.find(x=>x.k===c.category&&x.type===t);return r&&r.cut!=null?r.cut.toFixed(2):"—"};
- let v;if(V4.o.tsp&&c.tsp)v="TSP माइग्रेशन चालू है: आप NTSP सूची से बाहर माने गए।";
- else if(c.marks<mn)v="आपके अंक न्यूनतम अंक ("+mn+") से कम हैं, इसलिए सूची में नहीं गिने गए।";
- else if(s)v="<b class='ok'>✅ चयन: "+esc(s.k)+" — "+esc(s.type)+(d?" • विभाग: <b>"+V4.DN[d]+"</b>"+((R.palloc.get(String(c.roll))||V4.DN[d])!==V4.DN[d]?" — "+esc(R.palloc.get(String(c.roll))):""):" • इस परिदृश्य में विभाग का पद नहीं बचा")+"</b>";
- else v="<b class='err'>❌ इस परिदृश्य में चयन नहीं</b> • आपके अंक "+c.marks+" • "+esc(c.category)+" खुली मेरिट कटऑफ़ "+cut("खुली मेरिट")+(c.gender==="FEMALE"?" • "+esc(c.category)+" महिला कटऑफ़ "+cut(c.category==="GEN"?"सामान्य महिला (सभी वर्गों की)":"सामान्य महिला"):"");
- return "<div class='card'><h2>स्पेक-इंजन परिणाम <span class='warn'>[परिदृश्य]</span></h2><p>"+v+"</p><p class='mu'>TSP माइग्रेशन: "+(V4.o.tsp?"चालू":"बंद")+" • लैब बॉय: "+(V4.o.att?"30 उम्मीदवार माने":"उम्मीदवार नहीं (0)")+" • गारंटी नहीं।</p></div>"}
-(function(){try{$("fslopt").addEventListener("change",v4Refresh)}catch(e){}$("out").insertAdjacentHTML("afterend",v4Card());const _s=show;show=function(r){_s(r);const c=CANDS.find(x=>String(x.roll)===String(r));if(c&&$("out"))$("out").insertAdjacentHTML("afterbegin",v4Cand(c))}})();
+(function(){const _s=show;show=function(r){window.LASTROLL=r;_s(r)}})();
+/* P13: "संक्षिप्त परिणाम" वाला ब्लू कार्ड (v4Cand = rbData आधारित, नीचे S13 में परिभाषित) हर रिपोर्ट के ऊपर जुड़ता है — पहले यह जोड़ पुराने V4 ब्लॉक की पंक्ति में था, उसी को यहाँ सुरक्षित रखा */
+(function(){const _s=show;show=function(r){_s(r);const c=CANDS.find(x=>String(x.roll)===String(r));if(c&&$("out"))$("out").insertAdjacentHTML("afterbegin",v4Cand(c))}})();
 </script>
 <script>
 /* ===== v4 (20.10.2026): Word फाइल से विस्तृत वैकेंसी — केवल डिस्प्ले और मिलान। आवंटन/कटऑफ़ कैलकुलेशन को छुआ नहीं गया। ===== */
@@ -1508,30 +979,6 @@ function vac9HTML(){
   h+="</div></details>"});
  return h}
 
-</script>
-<script>
-/* ===== v8 (21.10.2026): ऑडिट सुधार — इंजन अब सत्यापित VD (Word फाइल, 20.10.2026) तालिका से चलता है, पुरानी हार्डकोडेड V4.P से नहीं ===== */
-(function(){
- const map={"SE-NS":["माध्यमिक शिक्षा","SE"],"SK-NS":["संस्कृत शिक्षा","SK"],"AG-NS":["कृषि","AG"],"PH-NS":["PHED","PH"],"FS-PH":["FSL फोटो","FS"],"FS-LA":["FSL प्रयोगशाला सहायक (फोटो के अलावा)","FS"],"FS-JR":["FSL कनिष्ठ","FS"]};
- const order=["SE-NS","SK-NS","AG-NS","PH-NS","FS-PH","FS-LA","FS-JR"],P=[];let sah=0;
- order.forEach(id=>{const v=VD.posts[id],c={};V4.FC.forEach(k=>{const x=v.cat[k];if(x&&x.total)c[k]=[x.M,x.GW,x.W,x.D]});
-  const s=v.cat.SAH?v.cat.SAH.total:0;sah+=s;Object.defineProperty(c,"__sah",{value:s,enumerable:false});
-  P.push({id:map[id][0],d:map[id][1],decl:v.cat?Object.values(v.cat).reduce((a,x)=>a+x.total,0):0,c});});
- V4.P.length=0;P.forEach(p=>V4.P.push(p));V4.SAH=sah;V4.MCAT.ST=92;V4.cache={};
- window.V8_NOTE="v8: सहरिया (SAH) "+sah+" पद पहचान-डेटा के बिना रिक्त गिने (ST में नहीं जोड़े); चयनित संख्या इसलिए 1011−"+sah+" तक।";
- try{v4Refresh()}catch(e){}
-  /* Rule registry: मास्टर नियमावली v2.1 के अंतिम नियम CFG.rules में ही परिभाषित हैं (कोई पुराना/लंबित नियम नहीं) */
-})();
-</script>
-<script>
-/* v8: Rule Registry + Validation Summary (live, इंजन से गणना) */
-function v8Card(){const R=v4Run(V4.o),by=new Map(CANDS.map(c=>[String(c.roll),c])),F=V4.FC;
- const seats=F.reduce((s,k)=>s+v4s(R.T[k]),0)+(V4.SAH||0),dup=CANDS.length-new Set(CANDS.map(c=>c.roll)).size,per={};R.palloc.forEach(p=>per[p]=(per[p]||0)+1);
- const over=R.posts.filter(p=>(per[p.id]||0)>v4ps(p.c)-(p.c.__sah||0)).length;
- let wr="";F.forEach(k=>{const T=R.T[k],q=T[1]+T[2]+T[3];let w=0,n=0;R.st.forEach((s,r)=>{if(s.k===k){n++;if(by.get(r).gender==="FEMALE")w++}});wr+="<tr><td>"+k+"</td><td>"+v4s(T)+"</td><td>"+n+"</td><td>"+q+"</td><td>"+w+"</td><td class='"+(w>=q?"ok":"err")+"'>"+(w>=q?"✔ कोटा पूरा":"✘ कम")+"</td></tr>"});
- const rr=CFG.rules.map(r=>"<tr><td>"+esc(r.id)+"</td><td><b>"+esc(r.name)+"</b>"+(r.text?"<details><summary class='mu'>पूरा नियम</summary><div class='mu' style='white-space:pre-wrap'>"+esc(r.text)+"</div></details>":"")+"</td><td>"+esc(r.tier||r.status)+"</td><td class='mu'>"+esc(r.src)+"</td><td>"+(r.status==="repealed"?"निरस्त":"सक्रिय")+"</td></tr>").join("");
- return "<div class='card' id='v8card'><h2>v8 सत्यापन सारांश <span class='warn'>[इंजन से लाइव]</span></h2><div class='sc'><table><tr><th>जाँच</th><th>मान</th></tr><tr><td>कुल उम्मीदवार</td><td>"+CANDS.length+"</td></tr><tr><td>कुल पद (NTSP)</td><td>"+seats+"</td></tr><tr><td>चयनित</td><td>"+R.st.size+"</td></tr><tr><td>रिक्त (कारण: सहरिया "+(V4.SAH||0)+" — पहचान-डेटा नहीं)</td><td>"+(seats-R.st.size)+"</td></tr><tr><td>दोहरे रोल / दोहरी गणना</td><td class='"+(dup?"err":"ok")+"'>"+dup+"</td></tr><tr><td>पोस्ट की सीमा से अधिक आवंटन</td><td class='"+(over?"err":"ok")+"'>"+over+"</td></tr></table></div><h3>महिला आरक्षण जाँच (चयनित महिलाएँ ≥ कोटा; Open में चुनी महिलाएँ गिनी गईं)</h3><div class='sc'><table><tr><th>वर्ग</th><th>पद</th><th>चयनित</th><th>महिला कोटा</th><th>चयनित महिलाएँ</th><th>नतीजा</th></tr>"+wr+"</table></div><p class='mu'>"+(window.V8_NOTE||"")+" अनुमानित कटऑफ आधिकारिक नहीं।</p><details><summary>Rule Registry</summary><div class='sc'><table><tr><th>ID</th><th>नियम</th><th>स्तर/स्थिति</th><th>स्रोत/सत्यापन आधार</th><th>Active</th></tr>"+rr+"</table></div></details></div>"}
-(function(){try{const e=document.getElementById("v4card");if(e)e.insertAdjacentHTML("afterend",v8Card());const o=v4Refresh;v4Refresh=function(){o();const x=document.getElementById("v8card");if(x)x.outerHTML=v8Card()};const a=v4Apply;v4Apply=function(){a();const x=document.getElementById("v8card");if(x)x.outerHTML=v8Card()}}catch(e){console.error(e)}})();
 </script>
 <script>
 /* =====================================================================
@@ -2087,9 +1534,9 @@ window.addEventListener("hashchange",function(){var sr0=parseShareHash(location.
 const RB_NS=["SE-NS","SK-NS","AG-NS","PH-NS","FS-PH","FS-LA","FS-JR"],RB_S=["SE-S","SK-S","PH-S"],RB_C=["EWS","OBC","SC","ST","MBC"];
 const RB_NAME={"SE-NS":"माध्यमिक शिक्षा","SK-NS":"संस्कृत शिक्षा","AG-NS":"कृषि","PH-NS":"PHED","FS-PH":"FSL फोटो","FS-LA":"FSL फोटोतर","FS-JR":"FSL कनिष्ठ","SE-S":"माध्यमिक (TSP)","SK-S":"संस्कृत (TSP)","PH-S":"PHED (TSP)"};
 function rbPool(L,ids,lb,adj){
- const mk=(t,wm,w,d)=>({left:t,N:(wm==null?w+d:wm),qd:w+d,ws:0,ds:0}); /* S06: छोटे विभागों के डेटा में कुल महिला पद दर्ज नहीं (null) — पहले NaN बनकर विधवा/परित्यक्ता पद भी लागू नहीं होते थे। अब केवल डेटा में दर्ज W+D पद लागू; कोई अतिरिक्त % अनुमान नहीं */
- const S=ids.filter(id=>VD.posts[id]).map(id=>{const c=VD.posts[id].cat,o={id,open:mk(c.GEN.total,c.GEN.women,c.GEN.W,c.GEN.D),cats:{}};
-  RB_C.forEach(k=>{if(c[k])o.cats[k]=mk(c[k].total,c[k].women,c[k].W,c[k].D)});
+ const mk=(t,wm,w,d,gw)=>({left:t,N:(wm==null?(gw||0)+w+d:wm),qd:w+d,ws:0,ds:0}); /* P8-2a (24-10-2026): कुल महिला संख्या न होने पर आवश्यकता = GW+W+D (अधिसूचना का सीधा डेटा) */ /* S06: छोटे विभागों के डेटा में कुल महिला पद दर्ज नहीं (null) — पहले NaN बनकर विधवा/परित्यक्ता पद भी लागू नहीं होते थे। अब केवल डेटा में दर्ज W+D पद लागू; कोई अतिरिक्त % अनुमान नहीं */
+ const S=ids.filter(id=>VD.posts[id]).map(id=>{const c=VD.posts[id].cat,o={id,open:mk(c.GEN.total,c.GEN.women,c.GEN.W,c.GEN.D,c.GEN.GW),cats:{}};
+  RB_C.forEach(k=>{if(c[k])o.cats[k]=mk(c[k].total,c[k].women,c[k].W,c[k].D,c[k].GW)});
   const D=lb==="B"&&id==="SE-NS"?55:lb==="C"?(id==="SE-NS"?107:id==="SE-S"?20:0):0;if(D){ // R12-B (55) / C (107 NTSP, 20 TSP): लैब बालक पद, वर्गानुपात (largest-remainder) — मान्यता
    const ks=["GEN"].concat(RB_C).filter(k=>c[k]),tot=ks.reduce((a,k)=>a+c[k].total,0),ex=ks.map(k=>{const x=D*c[k].total/tot;return{k,f:Math.floor(x),r:x-Math.floor(x)}});
    let rem=D-ex.reduce((a,e)=>a+e.f,0);ex.slice().sort((a,b)=>b.r-a.r).forEach(e=>{if(rem>0){e.f++;rem--}});
@@ -2097,19 +1544,21 @@ function rbPool(L,ids,lb,adj){
   return o});
  if(adj)S.forEach(o=>{[["OPEN",o.open]].concat(Object.keys(o.cats).map(k=>[k,o.cats[k]])).forEach(([k,q])=>{const n=adj[o.id+"|"+k]||0,nf=adj[o.id+"|"+k+"|F"]||0;if(n){q.left=Math.max(0,q.left-n);q.N=Math.min(Math.max(0,q.N-nf),q.left);q.qd=Math.min(q.qd,q.left)}})});
  // R11: विधवा/परित्यक्ता (WD) और अन्य महिलाओं की शेष संख्या (Open के लिए ALL, वर्ग के लिए उसी वर्ग की)
- const isWD=c=>c.gender==="FEMALE"&&/WID|DIV/.test(String(c.subcat||"")),wd={ALL:0},nw={ALL:0};
+ if(adj)S.forEach(o=>{[["OPEN",o.open]].concat(Object.keys(o.cats).map(k=>[k,o.cats[k]])).forEach(([k,q])=>{const qc=adj[o.id+"|"+k+"|QD"];if(qc!==undefined)q.qd=Math.min(q.qd,qc)})}); /* P10b: WD सीट की सीमा = पिछले चक्र में सच में भरी WD सीटें */
+  const isWD=c=>c.gender==="FEMALE"&&/WID|DIV/.test(String(c.subcat||"")),wd={ALL:0},nw={ALL:0};
  L.forEach(c=>{if(c.gender!=="FEMALE")return;const m=isWD(c)?wd:nw;m.ALL++;m[c.category]=(m[c.category]||0)+1});
  const res=new Map(),cut={};
  for(const c of L){const f=c.gender==="FEMALE",k=RB_C.includes(c.category)?c.category:"GEN",wdc=isWD(c);
   if(f){const m=wdc?wd:nw;m.ALL--;if(m[c.category]!==undefined)m[c.category]--}
   const tryB=(q,sc,key,o)=>{
    if(q.left<=0)return false;
-   if(!wdc){const needT=Math.max(0,q.N-q.sel),qWD=Math.max(0,q.qd-q.wdsel),rW=Math.max(0,wd[sc]||0),resWD=Math.min(needT,qWD,rW);
+   const wdE=wdc; /* P11 (24-10-2026) सुधार: Open (GEN) की WD सीट पर सभी वर्गों की पात्र WD उम्मीदवार merit से प्रतिस्पर्धा कर सकती हैं (P10 का GEN-only प्रतिबंध हटाया); WD सीट न भरे तो W↔D अदला-बदली (qd=W+D एक साथ), फिर महिला सीट में अंतरण */
+    if(!wdE){const needT=Math.max(0,q.N-q.sel),qWD=Math.max(0,q.qd-q.wdsel),rW=Math.max(0,wd[sc]||0),resWD=Math.min(qWD,rW); /* P9 (24-10-2026): पात्र विधवा/परित्यक्ता के लिए WD सीट तब भी सुरक्षित, जब merit की महिलाएँ कुल महिला आवश्यकता पूरी कर चुकी हों (R11.2) */
     if(q.left-1<resWD)return false;
-    if(!f){const gen=Math.min(needT-resWD,Math.max(0,nw[sc]||0));if(needT>0&&q.left-1<resWD+gen)return false}}
+    if(!f){const gen=Math.max(0,Math.min(needT-resWD,Math.max(0,nw[sc]||0)));if(needT>0&&q.left-1<resWD+gen)return false}}
    /* S06: rs=1 → महिला-आरक्षित सीट (बची सीटें सिर्फ़ महिलाओं के लिए बचीं थीं), rs=2 → विधवा/परित्यक्ता आरक्षित सीट; rs=0 → मेरिट सीट */
-   const rs=f?(wdc?(q.left<=Math.max(0,q.qd-q.wdsel)?2:0):(q.left<=Math.max(0,q.N-q.sel)?1:0)):0;
-   q.left--;if(f){q.sel++;if(wdc)q.wdsel++}
+   const rs=f?(wdE?(q.left<=Math.max(0,q.qd-q.wdsel)?2:0):(q.left<=Math.max(0,q.N-q.sel)?1:0)):0;
+   q.left--;if(f){q.sel++;if(wdE)q.wdsel++;if(sc==="ALL"&&k!=="GEN"){const oc=o.cats[k];if(oc)oc.sel=(oc.sel||0)+1}} /* P8-2b: Open में चुनी उसी वर्ग की महिला वर्ग की महिला आवश्यकता में गिनी जाती है (R10.1) */
    res.set(c.roll,{p:o.id,b:key,rs:rs});const kk=o.id+"|"+key,kg=kk+(f?"|F":"|M"),bump=z=>{cut[z]={m:c.marks,n:(cut[z]||{n:0}).n+1}};
    if(!rs)bump(kk); /* kk = केवल मेरिट चयन का अंतिम */
    if(rs!==2)bump(kg); /* |F = महिला (आरक्षित महिला पद सहित, WD-आरक्षित छोड़कर), |M = पुरुष */
@@ -2124,11 +1573,10 @@ function rbPool(L,ids,lb,adj){
  return{res,cut,S}}
 const RB_LB=new Set(["121703", "122614", "122688", "123046", "123177", "124276", "125454", "125844", "125948", "126144", "126203", "126409", "127440", "129115", "129829", "130112", "131236", "133824", "134036", "134566", "135340", "137609", "138389", "138653", "139069", "139439", "140317", "140912", "141189", "141347", "141623", "141805", "142222", "142934", "143028", "143078", "143253", "145535", "146248", "146576", "146650", "146663", "147146", "148701", "149745", "150533", "150684", "150991", "151199", "152125", "152694", "152803", "153871", "154168", "154745", "154976", "154997", "155343", "156027", "156237", "156428", "157272", "157976", "158133", "160127", "160239", "160239", "161267", "161267", "162553", "162553", "162735", "162735", "163739", "163739", "164304", "164359", "165641", "165938", "167027", "167048", "167825", "167837", "168178", "168358", "168899", "169090", "169408", "169624", "169652", "169653", "169816", "170304", "170542", "171030", "172028", "172201", "172353", "172624", "173492", "173529", "173633", "173937", "173959", "174198", "174319", "174853", "174863", "175014", "175099", "175837", "175867", "176006", "176691", "176741", "177004", "177013", "178018", "178282", "178318", "179857", "180601", "180831", "181468", "181938", "182397", "182568", "182604", "183791", "184747", "185122", "185965", "187211", "187410", "187680", "187940", "189622", "190039", "190314", "190768", "191491", "192161", "192172", "192448", "192587", "192617", "193209", "193403", "193434", "193593", "194461", "194642", "196064", "196814", "197083", "197184", "197611", "197929", "198418", "198806", "198999", "199586", "199903", "200014", "200489", "200544", "200669", "201274", "201371", "201413", "201838", "201964", "202012", "202024", "202842", "203370", "203525", "203663", "203665", "204182", "204220", "204591", "205068", "205569", "205783", "205802", "206004", "207367", "207369", "207626", "207867", "208173", "208617", "208733", "208879", "209297", "210290", "210825", "210932", "211406", "211765", "211808", "212302", "212563", "212645", "212932", "213566", "213750", "213779", "214628", "215187", "215843", "215876", "215999", "216121", "216407", "217202", "217414", "217875", "218852", "219137", "219906", "219935", "220132", "220170", "220362", "221035", "221516", "221607", "222919", "222934", "223401", "223886", "224232", "224534", "224942", "225100", "225343", "225675", "225801", "225933", "226638", "226795", "227404", "228755", "229355", "229848", "230569", "230918", "231323", "234109", "234391", "234502", "234673", "234836", "235369", "235478", "235909", "236092", "236567", "237849", "238789", "239019", "239469", "240491", "240614", "240786", "241050", "241178", "241530", "241852", "242504", "244123", "244185", "244393", "244794", "244882", "245994", "246092", "246521", "247618", "249452", "250781", "251005", "251552", "252171", "253892", "254188", "254408", "255061", "255096", "255260", "256239", "256811", "257030", "257591", "258101", "259463", "259896", "259950", "261419", "261749", "262221", "263214", "264444", "264494", "264509", "264739", "264756", "264762", "264909", "265337", "265461", "265514", "265815", "266565", "267740", "269021", "269021", "270211", "270211", "270990", "270990", "271612", "271612", "272847", "272847", "273123", "273123", "273868", "273868", "275688", "275688", "276720", "276720", "278106", "278106", "278129", "278129", "279814", "279962", "280002", "280040", "280236", "280721", "281030", "281400", "282151", "282478", "283804", "284109", "284475", "284532", "284616", "285102", "285264", "285275", "285376", "285409", "285867", "287118", "288168", "288434", "288961", "289090", "289206", "289462", "290387", "291448", "291546", "292058", "292478", "292785", "293228", "293235", "293389", "293524", "293773", "294005", "294673", "294899", "294936", "294989", "295005", "295420", "295726", "295812", "296828", "296949", "297135", "297260", "297493", "297811", "297888", "298336", "298430", "299527", "300476", "300918", "301004", "301306", "301460", "301499", "301667", "301787", "301923", "302355", "304598", "305085", "305285", "306512", "306820", "307289", "307664", "307808", "308116", "308392", "308491", "308556", "308573", "309036", "309404", "309958", "310100", "310291", "310422", "310526", "311036", "311659", "312043", "312721", "312836", "312874", "313757", "314854", "315413", "315458", "315830", "316005", "316485", "316709", "317021", "318009", "320023", "322449", "322882", "323690", "327026", "328219", "328451", "328496", "328706", "328866", "329700", "329936", "330547", "330597", "330986", "331382", "332166", "332895", "333189", "333229", "333642", "334112", "334342", "335807", "336315", "336570", "337204", "337843", "338873", "338958", "339355", "339945", "340797", "341456", "342122", "342647", "343092", "343727", "344379", "345440", "345566", "345743", "346611", "347134", "347828", "348786", "349001", "350054", "350829", "351396", "352612", "352710", "352892", "353333", "354215", "354398", "355428", "355585", "355727", "356512", "356824", "357949", "358174", "359793", "360429", "360810", "361474", "361807", "362298", "362663", "363879", "364004", "364761", "365745", "365988", "366132", "366689", "366766", "367001", "367288", "367312", "367390", "367646", "367899", "368158", "368274", "369325", "369408", "370297", "370532", "371543", "372780", "372933", "373735", "373834", "373877", "375558", "376749", "376782", "377786", "378403", "378495", "378633", "378967", "378970", "380185", "380462", "381613", "382012", "383236", "383953", "384130", "385258", "386145", "386520", "387341", "388101", "388142", "388451", "388580", "388700", "388950", "389048", "389314", "389413", "389910", "391713", "392001", "393665", "393921", "394124", "395296", "396002", "396011", "396109", "397770", "398051", "398472", "398923", "399133", "399297", "399993", "400324", "400710", "400769", "400931", "401518", "402214", "403828", "403954", "404048", "404576", "405843", "406353", "406714", "406833", "407022", "407289", "407868", "408646", "408921", "409255", "409301", "409423", "409538", "409574", "410980", "411390", "411442", "412039", "412169", "412290", "412366", "413222", "413822", "413916", "414010", "414209", "415759", "415765", "416221", "416707", "416840", "417002", "417005", "417682", "417953", "417979", "418163", "418352", "418491", "418594", "418596", "418683", "418709", "419064", "419432", "420554", "422228", "423741", "423818", "425383", "425688", "425917", "425990", "426198", "426528", "426553", "427735", "427752", "427824", "428072", "428174", "428519", "428574", "428748", "428940", "429089", "429463", "429741", "431139", "432024", "432073", "432330", "432910", "433772", "433910", "434217", "434273", "435172", "435511", "436388", "436860", "436879", "437094", "437287", "437343", "437694", "438206", "438347", "438486", "438490", "438546", "438753", "439114", "439728", "440013", "440615", "440966", "441897", "441939", "442015", "443056", "443089", "443328", "443960", "444029", "444607", "445821", "446026", "446032", "446701", "447207", "447707", "447713", "447988", "448329", "448765", "448827", "449199", "449463", "450001", "450210", "451061", "451340", "452962", "453357", "453383", "454219", "454416", "454855", "454930", "455227", "455307", "455348", "455651", "456163", "456189", "456728", "457371", "457442", "458504", "458657", "459090", "459424", "459657", "459708", "460604", "460755", "461024", "461455", "461721", "461743", "461897", "461914", "462612", "462663", "462712", "462977", "463085", "463750", "463904", "464159", "465355", "466214", "466924", "467583", "468110", "468112", "469487", "469501", "469865", "469955", "470268", "470310", "470364", "470389", "471930", "471968", "471999", "472007", "472531", "473463", "474220", "474398", "474564", "475118", "475246", "475736", "475881", "476140", "476465", "476534", "476657", "477602", "478031", "478220", "478521", "478850", "479156", "479356", "479930", "480681", "480705", "481113", "481471", "481935", "482481", "482524", "482822", "483321", "483358", "483734", "484045", "484260", "484567", "484740", "485137", "485184", "485370", "485465", "486136", "487128", "487538", "488697", "488758", "488848", "489062", "489638", "489878", "490326", "490753", "490984", "491431", "491642", "492656", "492859", "492923", "494233", "494372", "494578", "495415", "496255", "496372", "496477", "496999", "497500", "498201", "498721", "499147", "499238", "499723", "500406", "500667", "500895", "501119", "501954", "502047", "502242", "502326", "502482", "502724", "502949", "503285", "503508", "503810", "504117", "504129", "504190", "504816", "505035", "505451", "506985", "507040", "507490", "507524", "507562", "509036", "509082", "509759", "509976", "510242", "510731", "510769", "510934", "511287", "513051", "513288", "514076", "514214", "515441", "515559", "516242", "516242", "516486", "517052", "517052", "517128", "517128", "517451", "517451", "517495", "517495", "518342", "518342", "518592", "518592", "518697", "518697", "518749", "518749", "520085", "521029", "521029", "522882", "523103", "523363", "524779", "525216", "525300", "525839", "525886", "526107", "526255", "526354", "526492", "527436", "527542", "527734", "527807", "527857", "527953", "528142", "528181", "528226", "528302", "528768", "528916", "529410", "529413", "531417", "532019", "532946", "533527", "534088", "534195", "535523", "536298", "537765", "538289", "538585", "538673", "539872", "540137", "541010", "541913", "542126", "542197", "542344", "542444", "543323", "544015", "544158", "544552", "544826", "544910", "544911", "545012", "545117", "545317", "545405", "545431", "545700", "545942", "546131", "546477", "548496", "549041", "549414", "550604", "551222", "552567", "552630", "552935", "554505", "554809", "554957", "555280", "555710", "556984", "558449", "559400", "559950", "560606", "561055", "561496", "561714", "562218", "562460", "563129", "563295", "563447", "563663", "564225", "564411", "564437", "564596", "565265", "565620", "566210", "567316", "567432", "567606", "567675", "568442", "568516", "568545", "568879", "569508", "569969", "570050", "571015", "573204", "573204", "573300", "573300", "573945", "573945", "574436", "574436", "574590", "574590", "575378", "575378", "575516", "575516", "577673", "577689", "577689", "578038", "578038", "579919", "579919", "581304", "581304", "581685", "581685", "581845", "581845", "582218", "582218", "582305", "582305", "582639", "582639", "582722", "583343", "583343", "583782", "583782", "583919", "584099", "584333", "584333", "585948", "585948", "586218", "586218", "586735", "586735", "587166", "587166", "588216", "588216", "589597", "589597", "590053", "590053", "590689", "590689", "590821", "590821", "593069", "593069", "593889", "593889", "594051", "594051", "594204", "594204", "595673", "595673", "595856", "595856", "595910", "595910", "596568", "596620", "596620", "597150", "597150", "597302", "597302", "597618", "597618", "598605", "598605", "599110", "600169", "600169", "600216", "600216", "600588", "600588", "602292", "602292", "602298", "602298", "602775", "602775", "604182", "604182", "605030", "605508", "605508", "605601", "605601", "606076", "606076", "606341", "606341", "608272", "608272", "610185", "610185", "611609", "611795", "613236", "614281", "614434", "614877", "615083", "615113", "615934", "616078", "616304", "616954", "617495", "617884", "618312", "618781", "619012", "619029", "619164", "619223", "619719", "620948", "621107", "621778", "622356", "622501", "622743", "623218", "623451", "623627", "624014", "624115", "624346", "624406", "624629", "624916", "627467", "628343", "628561", "628648", "628835", "629284", "629921", "629946", "630344", "630945", "631163", "631342", "631436", "631814", "632139", "633003", "633322", "633358", "633450", "633566", "634251", "635688", "636457", "636937", "637250", "637302", "637323", "637353", "637962", "638083", "638195", "638794", "639596", "639868", "640277", "641241", "641555", "641826", "642611", "642617", "642891", "643141", "645301"]); // प्रोविज़नल सूची में LB/LA चिह्नित रोल (R12-C)
 const RB_ABS=new Set(["122614", "123525", "127885", "128552", "132058", "134566", "139069", "140446", "143078", "148048", "149790", "154745", "155096", "155343", "161383", "164385", "164420", "165041", "165612", "165904", "166581", "166985", "167048", "167286", "167584", "167931", "168707", "169624", "171030", "172329", "172353", "173613", "173633", "173937", "174863", "175037", "175303", "175642", "176691", "176741", "178695", "182537", "190921", "191920", "193962", "197083", "197723", "201838", "203507", "203651", "205569", "206129", "207268", "207626", "208957", "209297", "210816", "212676", "213198", "216369", "217196", "219884", "219906", "220132", "220250", "220864", "221035", "223886", "224861", "225581", "225663", "226913", "228469", "229355", "229935", "229963", "230561", "231623", "232020", "232642", "233461", "234009", "234391", "235614", "235909", "237121", "237688", "241530", "242287", "242955", "245371", "245914", "246386", "252162", "253947", "256239", "257030", "260000", "263001", "263845", "265514", "268035", "269021", "269444", "270211", "271612", "274156", "279840", "280002", "280040", "283217", "283772", "284363", "285275", "287680", "288403", "289475", "291642", "292376", "298336", "299215", "300849", "308116", "309444", "310526", "311036", "311659", "311676", "313252", "315675", "315985", "321529", "321989", "322120", "322449", "324105", "328231", "331341", "331817", "333426", "333875", "341008", "341846", "341852", "344379", "345083", "347628", "351176", "354398", "354485", "355237", "356234", "361474", "361807", "368498", "370532", "372780", "377315", "377536", "381273", "383383", "383859", "386342", "387600", "389048", "392341", "400710", "402545", "402863", "406715", "406923", "408073", "408723", "408845", "409303", "409721", "410140", "410273", "410980", "411556", "411634", "412038", "413753", "414218", "417682", "418683", "419432", "419841", "421417", "422228", "423741", "425917", "428072", "432024", "433772", "433820", "435172", "437287", "437303", "437343", "438300", "438347", "440615", "441216", "442183", "442298", "442789", "443257", "444029", "444607", "447987", "449333", "449552", "451855", "452864", "453383", "453692", "455503", "456109", "456189", "456506", "458259", "461455", "461914", "462283", "463085", "463217", "463577", "464192", "465355", "466924", "467052", "467842", "468112", "469917", "471539", "471999", "472967", "474220", "475762", "476046", "476250", "477209", "477557", "477602", "478259", "480705", "483526", "484189", "486096", "486306", "486313", "487175", "488758", "488981", "489638", "490753", "496477", "497440", "498567", "500046", "502724", "502822", "503387", "504701", "509976", "515291", "517128", "517451", "518120", "518592", "518697", "518749", "519586", "520338", "523925", "525300", "527273", "535361", "539446", "543325", "547379", "549983", "552053", "560202", "560663", "562869", "563367", "563582", "563822", "564816", "565265", "565714", "566432", "567076", "567432", "571897", "572482", "573808", "573945", "574273", "574436", "575134", "575516", "575788", "581685", "582639", "582655", "582739", "583782", "585948", "586218", "589955", "591180", "594051", "594204", "595856", "596620", "599461", "599544", "600169", "600992", "603648", "604961", "607730", "608272", "611231", "611245", "611909", "618987", "619012", "624115", "624761", "631189", "632139", "642617"]); // DV अनुपस्थित सूची (07.10.2026 को पुनः अवसर; बाद का परिणाम अज्ञात)
-const RB_X={abs:0,inel:0,nj:0,hq:1}; // P4c-रिवीज़न: मुख्य गणना में सभी उम्मीदवार यथावत (कोई प्रतिशत-बहिष्करण नहीं) // abs: अनुपस्थितों में से जो अंततः बाहर रहें %; inel: DV अपात्र %; nj: जॉइन न करने वाले % (R15.3)
+const RB_X={abs:0,hq:1}; /* P15: प्रतिशत-चर (inel, nj) और अनुपस्थित-% हटाए; abs अब केवल 0/1 झंडा (1 = बोर्ड की DV-अनुपस्थित सूची बाहर, केवल बॉर्डरलाइन के लिए) */ // P4c-रिवीज़न: मुख्य गणना में सभी उम्मीदवार यथावत (कोई प्रतिशत-बहिष्करण नहीं) // abs: अनुपस्थितों में से जो अंततः बाहर रहें %; inel: DV अपात्र %; nj: जॉइन न करने वाले % (R15.3)
 const RB_CACHE={};
-function rbH(roll,s){return(Math.imul(parseInt(roll,10)^(s*7919),2654435761)>>>0)/4294967296}
-function rbOut(c){return(RB_ABS.has(c.roll)&&rbH(c.roll,1)<RB_X.abs/100)||rbH(c.roll,2)<RB_X.inel/100||rbH(c.roll,3)<RB_X.nj/100}
-function rbRun(t,lb,keep){const key=t+lb+"|"+RB_X.abs+"|"+RB_X.inel+"|"+RB_X.nj+"|"+RB_X.hq+"|"+(keep||"");if(RB_CACHE[key])return RB_CACHE[key];
+function rbOut(c){return !!RB_X.abs&&RB_ABS.has(c.roll)}
+function rbRun(t,lb,keep){const kp=(keep&&RB_X.abs&&RB_ABS.has(keep))?keep:""; /* P16 (गति): keep केवल तब मायने रखता है जब उम्मीदवार DV-अनुपस्थित-बहिष्कार में आता हो; वरना सूची सबके लिए एक जैसी है, इसलिए कैश सभी विद्यार्थियों में साझा */ const key=t+lb+"|"+RB_X.abs+"|"+RB_X.hq+"|"+kp;if(RB_CACHE[key])return RB_CACHE[key];
  const L=CANDS.filter(c=>c.roll===keep||!rbOut(c)).sort((a,b)=>a.rank-b.rank),T=c=>Number(c.tsp)===1;
  const ns=rbPool(t==="A"?L:L.filter(c=>!T(c)),RB_NS,lb);
  const ts=rbPool(t==="A"?L.filter(c=>T(c)&&!ns.res.has(c.roll)):L.filter(T),RB_S,lb);
@@ -2152,6 +1600,14 @@ function rbEl(c,id,g){if(!/^FS-/.test(id))return true;if(g==="BLV"||g==="MIMD")r
 function rbHq0(id){const q={};(VD.posts[id].hor||[]).forEach(h=>{const g=rbHl(h.label),n=+h.total||0;if(!g||!n)return;const o=q[g]||(q[g]={all:0,cat:{}});o.all+=n;
   if(g==="EXM"){const m=String(h.label).match(/\b(GEN|SC|ST|OBC|MBC|EWS)\s*$/);if(m)o.cat[m[1]]=(o.cat[m[1]]||0)+n}});return q}
 function rbCk(c){return RB_C.includes(c.category)?c.category:"GEN"}
+/* P10b (24-10-2026): जो WD सीट किसी पात्र WD उम्मीदवार को नहीं मिली (वह पहले से ऊँची पसंद के पद में चली गई), उसे हर पद में अनंत काल तक रोके न रखें; सीट-सीमा को वास्तविक भराव तक घटाकर दोहराएँ, ताकि रिक्त आरक्षित सीट अगले श्रेष्ठ merit वाले को मिले, रैंक की पूँछ वाले को नहीं */
+const _rbPoolRaw=rbPool;
+rbPool=function(L,ids,lb,adj){const cap={};let out=null;
+ for(let i=0;i<12;i++){const a=Object.assign({},adj||{});Object.keys(cap).forEach(k=>{a[k+"|QD"]=cap[k]});
+  out=_rbPoolRaw(L,ids,lb,a);let ch=false;
+  (out.S||[]).forEach(o=>{[["OPEN",o.open]].concat(Object.keys(o.cats).map(k=>[k,o.cats[k]])).forEach(([k,q])=>{const key=o.id+"|"+k,w=q.wdsel||0;if(w<q.qd&&(cap[key]===undefined||w<cap[key])){cap[key]=w;ch=true}})});
+  if(!ch)break}
+ return out};
 const _rbPool0=rbPool;
 /* P7 (v58b, 23-10-2026): क्षैतिज आरक्षित-सीट लॉजिक. (1) पात्र क्षैतिज अभ्यर्थी अपनी श्रेणी की सीट पर आरक्षित (R6.6/R6.7); (2) महिला हो तो उसी सीट पर श्रेणी के महिला-कोटे में भी गिनी जाए (R6.9, R10.3);
    (3) बहु-फ़्लैग: एक अभ्यर्थी केवल एक समूह में गिना जाए, PwD > SP > EXM (R6.2); (4) रिक्त EXM/SP पद उसी वर्ग के सामान्य को लौटते हैं (R6.1, पहले जैसा);
@@ -2199,6 +1655,8 @@ rbPool=function(L,ids,lb){
 const RB_HQ_ORDER=["BLV","HI","LDCP","MIMD","SP","EXM"]; /* P6: R6.2 — PwD > SP > EXM */
 const RB_COMBOS=[["A","A"],["A","B"],["B","A"],["B","B"]],RB_ALL=RB_COMBOS.concat([["A","C"],["B","C"]]);
 function rbX(r,b){return r+"|"+b}
+/* P12 (24-10-2026): महिला की अलग कटऑफ़ केवल जब उस सीट-वर्ग में महिला-आरक्षण सच में लगा (|R मौजूद); वरना सबके लिए एक ही (मेरिट) कटऑफ़. पहले |F (अंतिम चयनित महिला) हमेशा दिखता था, जो मेरिट से ऊँचा आ सकता है */
+function rbFC(W,id,b,F){const kx=id+"|"+b,q=W.cut[kx],f=W.cut[kx+"|F"],r=W.cut[kx+"|R"];return F&&f&&(r||!q)?f:(q||null)}
 /* S11: पुराना छिपा "मास्टर नियमावली इंजन v2.1" कार्ड (rbCard/rbFind/rbRk + उसका अलग सर्च-बॉक्स) हटाया — मुख्य रिपोर्ट नए इंजन से चलती है */
 
 
@@ -2211,7 +1669,7 @@ function rbBN(b){const p=String(b).split("·"),t=RB_BNL[p[0]]||esc(p[0]);return 
 function rbLab(pl){return esc(RB_NAME[pl.v.p])+(pl.pool==="NTSP"?" (NTSP)":"")+" — "+rbBN(pl.v.b)}
 function rbScn(t,l){return(t==="A"?"सामान्य":"TSP अलग पूल")+(l==="A"?"":l==="B"?" + लैब बालक सहित":" + लैब बालक सूची से (तुलना)")}
 function rbNear(c,r){const k=RB_C.includes(c.category)?c.category:"GEN";let best=null;
- [[r.ns,RB_NS],[Number(c.tsp)===1?r.ts:null,RB_S]].forEach(([W,ids])=>{if(!W)return;ids.forEach(id=>["OPEN"].concat(k==="GEN"?[]:[k]).forEach(b=>{const x=(c.gender==="FEMALE"&&W.cut[rbX(id,b)+"|F"])||W.cut[rbX(id,b)];if(!x)return;const gap=x.m-c.marks;if(gap>0&&(!best||gap<best.gap))best={id:id,b:b,gap:gap}}))});
+ [[r.ns,RB_NS],[Number(c.tsp)===1?r.ts:null,RB_S]].forEach(([W,ids])=>{if(!W)return;ids.forEach(id=>["OPEN"].concat(k==="GEN"?[]:[k]).forEach(b=>{const x=rbFC(W,id,b,c.gender==="FEMALE");if(!x)return;const gap=x.m-c.marks;if(gap>0&&(!best||gap<best.gap))best={id:id,b:b,gap:gap}}))});
  return best}
 function rbData(c){const R=RB_ALL.map(([t,l])=>{const r=rbRun(t,l,c.roll);return{t:t,l:l,r:r,pl:rbPlace(r,c.roll)}});
  const M=R.slice(0,4),n=M.filter(x=>x.pl).length;return{R:R,M:M,n:n,lv:n===4?"A":n>0?"B":"D"}}
@@ -2222,7 +1680,7 @@ const RB_HZ=c=>c.subcat&&!/^(WID|DIV)/.test(String(c.subcat))?(rbHg(c).length?"<
 /* ब्लू कार्ड का इंजन-सार (b7 के v4Cand की जगह; present() इसे "संक्षिप्त परिणाम" में रखता है) */
 function rbGap(c,x){const cu=x.pl?x.pl.W.cut[rbX(x.pl.v.p,x.pl.v.b)+(x.pl.v.rs===2?"|RW":x.pl.v.rs===1?"|R":"")]:null,nr=x.pl?null:rbNear(c,x.r);
  return[cu?cu.m.toFixed(2):"—",cu?"<span class='ok'>+"+(c.marks-cu.m).toFixed(2)+"</span>":nr?"<span class='err'>−"+nr.gap.toFixed(2)+"</span><br><span class='mu'>("+esc(RB_NAME[nr.id])+" "+rbBN(nr.b)+" के कटऑफ़ से)</span>":"—"]}
-v4Cand=function(c){const D=rbData(c),m=D.M[0],res=x=>x.pl?rbLab(x.pl):"<span class='err'>चयन नहीं</span>",key=x=>x.pl?rbLab(x.pl):"-",
+var v4Cand=function(c){const D=rbData(c),m=D.M[0],res=x=>x.pl?rbLab(x.pl):"<span class='err'>चयन नहीं</span>",key=x=>x.pl?rbLab(x.pl):"-",
   row=x=>{const g=rbGap(c,x);return"<tr><td>"+rbScn(x.t,x.l)+"</td><td>"+res(x)+"</td><td>"+g[0]+"</td><td>"+g[1]+"</td></tr>"},
   diff=D.M.slice(1).some(x=>key(x)!==key(m)),g0=rbGap(c,m);
  return"<div class='card'><h2>स्पेक-इंजन परिणाम</h2><p style='font-size:16px'><b>सामान्य कटऑफ़ के अनुसार:</b> "+res(m)+"</p>"+
@@ -2241,7 +1699,7 @@ function rbRunX(t,lb,keep,excl){ /* rbRun जैसा ही, पर कैश 
  const ts=rbPool(t==="A"?L.filter(c=>T(c)&&!ns.res.has(c.roll)):L.filter(T),RB_S,lb);
  return{ns,ts,L}}
 function rbWomenGap(c,D){
- const key=c.roll+"|"+RB_X.abs+"|"+RB_X.inel+"|"+RB_X.nj+"|"+RB_X.hq;
+ const key=c.roll+"|"+RB_X.abs+"|"+RB_X.hq;
  if(RB_WG_CACHE[key]!==undefined)return RB_WG_CACHE[key];
  let out=null;
  try{
@@ -2265,7 +1723,11 @@ function rbWomenGap(c,D){
     out={none:false,m:hi,M:M,absN:absN,pl:ok(hi)}}}
  }catch(e){console.error("womengap",e);out=null}
  RB_WG_CACHE[key]=out;return out}
-function rbWomenGapNote(c,D){try{
+function rbWomenGapNote(c,D){ /* P16: भारी "अगर आगे की महिलाएँ बाहर होतीं" गणना रिपोर्ट दिखने के बाद अलग से जुड़ती है; पहले कैश में हो या SYNC हो तो तुरंत */
+ try{const x0=D.R[0];if(window.__WG_SYNC||x0.pl||RB_WG_CACHE[c.roll+"|"+RB_X.abs+"|"+RB_X.hq]!==undefined)return rbWomenGapNoteNow(c,D);
+  const id="wg"+c.roll;setTimeout(function(){try{const h=rbWomenGapNoteNow(c,D),el=document.getElementById(id);if(el)el.outerHTML=h||""}catch(e){console.error(e)}},40);
+  return"<div class='catx wgap' id='"+id+"'><p class='mu'>⏳ यह हिस्सा तैयार हो रहा है…</p></div>"}catch(e){return rbWomenGapNoteNow(c,D)}}
+function rbWomenGapNoteNow(c,D){try{
  const g=rbWomenGap(c,D);if(!g)return"";
  const k=rbCk(c),nf=n=>Number(n).toLocaleString("en-IN");
  let h="<div class='catx wgap'><h4 class='pooh'>अगर आपसे आगे की महिलाएँ बाहर हो जातीं तो?</h4>";
@@ -2349,7 +1811,7 @@ function rbWomenSec(c,D,sn){try{
  return h}catch(e){console.error("womensec",e);return""}}
 function rbNarr(c,D,gp){try{
  const k=rbCk(c),F=c.gender==="FEMALE",gl=F?"महिला":"पुरुष",x=D.R[0],r=x.r,L=r.L,ah=L.filter(z=>z.rank<c.rank),
- nm=id=>esc(RB_NAME[id]),bn=b=>rbBN(b),el=c.marks>=eligMin(c)||c.subcat,
+ nm=id=>esc(RB_NAME[id]),bn=b=>rbBN(b),el=true /* R7: अंक के आधार पर कोई छँटनी नहीं */,
  T=Number(c.tsp)===1,
  pools=[["ns",RB_NS,"गैर-अनुसूचित (NTSP)"]].concat(T?[["ts",RB_S,"अनुसूचित (TSP)"]]:[]);
  const nf=n=>Number(n).toLocaleString("en-IN");
@@ -2371,7 +1833,7 @@ function rbNarr(c,D,gp){try{
   dp+="<div class='sc'><table class='dtab nw'><tr><th>विभाग</th><th>यहाँ पहुँचे</th><th>सीटें</th><th>चुने गए</th><th>आपका नतीजा</th></tr>"+tr+"</table></div>"+(hereTxt?"<p>"+hereTxt+"</p>":"<p class='mu'>इस पूल के सभी विभागों के बाद बिना सीट वाले उम्मीदवार: <b>"+nf(left)+"</b>।</p>")+"<p class='mu'>'सीट नहीं बची' का अर्थ: आपके लिए खुली और आपकी श्रेणी की सीटें भर चुकी थीं, इसलिए आप अगले विभाग पर गए। "+rbStarTxt(c)+"</p>"}
   const nr=placed?null:rbNear(c,r),oth=D.R.slice(1,4).map(z=>[rbScn(z.t,z.l),z.pl?rbLab(z.pl):"चयन नहीं"]),base=x.pl?rbLab(x.pl):"चयन नहीं",same=oth.every(o=>o[1]===base);
  let h="<div class='card'><h2>आपका विश्लेषण (सरल भाषा में)</h2>",sn=0;
- if(!el)h+="<p><b>आपके अंक न्यूनतम सीमा ("+eligMin(c)+") से कम हैं, इसलिए चयन-सूची में गिनती नहीं बनती।</b></p>";
+ /* R7: न्यूनतम-अंक वाला संदेश हटाया (किसी को अंक के आधार पर बाहर नहीं माना जाता) */
  h+="<h3 class='nh'>"+(++sn)+". आपकी स्थिति</h3><p>आपकी कुल रैंक <b>"+c.rank+"</b>, अंक <b>"+c.marks+"</b>, वर्ग <b>"+esc(c.category)+" ("+gl+")</b>"+(c.subcat?", उप-श्रेणी <b>"+esc(c.subcat)+"</b>":"")+(T?", TSP-पात्र":"")+" है। यह व्याख्या <b>सामान्य गणना</b> पर है (लैब बालक के पद घटाए बिना)"+(T?"; इसमें आप NTSP में पहले गिने जाते हैं और TSP में तभी, जब NTSP में चयन न हो (R5)":"")+"।</p>";
  if(k!=="GEN"){
   const sa=ah.filter(z=>rbCk(z)===k);let cO=0,cM=0,cN=0;
@@ -2411,8 +1873,8 @@ stuHTML=function(c){RB_CUR=String(c.roll);const D=rbData(c),gp=rbGroups(D.M),T=N
  "</div>"+narr};
 
 /* ===== P4c: संभावित चयन-दायरा (बॉर्डरलाइन) — आधिकारिक वेटिंग लिस्ट नहीं, केवल परिदृश्य-अनुमान ===== */
-const RB_MAX={abs:100,inel:0,nj:0}; // बॉर्डरलाइन आधार: केवल बोर्ड की वास्तविक DV-अनुपस्थित सूची (RB_ABS); कोई काल्पनिक प्रतिशत नहीं
-function rbMaxRun(t,l,roll){const s={abs:RB_X.abs,inel:RB_X.inel,nj:RB_X.nj};Object.assign(RB_X,RB_MAX);try{return rbRun(t,l,roll)}finally{Object.assign(RB_X,s)}}
+const RB_MAX={abs:1}; // बॉर्डरलाइन आधार: केवल बोर्ड की वास्तविक DV-अनुपस्थित सूची (RB_ABS); कोई काल्पनिक प्रतिशत नहीं
+function rbMaxRun(t,l,roll){const s={abs:RB_X.abs};Object.assign(RB_X,RB_MAX);try{return rbRun(t,l,roll)}finally{Object.assign(RB_X,s)}}
 function rbLast(r,k,g,tp,wd){let m=0;r.L.forEach(c=>{if(rbCk(c)!==k||c.gender!==g||(Number(c.tsp)===1)!==tp||(/^(WID|DIV)/.test(String(c.subcat||"")))!==wd)return;const v=r.ns.res.get(c.roll)||r.ts.res.get(c.roll);if(v&&!v.q&&c.rank>m)m=c.rank});return m}
 function rbPossHTML(c,D){try{
  if(D.R[0].pl)return"";
@@ -2433,7 +1895,7 @@ function rbDeptHTML(c){try{
  const rows=ids.filter(id=>VD.posts[id]).map(id=>{
   const P=VD.posts[id],pool=RB_S.includes(id)?"ts":"ns",so=P.cat.GEN?P.cat.GEN.total:0,sc=k==="GEN"?null:(P.cat[k]?P.cat[k].total:0);
   const oc=[],cc=[];let here=0;const sts=[];
-  D.R.slice(0,4).forEach(x=>{const W=x.r[pool],cu=b=>{const q=W.cut[rbX(id,b)],f=F&&W.cut[rbX(id,b)+"|F"];return f||q||null},o=cu("OPEN"),q=k==="GEN"?null:cu(k);
+  D.R.slice(0,4).forEach(x=>{const W=x.r[pool],cu=b=>rbFC(W,id,b,F),o=cu("OPEN"),q=k==="GEN"?null:cu(k);
    if(o)oc.push(o.m);if(q)cc.push(q.m);
    if(!x.pl)sts.push("N");else if(x.pl.v.p===id){here++;sts.push("H:"+rbBN(x.pl.v.b))}
    else if(order(x.pl.v.p)<order(id)||(pool==="ts"&&x.pl.pool==="NTSP"))sts.push("E");else sts.push("O")});
@@ -2446,7 +1908,7 @@ function rbDeptHTML(c){try{
   return"<tr"+(here?" class='me'":"")+"><td><b>"+esc(RB_NAME[id])+"</b></td><td>GEN (सामान्य / खुली) "+so+(sc===null?"":" • "+esc(k)+" "+sc)+"</td><td>"+(oR?oR+"<br><span class='mu'>अंतर: "+sgn(oc.map(m=>c.marks-m))+"</span>":"—")+"</td><td>"+(sc===null?"<span class='mu'>लागू नहीं</span>":cR?cR+"<br><span class='mu'>अंतर: "+sgn(cc.map(m=>c.marks-m))+"</span>":(sc===0?"<span class='mu'>इस विभाग में "+esc(k)+" के पद नहीं हैं</span>":"<span class='mu'>इस श्रेणी में कोई मेरिट चयन नहीं</span>"))+"</td><td>"+st.join("<br>")+"</td></tr>"}).join("");
  const kd=x=>x.pl?rbLab(x.pl):"-",m0=D.M[0],diffAlt=D.M.slice(1).some(x=>kd(x)!==kd(m0)),anyAlt=D.M.slice(1).some(x=>x.pl),
   fin=m0.pl?"<p>सामान्य गणना में आपका नतीजा: <span class='hl'>"+rbLab(m0.pl)+"</span>"+(diffAlt?"; दूसरे विकल्पों में नतीजा अलग है (रिपोर्ट के अंत में 'दूसरे विकल्पों से तुलना' देखें)।":"; दूसरे विकल्पों में भी यही।")+"</p>":"<p><span class='err'>सामान्य गणना में किसी विभाग में चयन नहीं बन रहा।</span>"+(anyAlt?" कुछ दूसरे विकल्पों में चयन बनता है (रिपोर्ट के अंत में 'दूसरे विकल्पों से तुलना' देखें)।":"")+" नीचे हर विभाग का अंतिम मेरिट अंक है, ताकि आप अंतर देख सकें।</p>";
- return fin+"<p class='mu'>आपके अंक <b>"+c.marks+"</b>।</p><ul class='dnote'>"+"<li>हर उम्मीदवार को वरीयता-क्रम में एक-एक विभाग पर पहले खुली सीट, फिर अपनी श्रेणी की सीट के लिए जाँचा जाता है; जहाँ पहले सीट मिले वहीं चयन माना जाता है (R4)।</li>"+"<li>तालिका के अंक = उस सीट पर चयनित अंतिम उम्मीदवार के अंक (महिला-आरक्षित, विधवा/परित्यक्ता और क्षैतिज पदों को छोड़कर)"+(F?"; महिला होने से यहाँ महिला उम्मीदवारों के अंतिम चयन का अंक लिया गया है":"")+"।</li>"+"<li>'अंतर' (आपके अंक − कटऑफ़) धन (+) हो तो आप उस सीमा से ऊपर हैं, ऋण (−) हो तो नीचे।</li>"+"<li>संख्याएँ चार परिदृश्यों (सामान्य / TSP अलग पूल × लैब बालक सहित-रहित) की न्यूनतम–अधिकतम सीमा हैं।</li></ul>"+
+ return fin+"<p class='mu'>आपके अंक <b>"+c.marks+"</b>।</p><ul class='dnote'>"+"<li>हर उम्मीदवार को वरीयता-क्रम में एक-एक विभाग पर पहले खुली सीट, फिर अपनी श्रेणी की सीट के लिए जाँचा जाता है; जहाँ पहले सीट मिले वहीं चयन माना जाता है (R4)।</li>"+"<li>तालिका के अंक = उस सीट पर चयनित अंतिम उम्मीदवार के अंक (महिला-आरक्षित, विधवा/परित्यक्ता और क्षैतिज पदों को छोड़कर)"+(F?"; महिला होने से: जहाँ महिला-आरक्षण सच में लगा वहीं महिला उम्मीदवारों के अंतिम चयन का अलग अंक दिखाया गया है, बाकी जगह सबके लिए एक ही कटऑफ़":"")+"।</li>"+"<li>'अंतर' (आपके अंक − कटऑफ़) धन (+) हो तो आप उस सीमा से ऊपर हैं, ऋण (−) हो तो नीचे।</li>"+"<li>संख्याएँ चार परिदृश्यों (सामान्य / TSP अलग पूल × लैब बालक सहित-रहित) की न्यूनतम–अधिकतम सीमा हैं।</li></ul>"+
   "<div class='sc'><table class='dtab nw3'><tr><th>विभाग</th><th>पद</th><th>GEN (सामान्य / खुली) में अंतिम मेरिट अंक</th><th>आपकी श्रेणी में अंतिम मेरिट अंक</th><th>आपका नतीजा</th></tr>"+rows+"</table></div>"+
   (ids.includes("SE-NS")?"<p class='mu'>माध्यमिक (NTSP) में GEN (सामान्य / खुली) के 319 पद = 224 सामान्य + 70 सामान्य-महिला + 23 विधवा + 2 परित्यक्ता पद।</p>":"")+
   "<p class='mu'>'लैब बालक सहित' परिदृश्य में माध्यमिक शिक्षा के पद कम गिने जाते हैं (R12), इसलिए वहाँ अंक की सीमा ऊपर खिसकती है।</p>"}catch(e){console.error("dept",e);return"<p class='mu'>विभाग-वार विश्लेषण उपलब्ध नहीं।</p>"}}
@@ -2466,12 +1928,14 @@ function rbSubOf(c){const sc=String(c.subcat||"").toUpperCase(),f=c.gender==="FE
 const RB_SUBN={ALL:"GEN (सामान्य)",M:"पुरुष",F:"FEM (महिला — आरक्षित महिला पद सहित)",WID:"WID. (विधवा)",DIV:"DIV. (परित्यक्ता)"};Object.keys(RB_HQN).forEach(k=>RB_SUBN[k]=RB_HQN[k]);Object.assign(RB_SUBN,{EXM:"EX (भूतपूर्व सैनिक)",SP:"SP (खिलाड़ी)",BLV:"BLV (दृष्टिबाधित)",HI:"HI (श्रवणबाधित)",LDCP:"LD/CP/ACID/DW (अस्थि-दिव्यांग)",MIMD:"MIMD (ID/MI/SLD/Autism)"});
 const RB_SUBO=["ALL","F","WID","DIV","EXM","SP","BLV","HI","LDCP","MIMD"];
 /* एक परिदृश्य से: pool→dept→bucket→sub→{rank,marks} (अंतिम चयनित = सबसे बड़ी रैंक) */
-function rbLastMap(r,pool){const W=r[pool],M={};W.res.forEach((v,roll)=>{const c=CANDS.find(x=>x.roll===roll);if(!c)return;const b=String(v.b).split("·")[0];
+function rbLastMap(r,pool){const W=r[pool],M={},RSV=new Set();W.res.forEach((v)=>{if(v.rs===1&&!v.q&&!/·(Q|LB)/.test(String(v.b)))RSV.add(v.p+"|"+String(v.b).split("·")[0])}); /* P14 (24-10-2026): महिला (FEM) पंक्ति केवल तब, जब उस (पद, वर्ग) में आरक्षित महिला सीट पर सच में चयन हुआ; वरना महिलाएँ GEN पंक्ति में ही हैं और अलग "आख़िरी महिला" अंक भ्रामक (GEN से ऊँचा) दिखता है */
+ W.res.forEach((v,roll)=>{const c=rbCandOf(roll);if(!c)return;const b=String(v.b).split("·")[0];
   const hq=!!v.q||/·(Q|LB)/.test(String(v.b)),rs=v.rs||0; /* S06: क्षैतिज-कोटा (Q/LB) और आरक्षित महिला पद 'मेरिट' पंक्ति में नहीं गिने जाते */
-  rbSubOf(c).forEach(sb=>{if(!hq){if(sb==="ALL"&&rs)return;if(sb==="F"&&rs===2)return}else if(sb==="ALL"||sb==="M"||sb==="F"||sb==="WID"||sb==="DIV"||(v.q&&v.g&&sb!==v.g))return; /* P8: क्षैतिज कोटे से चुना अभ्यर्थी बहु-फ़्लैग होने पर भी केवल उसी समूह की पंक्ति में (R6.2) */
+  rbSubOf(c).forEach(sb=>{if(!hq){if(sb==="ALL"&&rs)return;if(sb==="F"&&(rs===2||!RSV.has(v.p+"|"+b)))return}else if(sb==="ALL"||sb==="M"||sb==="F"||sb==="WID"||sb==="DIV"||(v.q&&v.g&&sb!==v.g))return; /* P8: क्षैतिज कोटे से चुना अभ्यर्थी बहु-फ़्लैग होने पर भी केवल उसी समूह की पंक्ति में (R6.2) */
    const k=v.p+"|"+b+"|"+sb,o=M[k];if(!o||c.rank>o.rank)M[k]={rank:c.rank,marks:c.marks}})});return M}
+let _rbCM=null,_rbCMsrc=null;function rbCandOf(roll){if(_rbCMsrc!==CANDS||!_rbCM){_rbCM=new Map(CANDS.map(c=>[c.roll,c]));_rbCMsrc=CANDS}return _rbCM.get(roll)} /* P16: रोल→उम्मीदवार नक्शा (linear find की जगह) */
 const _rbCutCache={};
-function rbCutData(){const key=[RB_X.abs,RB_X.inel,RB_X.nj,RB_X.hq].join("|");if(_rbCutCache[key])return _rbCutCache[key];
+function rbCutData(){const key=[RB_X.abs,RB_X.hq].join("|");if(_rbCutCache[key])return _rbCutCache[key];
  const out={};["ns","ts"].forEach(pool=>{const base=RB_COMBOS.map(([t,l])=>rbLastMap(rbRun(t,l),pool)),bord=RB_COMBOS.map(([t,l])=>rbLastMap(rbMaxRun(t,l),pool)),R={};
   const keys=new Set();base.concat(bord).forEach(m=>Object.keys(m).forEach(k=>keys.add(k)));
   keys.forEach(k=>{const b=base.map(m=>m[k]).filter(Boolean),d=bord.map(m=>m[k]).filter(Boolean);if(!b.length)return;
@@ -2481,7 +1945,7 @@ function rbCutData(){const key=[RB_X.abs,RB_X.inel,RB_X.nj,RB_X.hq].join("|");if
 
 /* ===== P8 (v58_H3, 23-10-2026): क्षैतिज कोटा — पद / भरे / रिक्त / रिक्त का क्या हुआ + अंतिम चयनित अंक (R15). स्रोत: rbPool का out.hq.rem (असली नतीजे); कोई नया नियम/अनुमान नहीं ===== */
 const _rbHzCache={};
-function rbHzData(){const key=[RB_X.abs,RB_X.inel,RB_X.nj,RB_X.hq].join("|");if(_rbHzCache[key])return _rbHzCache[key];
+function rbHzData(){const key=[RB_X.abs,RB_X.hq].join("|");if(_rbHzCache[key])return _rbHzCache[key];
  const o={ns:{},ts:{}};RB_COMBOS.forEach(([t,l])=>{const r=rbRun(t,l);["ns","ts"].forEach(pool=>{const h=r[pool]&&r[pool].hq;if(!h)return;
   Object.keys(h.rem).forEach(id=>Object.keys(h.rem[id]).forEach(k=>{const v=h.rem[id][k],kk=id+"|"+k,x=o[pool][kk]||(o[pool][kk]={id:id,k:k,quota:v.quota,mode:v.mode,f0:1e9,f1:-1});x.f0=Math.min(x.f0,v.filled);x.f1=Math.max(x.f1,v.filled)}))})});
  return _rbHzCache[key]=o}
@@ -2643,6 +2107,18 @@ $("ytcCopy").addEventListener("click",function(){var o=$("ytcOut");if(!o.value){
  var ok=function(){msg("✔ कॉपी हो गया")},bad=function(){o.focus();o.select();try{document.execCommand("copy")?ok():msg("टेक्स्ट चुना गया है, मैन्युअल कॉपी करें।")}catch(e){msg("टेक्स्ट चुना गया है, मैन्युअल कॉपी करें।")}};
  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(o.value).then(ok,bad);else bad()});
 }catch(err){try{console.warn("yt comment:",err)}catch(_){}}})();
+</script>
+<script>
+/* P16 (गति): पेज खुलने के बाद खाली समय में भारी गणनाएँ पहले से तैयार (कैश) कर ली जाती हैं, ताकि विद्यार्थी के रैंक डालते ही रिपोर्ट तुरंत बने। एक-एक छोटा काम, UI नहीं रुकता */
+(function(){try{var jobs=[];
+ RB_ALL.forEach(function(x){jobs.push(function(){rbRun(x[0],x[1])})});
+ RB_COMBOS.forEach(function(x){jobs.push(function(){rbMaxRun(x[0],x[1])})});
+ jobs.push(function(){rbCutData()});jobs.push(function(){rbHzData()});
+ function next(){var j=jobs.shift();if(!j)return;try{j()}catch(e){try{console.warn("prewarm",e)}catch(_){}}
+  if(jobs.length)(window.requestIdleCallback?requestIdleCallback(next,{timeout:800}):setTimeout(next,60))}
+ function start(){setTimeout(next,100)}
+ if(document.readyState==="complete")start();else window.addEventListener("load",start)
+}catch(e){}})();
 </script>
 </body>
 </html>
