@@ -432,6 +432,9 @@ footer.foot h2 .bw{letter-spacing:1.5px;font-weight:800}
 .lim-top a{white-space:nowrap}
 .rep-end{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 6px}
 td.tot,tr.totrow td{font-weight:700}table.dtab.nw{table-layout:fixed;width:100%;min-width:480px}table.dtab.nw td,table.dtab.nw th{width:20%;overflow-wrap:anywhere}table.dtab.nw3{table-layout:fixed;width:100%;min-width:500px;font-size:12.5px}table.dtab.nw3 td,table.dtab.nw3 th{width:20%;padding:6px 5px;overflow-wrap:anywhere;line-height:1.35}table.dtab.nw2{table-layout:fixed;width:100%;min-width:660px}table.dtab.nw2 td,table.dtab.nw2 th{width:13%;overflow-wrap:anywhere}table.dtab.nw2 th:last-child,table.dtab.nw2 td:last-child{width:22%}table.dtab td.rmk>div{max-width:none;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding-bottom:2px}table.dtab td,table.dtab th{vertical-align:top}table.dtab tr.me td{background:rgba(22,128,60,.10)}
+
+table.dtab.nw3{min-width:640px}table.dtab.nw3 td,table.dtab.nw3 th{vertical-align:top}table.dtab.nw3 tr.me td{background:var(--ok-bg,rgba(90,208,138,.10))}.kmk{color:var(--ac);font-weight:700}.kct{color:var(--wa);font-weight:700}.kup{color:var(--ok);font-weight:700}.kdn{color:var(--er);font-weight:700}.klg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0;font-size:13.5px}.kbx{line-height:1.7}.kbx .kbig{font-size:16px}
+table.dtab td:first-child,table.dtab th:first-child{position:sticky;left:0;z-index:1;background:var(--card,#0b1220)}
 @media print{.rep-end,#r-nav,.lim-top a,.faq,.back-fab{display:none!important}details.acc>summary{list-style:none}.rs{break-inside:avoid-page}}
 /* P5: मुख्य जानकारी .in कार्ड — एक-जैसा संतुलित डिज़ाइन (Light + Dark)। केवल प्रस्तुति */
 :root{--in-bg:#f5f9ff;--in-bd:#cddbf0;--in-bar:#1f5fd6;--in-ok-bg:#eaf6ee;--in-ok-bd:#b9dec5;--in-ok-bar:#12703a;--in-lo-bg:#f4f6f9;--in-lo-bd:#d5dbe5;--in-lo-bar:#5d6b80;--in-v:#0f2552}
@@ -1740,11 +1743,74 @@ function rbWomenGapNoteNow(c,D){try{
   h+="<div class='f10'><h4>"+esc(f.title)+"</h4><p class='f10m'><span>"+esc(f.calc)+"</span>"+(d?"<span>"+esc(d)+"</span>":"")+(f.id==="F2"?"<span>आपसे आगे की सीट-प्राप्त "+nf(g.M)+" महिलाओं में से "+nf(g.absN)+" बोर्ड की अनुपस्थित सूची में</span>":"")+"</p><p>"+esc(f.text)+"</p></div>"});
  h+="<p class='mu'>यह केवल संभावित परिदृश्य है, चयन की गारंटी नहीं। इन कारकों का उम्मीदवार-वार डेटा उपलब्ध नहीं है। "+esc(disc10())+"</p></div>";
  return h}catch(e){console.error("womengapnote",e);return""}}
+/* ===== महिला कोटे की गिनती (नया, 25-10-2026): हर (विभाग × सीट-समूह) की गिनती केवल इंजन के असली नतीजों (W.S, W.res, W.hq) से; महिला व पुरुष दोनों के लिए एक ही सरल व्याख्या ===== */
+function rbWGrp(W,id,b,c,by){
+ const S=(W.S||[]).find(o=>o.id===id);if(!S)return null;
+ const q=b==="OPEN"?S.open:S.cats[b],post=VD.posts[id]&&VD.posts[id].cat[b==="OPEN"?"GEN":b];if(!q||!post)return null;
+ const g={id:id,b:b,T:+post.total||0,M:+post.M||0,GW:+post.GW||0,Wp:+post.W||0,Dp:+post.D||0,Nw0:rbWomenPosts(post),small:post.women==null,
+  fwd:((W.hq&&W.hq.fwd&&W.hq.fwd[id])||{})[b]||0,Qm:0,Qf:0,m:0,w0:0,w1:0,w2:0,wc:0,dc:0,lb:0,wOC:0,wAh:0,later:[],here:false,viaQ:false};
+ W.res.forEach((v,roll)=>{if(v.p!==id)return;const z=by.get(roll);if(!z)return;const bb=String(v.b),f=z.gender==="FEMALE",ah=z.rank<c.rank;
+  if(roll===c.roll&&bb.split("·")[0]===b){g.here=true;g.viaQ=!!v.q;g.hrs=v.rs}
+  if(bb===b+"·Q"){if(f)g.Qf++;else g.Qm++;return}
+  if(bb===b+"·LB"){g.lb++;return}
+  if(bb===b){if(!f)g.m++;else if(v.rs===2){g.w2++;if(/DIV/.test(String(z.subcat||"")))g.dc++;else g.wc++}else if(v.rs===1)g.w1++;else g.w0++;
+   if(f&&ah)g.wAh++;
+   if(z.rank>c.rank&&v.rs>0)g.later.push({rank:z.rank,rs:v.rs});return}
+  if(b!=="OPEN"&&bb==="OPEN"&&f&&rbCk(z)===b){g.wOC++;if(ah)g.wAh++}});
+ g.later.sort((a,b2)=>a.rank-b2.rank);
+ g.N=q.N;g.sel=q.sel||0;g.wdPosts0=g.Wp+g.Dp;g.wdVac=Math.max(0,g.wdPosts0-g.w2);
+ g.seatsEff=g.T-g.fwd-g.Qm-g.Qf-g.lb;g.fill=g.m+g.w0+g.w1+g.w2+g.Qm+g.Qf+g.lb+g.fwd;g.vacant=Math.max(0,g.T-g.fill);
+ g.Wt=g.w0+g.w1+g.w2+g.Qf;return g}
+function rbWStepsHTML(g,nm,nf){
+ const bl=g.b==="OPEN"?"खुली (GEN) सीटें":esc(g.b)+" की सीटें",li=[];
+ /* 1. कुल पद का जोड़ */
+ const parts=[[g.M,g.b==="OPEN"?"सामान्य (ओपन/पुरुष)":"पुरुष/सामान्य"],[g.GW,"सामान्य-महिला"],[g.Wp,"विधवा"],[g.Dp,"परित्यक्ता"]].filter((a,i)=>i===0||a[0]>0),sum=g.M+g.GW+g.Wp+g.Dp,okSum=sum===g.T;
+ li.push("<li><b>कुल पद:</b> <b>"+nf(g.T)+"</b>"+(okSum?" = "+parts.map(a=>nf(a[0])+" "+a[1]).join(" + "):"")+"। इनमें <b>महिला पद "+nf(g.Nw0)+"</b>"+(okSum&&!g.small&&g.Nw0===g.GW+g.Wp+g.Dp&&(g.Wp+g.Dp>0||g.GW>0)?" ("+[g.GW?nf(g.GW)+" सामान्य-महिला":"",g.Wp?nf(g.Wp)+" विधवा":"",g.Dp?nf(g.Dp)+" परित्यक्ता":""].filter(Boolean).join(" + ")+")":"")+"।</li>");
+ /* 2. क्षैतिज कोटा */
+ const hz=g.Qm+g.Qf;let s2;
+ if(hz||g.fwd){s2="<li><b>क्षैतिज कोटा</b> (भूतपूर्व सैनिक / खिलाड़ी / दिव्यांग): ";
+  if(hz){s2+="इस समूह की <b>"+nf(hz)+"</b> सीटें पात्र क्षैतिज उम्मीदवारों को पहले ही दे दी गईं ("+nf(g.Qm)+" पुरुष, "+nf(g.Qf)+" महिला)";
+   if(g.Qf)s2+="। "+(g.Qf===1?"यह 1 महिला":"ये "+nf(g.Qf)+" महिलाएँ")+" महिला कोटे में ही गिनी गईं (एक सीट, दो गिनती — R6.9), इसलिए महिला पद "+nf(g.Nw0)+" − "+nf(g.Qf)+" = <b>"+nf(Math.max(0,g.Nw0-g.Qf))+"</b> रह गए";
+   else s2+="। इनमें कोई महिला नहीं, इसलिए महिला पद "+nf(g.Nw0)+" ही रहे (जिस क्षैतिज श्रेणी में पात्र महिला नहीं मिलती, वह सीट महिला पदों में ही रहती है)"}
+  if(g.fwd)s2+=(hz?"; ":"")+"<b>"+nf(g.fwd)+"</b> दिव्यांग पद पात्र उम्मीदवार न मिलने से रिक्त रहे और आगे की भर्ती के लिए अग्रेषित हुए (R6.1)";
+  s2+="। अब मेरिट/आरक्षण से भरने के लिए <b>"+nf(g.seatsEff)+"</b> सीटें बचीं ("+nf(g.T)+(hz?" − "+nf(hz):"")+(g.fwd?" − "+nf(g.fwd):"")+")।</li>"}
+ else s2="<li><b>क्षैतिज कोटा:</b> इस समूह में क्षैतिज कोटे की कोई सीट अलग नहीं हुई (पात्र उम्मीदवार मेरिट पर ही आ गए या इस समूह में पद नहीं), इसलिए महिला पद "+nf(g.Nw0)+" ही रहे।</li>";
+ li.push(s2);
+ if(g.N!==Math.max(0,g.Nw0-g.Qf))li.push("<li class='mu'>सीटों की कुल सीमा के कारण महिला पद <b>"+nf(g.N)+"</b> तक सीमित रहे।</li>");
+ /* 3. विधवा / परित्यक्ता */
+ if(g.wdPosts0>0)li.push("<li><b>विधवा / परित्यक्ता:</b> पद <b>"+nf(g.wdPosts0)+"</b> ("+nf(g.Wp)+" विधवा + "+nf(g.Dp)+" परित्यक्ता); दोनों के पद साथ गिने जाते हैं, एक की सीट खाली रहे तो दूसरी को मिलती है (R11.2)। पात्र उम्मीदवारों से <b>"+nf(g.w2)+"</b> सीटें भरीं (विधवा "+nf(g.wc)+", परित्यक्ता "+nf(g.dc)+")"+(g.dc>g.Dp?"। परित्यक्ता के "+nf(g.Dp)+" पद थे, पर "+nf(g.dc)+" परित्यक्ताएँ चुनी गईं: "+nf(g.dc-g.Dp)+" विधवा-पद उन्हें अदला-बदली से मिले, क्योंकि सूची में विधवाएँ कम थीं":"")+(g.wc>g.Wp?"। विधवा के "+nf(g.Wp)+" पद थे, पर "+nf(g.wc)+" विधवाएँ चुनी गईं: "+nf(g.wc-g.Wp)+" परित्यक्ता-पद उन्हें अदला-बदली से मिले":"")+(g.wdVac>0?"; शेष <b>"+nf(g.wdVac)+"</b> सीटें खाली नहीं छोड़ी गईं — वे महिला पदों में ही सामान्य महिलाओं को चली गईं":"; सभी पद भर गए")+"।</li>");
+ else li.push("<li><b>विधवा / परित्यक्ता:</b> इस समूह में इनके अलग पद नहीं हैं।</li>");
+ /* 4. अंतिम महिला पद */
+ li.push("<li><b>अंतिम महिला पद = "+nf(g.N)+"</b>"+(g.wdPosts0>0?" ("+nf(Math.min(g.w2,g.N))+" विधवा/परित्यक्ता + "+nf(Math.max(0,g.N-g.w2))+" सामान्य महिला)":"")+"।</li>");
+ /* 5. मेरिट बनाम आरक्षण */
+ const short=Math.max(0,g.N-g.sel),ph=[];let s5="<li><b>मेरिट या आरक्षण?</b> ";
+ if(g.b==="OPEN"){if(g.w0)ph.push("<b>"+nf(g.w0)+"</b> महिलाएँ (किसी भी श्रेणी की) अपनी मेरिट से खुली सीट पर आईं")}
+ else{if(g.wOC)ph.push(esc(g.b)+" की <b>"+nf(g.wOC)+"</b> महिलाएँ खुली सीटों पर आईं (वे "+esc(g.b)+" की कतार से हटकर "+esc(g.b)+" के महिला कोटे में गिनी गईं)");if(g.w0)ph.push("<b>"+nf(g.w0)+"</b> ने "+esc(g.b)+" की अपनी सीटों पर मेरिट से सीट पाई")}
+ if(g.w2)ph.push("<b>"+nf(g.w2)+"</b> विधवा/परित्यक्ता आरक्षित पदों पर");if(g.w1)ph.push("<b>"+nf(g.w1)+"</b> सामान्य महिलाएँ कोटे की रोकी हुई सीटों पर");
+ s5+=(ph.length?ph.join("; "):"इस समूह में अपनी मेरिट या आरक्षण से कोई महिला नहीं चुनी गई")+"। कुल गिनी गई महिलाएँ <b>"+nf(g.sel)+"</b>, ज़रूरत <b>"+nf(g.N)+"</b>। ";
+ if(short>0)s5+="पर्याप्त महिला उम्मीदवार नहीं मिलीं: <b>"+nf(short)+"</b> महिला पद खाली रहकर उसी वर्ग के पुरुषों को गए (R11.2)।";
+ else if(g.w1>0)s5+="मेरिट से कोटा पूरा नहीं हुआ, इसलिए बाकी <b>"+nf(g.w1)+"</b> महिलाओं को नीचे की मेरिट से रोकी हुई सीटों पर लिया गया।";
+ else s5+="कोटा मेरिट (और विधवा/परित्यक्ता पदों) से ही पूरा हो गया, इसलिए किसी महिला को नीचे की मेरिट से अलग से नहीं लेना पड़ा।";
+ li.push(s5+"</li>");
+ /* 6. पुरुषों की सीटें */
+ const extra=g.Wt-g.Nw0,mS=g.m+g.Qm;let s6="<li><b>पुरुषों के लिए:</b> इस समूह में पुरुषों को <b>"+nf(mS)+"</b> सीटें मिलीं"+(g.Qm?" ("+nf(g.m)+" मेरिट पर + "+nf(g.Qm)+" क्षैतिज)":"");
+ if(okSum&&g.vacant===0&&!g.lb&&g.M-extra-g.fwd===mS&&(extra!==0||g.fwd))s6+="। कागज़ पर पुरुष/सामान्य पद "+nf(g.M)+" थे; "+nf(g.M)+(extra>0?" − "+nf(extra)+" (महिलाएँ पदों से ज़्यादा मेरिट पर आईं)":extra<0?" + "+nf(-extra)+" (महिला पद पूरे नहीं भरे)":"")+(g.fwd?" − "+nf(g.fwd)+" (अग्रेषित दिव्यांग पद)":"")+" = <b>"+nf(mS)+"</b>";
+ s6+="।";if(g.vacant)s6+=" इस समूह की <b>"+nf(g.vacant)+"</b> सीटें योग्य उम्मीदवार न मिलने से खाली रहीं।";
+ li.push(s6+"</li>");
+ return"<div class='catx wq'><p><b>"+nm(g.id)+" — "+bl+"</b></p><ol class='wsteps' style='margin:4px 0;padding-left:20px'>"+li.join("")+"</ol></div>"}
+function rbWSumHTML(g,nm,nf){ /* एक पंक्ति का सार — पूरी गिनती rbWStepsHTML में */
+ const bl=g.b==="OPEN"?"खुली (GEN) सीटें":esc(g.b)+" की सीटें",short=Math.max(0,g.N-g.sel),mS=g.m+g.Qm;
+ let s="<p class='wsum'><b>"+nm(g.id)+" — "+bl+":</b> कुल पद <b>"+nf(g.T)+"</b>, इनमें महिला पद <b>"+nf(g.Nw0)+"</b>";
+ if(g.Qf)s+="; क्षैतिज कोटे की "+nf(g.Qf)+" महिलाएँ उन्हीं में गिनी गईं, इसलिए अंतिम महिला पद <b>"+nf(g.N)+"</b>";
+ else if(g.N!==g.Nw0)s+="; अंतिम महिला पद <b>"+nf(g.N)+"</b>";
+ s+="। इनके मुकाबले <b>"+nf(g.sel)+"</b> महिलाएँ मेरिट"+(g.w2?" / विधवा-परित्यक्ता पदों":"")+(g.w1?" / आरक्षित सीटों":"")+" से गिनी गईं";
+ if(short>0)s+="; <b>"+nf(short)+"</b> महिला पद खाली रहकर पुरुषों को गए";
+ else if(g.w1>0)s+="; कोटा पूरा करने के लिए <b>"+nf(g.w1)+"</b> महिलाओं को नीचे की मेरिट से रोकी हुई सीटों पर लिया गया";
+ else s+="; इसलिए नीचे की मेरिट से किसी को अलग से नहीं लेना पड़ा";
+ return s+"। पुरुषों को <b>"+nf(mS)+"</b> सीटें मिलीं।</p>"}
 function rbWomenSec(c,D,sn){try{
  const x=D.R[0],r=x.r,L=r.L,k=rbCk(c),F=c.gender==="FEMALE",T=Number(c.tsp)===1,
- isWD=z=>z.gender==="FEMALE"&&/WID|DIV/.test(String(z.subcat||"")),wdc=isWD(c),
  by=new Map(L.map(z=>[z.roll,z])),nm=id=>esc(RB_NAME[id]),nf=n=>Number(n).toLocaleString("en-IN"),
- ah=L.filter(z=>z.rank<c.rank),pl=x.pl,normal=!!(pl&&!pl.v.q),
  pools=[[r.ns,RB_NS,"ns"]].concat(T?[[r.ts,RB_S,"ts"]]:[]),rows=[],csOf=pn=>pn==="ns"?L:L.filter(z=>Number(z.tsp)===1&&!r.ns.res.has(z.roll));
  let stop=false;
  const blkPos=(W,cs,ids,id,b,tot,qs)=>{ /* इस समूह में c से पहले कितने उम्मीदवार "सीट खाली थी पर नहीं मिली" की स्थिति में थे */
@@ -1760,54 +1826,46 @@ function rbWomenSec(c,D,sn){try{
   return pos};
  for(const [W,ids,pn] of pools){
   if(stop)break;
-  if(pn==="ts"&&normal&&pl.pool==="NTSP")break;
+  if(pn==="ts"&&r.ns.res.has(c.roll))break;
   for(const id of ids){
    if(!VD.posts[id])continue;
-   const P=VD.posts[id].cat;
    for(const b of ["OPEN"].concat(k==="GEN"?[]:[k])){
-    const q=b==="OPEN"?P.GEN:P[k];if(!q||!(q.total>0))continue;
-    const Nw=q.women==null?((+q.W||0)+(+q.D||0)):(+q.women||0);
-    let wAh=0,qs=0;const later=[];
-    W.res.forEach((v,roll)=>{if(v.p!==id)return;
-     if(v.b===b+"·Q"){qs++;return}
-     if(v.b!==b)return;
-     const z=by.get(roll);if(!z)return;
-     if(z.rank<c.rank){if(z.gender==="FEMALE")wAh++}
-     else if(z.rank>c.rank&&v.rs>0)later.push({rank:z.rank,rs:v.rs})});
-    const mine=W.res.get(c.roll),here=!!(normal&&mine&&mine.p===id&&mine.b===b);
-    later.sort((a,b)=>a.rank-b.rank);const bp=(later.length&&!here)?blkPos(W,csOf(pn),ids,id,b,q.total,qs):0;
-    if(Nw>0||later.length||here)rows.push({id:id,b:b,tot:q.total,Nw:Nw,wAh:wAh,later:later,qs:qs,here:here,small:q.women==null,bp:bp,aff:later.length>0&&!here&&bp<later.length});
-    if(here){stop=true;break}}
+    const g=rbWGrp(W,id,b,c,by);if(!g||!(g.T>0))continue;
+    const bp=(g.later.length&&!g.here)?blkPos(W,csOf(pn),ids,id,b,g.T-g.fwd,g.Qm+g.Qf):0;
+    g.bp=bp;g.aff=g.later.length>0&&!g.here&&bp<g.later.length;
+    if(g.Nw0>0||g.later.length||g.here)rows.push(g);
+    if(g.here){stop=true;break}}
    if(stop)break}}
+ if(!rows.length)return"";
  const show=F?rows:rows.filter(z=>z.aff);
- if(!show.length)return"";
+ const feat=rows.find(z=>z.here)||rows.find(z=>z.aff)||rows[0];
  const rk=a=>a.slice(0,3).map(z=>z.rank).join(", ")+(a.length>3?" …":""),bl=b=>b==="OPEN"?"खुली":esc(b);
- let h="<h3 class='nh'>"+sn+". "+(F?"महिला कोटे की गिनती":"महिला/विधवा-परित्यक्ता आरक्षण का आपकी सीट पर असर")+"</h3>";
- if(F)h+="<p>मेरिट सूची सबके लिए एक ही है; महिलाओं की अलग रैंक-सूची या अलग कटऑफ़-सूची से सीट नहीं दी जाती। 30% महिला कोटा हर (विभाग × सीट-समूह) की सीटों के भीतर <b>महिला पद</b> की गिनती है; मेरिट से सीट पाने वाली महिला भी इसी गिनती में आती है (R10)।</p>";
- if(F&&k!=="GEN"){
-  const sa=ah.filter(z=>rbCk(z)===k&&z.gender==="FEMALE");let cO=0,cM=0,cN=0;
-  sa.forEach(z=>{const v=r.ns.res.get(z.roll)||r.ts.res.get(z.roll);if(!v)cN++;else if(String(v.b).split("·")[0]==="OPEN")cO++;else cM++});
-  const pw=ids=>ids.reduce((a,id)=>{const q=VD.posts[id]&&VD.posts[id].cat[k];return a+(q?(q.women==null?((+q.W||0)+(+q.D||0)):(+q.women||0)):0)},0),posts=pw(RB_NS)+(T?pw(RB_S):0);
-  h+="<div class='catx'><ul>"+
-   "<li>आपकी "+esc(k)+" श्रेणी की <b>महिलाओं में आपकी रैंक "+(sa.length+1)+"</b> है (आपसे आगे "+esc(k)+" की <b>"+sa.length+"</b> महिलाएँ)।</li>"+
-   "<li>इनमें से <b>"+cO+"</b> को अपनी मेरिट पर खुली (Open) सीट मिली; वे "+esc(k)+" की महिला-कतार से हट गईं।</li>"+
-   "<li>बाकी में से <b>"+cM+"</b> को "+esc(k)+" की अपनी सीट मिली और <b>"+cN+"</b> को किसी विभाग में सीट नहीं मिली।</li>"+
-   "<li>इसलिए "+esc(k)+" सीटों के लिए आपकी <b>प्रभावी महिला रैंक: "+(sa.length+1)+" − "+cO+" = "+(sa.length+1-cO)+"</b>।</li>"+
-   (wdc?"<li>आप विधवा/परित्यक्ता हैं: आपके लिए अलग WD-पद भी हैं (R11), इसलिए यह प्रभावी रैंक केवल सामान्य महिला-सीटों के लिए है।</li>":"")+"<li>डेटा में दर्ज "+esc(k)+" महिला-पद (सभी विभाग मिलाकर): <b>"+posts+"</b>।</li></ul></div>"}
- if(F)h+=rbWomenGapNote(c,D); /* S17d: टेक्स्ट के बाद, तालिका से ठीक पहले */
- const rem=z=>{const p=[],n2=z.later.filter(y=>y.rs===2),n1=z.later.filter(y=>y.rs===1),closed=(!F||!wdc)?" — आपके लिए बंद":"";
-  if(n2.length)p.push(n2.length+" सीट बाद में विधवा/परित्यक्ता-आरक्षण से भरी (रैंक "+rk(n2)+")"+((!F||!wdc)?" — आपके लिए बंद":""));
+ let h="<h3 class='nh'>"+sn+". "+(F?"महिला कोटे की गिनती":"महिला आरक्षण का आपकी सीट पर असर")+"</h3>";
+ h+=F?"<p><b>महिला की गिनती पुरुष से अलग है:</b> पहले खुली सीट पर मेरिट से देखा जाता है — वहाँ आ गई तो वह महिला कोटे में भी गिनी जाती है (R10); न आ पाए तो कोटे की रोकी हुई सीट मिलती है। इस सीट-समूह का सार:</p>"
+  :"<p><b>पुरुष की गिनती मेरिट पर चलती है, पर हर सीट-समूह की कुछ सीटें महिला कोटे के लिए रोकी जाती हैं</b> (जितने महिला पद मेरिट से नहीं भरे, उतनी सीटें रुकी रहती हैं — R10, R11)। इस सीट-समूह का सार:</p>";
+ h+=rbWSumHTML(feat,nm,nf);
+ /* और देखें: बाकी सभी समूह, कुल महिला पद, अलग सिमुलेशन नोट, तालिका */
+ let more="<p><b>चरण-दर-चरण पूरी गिनती — "+nm(feat.id)+(feat.b==="OPEN"?" (खुली सीटें)":" ("+esc(feat.b)+")")+"</b></p>"+rbWStepsHTML(feat,nm,nf);
+ const ids2=RB_NS.concat(T?RB_S:[]),bN=rbPostBreak("GEN",RB_NS,rbWomenPosts),bT=T?rbPostBreak("GEN",RB_S,rbWomenPosts):{tot:0,txt:""};
+ more+="<p><b>सभी विभाग मिलाकर कुल महिला पद:</b> खुली (GEN): <b>"+nf(bN.tot+bT.tot)+"</b> ("+bN.txt+(T?"; अनुसूचित में — "+bT.txt:"")+")";
+ if(k!=="GEN"){const kN=rbPostBreak(k,RB_NS,rbWomenPosts),kT=T?rbPostBreak(k,RB_S,rbWomenPosts):{tot:0,txt:""};more+="। "+esc(k)+": <b>"+nf(kN.tot+kT.tot)+"</b> ("+kN.txt+(T?"; अनुसूचित में — "+kT.txt:"")+")"}
+ more+="। महिला पद कुल पदों के भीतर ही हैं, अलग से नहीं जुड़ते। माध्यमिक शिक्षा का महिला-पद योग बोर्ड की अधिसूचना में सीधे दिया है; छोटे विभागों में सामान्य-महिला + विधवा + परित्यक्ता पद जोड़कर गिना है।</p>";
+ const others=rows.filter(z=>z!==feat);
+ if(others.length)more+="<p><b>बाकी विभाग / सीट-समूहों का सार</b> (आपके नंबर तक देखे गए समूह; हर एक की गिनती इसी तरह चरण-दर-चरण होती है):</p>"+others.map(z=>rbWSumHTML(z,nm,nf)).join("");
+ if(F)more+=rbWomenGapNote(c,D); /* S17d: टेक्स्ट के बाद, तालिका से ठीक पहले */
+ const rem=z=>{const p=[],n2=z.later.filter(y=>y.rs===2),n1=z.later.filter(y=>y.rs===1);
+  if(n2.length)p.push(n2.length+" सीट बाद में विधवा/परित्यक्ता-आरक्षण से भरी (रैंक "+rk(n2)+")"+((!F||!(c.gender==="FEMALE"&&/WID|DIV/.test(String(c.subcat||""))))?" — आपके लिए बंद":""));
   if(n1.length)p.push(n1.length+" सीट बाद में महिला-आरक्षण से भरी (रैंक "+rk(n1)+")"+(!F?" — आपके लिए बंद":""));
   if(z.later.length&&!z.here)p.push(z.aff?"<b>इस रोक का असर आप तक पहुँचा</b>: आपसे पहले केवल "+z.bp+" उम्मीदवार इस सीट के दावेदार थे और रोकी गई सीटें "+z.later.length+" थीं":"इस रोक का असर आप तक नहीं पहुँचता: आपसे पहले ही "+z.bp+" उम्मीदवार इस सीट के दावेदार थे, जबकि रोकी गई सीटें केवल "+z.later.length+" थीं");
-  if(z.qs)p.push("क्षैतिज कोटे (EXM/खिलाड़ी/दिव्यांग) की "+z.qs+" सीट पहले ही अलग");
+  if(z.Qm+z.Qf)p.push("क्षैतिज कोटे (EXM/खिलाड़ी/दिव्यांग) की "+(z.Qm+z.Qf)+" सीट पहले ही अलग");
   return p.join("; ")||"—"};
- h+="<div class='sc'><table class='dtab nw2'><tr><th>विभाग</th><th>सीट-समूह</th><th>कुल सीट</th>"+(F?"<th>महिला पद</th><th>आपसे आगे चुनी महिलाएँ</th><th>कोटे की स्थिति</th>":"")+"<th>रोक / टिप्पणी</th></tr>"+
-  show.map(z=>"<tr"+(z.here?" class='me'":"")+"><td><b>"+nm(z.id)+"</b></td><td>"+bl(z.b)+"</td><td>"+nf(z.tot)+"</td>"+(F?"<td>"+nf(z.Nw)+"</td><td>"+nf(z.wAh)+"</td><td>"+(z.here?"<span class='ok'><b>✔ आपका चयन यहीं</b></span>":z.Nw>0?(z.wAh>=z.Nw?"पूरा":"अधूरा — "+(z.Nw-z.wAh)+" पद बाकी"):"—")+"</td>":"")+"<td class='rmk'><div>"+rem(z)+"</div></td></tr>").join("")+"</table></div>";
- if(F){const un=rows.filter(z=>z.Nw>z.wAh&&!z.here);
-  const pr=x.pl&&normal&&x.pl.v.rs;
-  h+=("<p>"+(pr===2?"आपका चयन <b>विधवा/परित्यक्ता-आरक्षित सीट</b> पर हुआ (R11); उस समूह में आपके नंबर तक महिला कोटा अधूरा था, इसलिए वह सीट आपके लिए रोकी गई थी।":pr===1?"आपका चयन <b>महिला-आरक्षित सीट</b> पर हुआ (R10); उस समूह में आपके नंबर तक महिला कोटा अधूरा था।":un.length?"":"सभी समूहों में महिला कोटा आपके नंबर तक मेरिट से ही पूरा हो चुका था, इसलिए आपके लिए अलग से कोई महिला-आरक्षित बची सीट नहीं थी।")+"</p>").replace("<p></p>","")}
- else h+="<p>आपकी बारी पर इन समूहों में सीट खाली थी, पर वह महिला/विधवा-परित्यक्ता आरक्षण के लिए रोकी हुई थी (बाद में आपसे कम मेरिट की महिलाओं को मिली); इसलिए आप वहाँ नहीं बैठ सके (R10, R11)। यह उसी नियम का असर है, आपकी मेरिट में कोई बदलाव नहीं।</p>";
- h+="<p class='mu'>'रोक / टिप्पणी' कॉलम की लंबी पंक्ति बग़ल में स्लाइड करके पढ़ें। यह गिनती सामान्य गणना (परिदृश्य A/A) की है और इंजन के असली नतीजों से निकाली गई है।"+(show.some(z=>z.small)?" छोटे पदों (संस्कृत, कृषि, PHED, FSL) के डेटा में कुल महिला पद दर्ज नहीं है, इसलिए वहाँ केवल विधवा+परित्यक्ता पद गिने गए हैं; सामान्य महिला पद शामिल नहीं (ज्ञात सीमा)।":"")+"</p>";
+ if(show.length)more+="<p><b>सारांश तालिका</b></p><div class='sc'><table class='dtab nw2'><tr><th>विभाग</th><th>सीट-समूह</th><th>कुल सीट</th>"+(F?"<th>अंतिम महिला पद</th><th>आपसे आगे गिनी महिलाएँ</th><th>कोटे की स्थिति</th>":"")+"<th>रोक / टिप्पणी</th></tr>"+
+  show.map(z=>"<tr"+(z.here?" class='me'":"")+"><td><b>"+nm(z.id)+"</b></td><td>"+bl(z.b)+"</td><td>"+nf(z.T)+"</td>"+(F?"<td>"+nf(z.N)+"</td><td>"+nf(z.wAh)+"</td><td>"+(z.here?"<span class='ok'><b>✔ आपका चयन यहीं"+(z.viaQ?" (क्षैतिज कोटे से)":"")+"</b></span>":z.N>0?(z.wAh>=z.N?"पूरा":"अधूरा — "+(z.N-z.wAh)+" पद बाकी"):"—")+"</td>":"")+"<td class='rmk'><div>"+rem(z)+"</div></td></tr>").join("")+"</table></div>";
+ if(F)more+="<p>"+(feat.here&&feat.hrs===2?"आपका चयन <b>विधवा/परित्यक्ता-आरक्षित सीट</b> पर हुआ (R11); उस समूह में आपके नंबर तक यह कोटा अधूरा था, इसलिए वह सीट आपके लिए रोकी गई थी।":feat.here&&feat.hrs===1?"आपका चयन <b>महिला-आरक्षित सीट</b> पर हुआ (R10); उस समूह में आपके नंबर तक महिला कोटा अधूरा था।":"")+"</p>".replace("<p></p>","");
+ else if(show.length)more+="<p>आपकी बारी पर इन समूहों में सीट खाली थी, पर वह महिला/विधवा-परित्यक्ता आरक्षण के लिए रोकी हुई थी (बाद में आपसे कम मेरिट की महिलाओं को मिली); इसलिए आप वहाँ नहीं बैठ सके (R10, R11)। यह उसी नियम का असर है, आपकी मेरिट में कोई बदलाव नहीं।</p>";
+ else more+="<p>आपकी बारी पर महिला-आरक्षण की रोक आपके किसी भी सीट-समूह में आप तक नहीं पहुँची।</p>";
+ more+="<p class='mu'>'रोक / टिप्पणी' कॉलम की लंबी पंक्ति बग़ल में स्लाइड करके पढ़ें। यह गिनती सामान्य गणना (परिदृश्य A/A) की है और इंजन के असली नतीजों से निकाली गई है; इंजन जो नहीं करता, वह यहाँ नहीं लिखा गया।"+(rows.some(z=>z.small)?" छोटे पदों (संस्कृत, कृषि, PHED, FSL) के डेटा में कुल महिला पद दर्ज नहीं है, इसलिए वहाँ सामान्य-महिला + विधवा + परित्यक्ता पद जोड़कर महिला पद गिने गए हैं।":"")+"</p>";
+ h+="<details class='acc wq-more'><summary>और देखें — चरण-दर-चरण पूरी गिनती</summary><div class='acc-body'>"+more+"</div></details>";
  return h}catch(e){console.error("womensec",e);return""}}
 function rbNarr(c,D,gp){try{
  const k=rbCk(c),F=c.gender==="FEMALE",gl=F?"महिला":"पुरुष",x=D.R[0],r=x.r,L=r.L,ah=L.filter(z=>z.rank<c.rank),
@@ -1838,15 +1896,18 @@ function rbNarr(c,D,gp){try{
  if(k!=="GEN"){
   const sa=ah.filter(z=>rbCk(z)===k);let cO=0,cM=0,cN=0;
   sa.forEach(z=>{const v=r.ns.res.get(z.roll)||r.ts.res.get(z.roll);if(!v)cN++;else if(String(v.b).split("·")[0]==="OPEN")cO++;else cM++});
-  const sumS=ids=>ids.reduce((a,id)=>a+((VD.posts[id]&&VD.posts[id].cat[k])?VD.posts[id].cat[k].total:0),0),sN=sumS(RB_NS),sT=sumS(RB_S);
+  const sumS=ids=>ids.reduce((a,id)=>a+((VD.posts[id]&&VD.posts[id].cat[k])?VD.posts[id].cat[k].total:0),0),sN=sumS(RB_NS),sT=sumS(RB_S),
+   nf0=n=>Number(n).toLocaleString("en-IN"),sumG=ids=>ids.reduce((a,id)=>a+((VD.posts[id]&&VD.posts[id].cat.GEN)?VD.posts[id].cat.GEN.total:0),0),
+   wdHTML=rbWDSeatsHTML(c,D,k,T),pbN=rbPostBreak(k,RB_NS,q=>+q.total||0),pbT=T?rbPostBreak(k,RB_S,q=>+q.total||0):{txt:""},genSumTxt=(RB_NS.concat(T?RB_S:[])).filter(id=>VD.posts[id]&&VD.posts[id].cat.GEN&&VD.posts[id].cat.GEN.total).map(id=>esc(RB_NAME[id])+" "+VD.posts[id].cat.GEN.total).join(" + ");
   h+="<h3 class='nh'>"+(++sn)+". आपकी "+esc(k)+" श्रेणी की रैंक कैसे बनी</h3><div class='catx'><ul>"+
    "<li>कुल मेरिट रैंक <b>"+c.rank+"</b>: पूरी सूची में आपसे आगे <b>"+(c.rank-1)+"</b> उम्मीदवार हैं।</li>"+
    "<li>"+esc(k)+" श्रेणी रैंक <b>"+(sa.length+1)+"</b>: आपसे आगे "+esc(k)+" के <b>"+sa.length+"</b> उम्मीदवार हैं।</li>"+
-   "<li>इनमें से <b>"+cO+"</b> को अपनी मेरिट पर खुली (Open) सीट मिली। ऐसे उम्मीदवार "+esc(k)+" की कतार से हट जाते हैं (R1, R2)।</li>"+
-   "<li>बाकी में से <b>"+cM+"</b> को "+esc(k)+" की अपनी सीट मिली और <b>"+cN+"</b> को किसी विभाग में सीट नहीं मिली।</li>"+
+   "<li>इनमें से <b>"+cO+"</b> को अपनी मेरिट पर खुली (Open) सीट मिली। ऐसे उम्मीदवार "+esc(k)+" की कतार से हट जाते हैं (R1, R2)। सभी विभागों के खुली (GEN) पद जोड़कर कुल <b>"+nf0(sumG(RB_NS)+(T?sumG(RB_S):0))+"</b> खुली सीटें हैं ("+genSumTxt+")।</li>"+
+   "<li>बाकी में से <b>"+cM+"</b> को "+esc(k)+" की अपनी सीट मिली (कुल "+esc(k)+" पद <b>"+nf0(sN+(T?sT:0))+"</b>) और <b>"+cN+"</b> को किसी विभाग में सीट नहीं मिली।</li>"+
    "<li>इसलिए "+esc(k)+" सीटों के लिए आपकी प्रभावी श्रेणी रैंक: "+(sa.length+1)+" − "+cO+" = <b>"+(sa.length+1-cO)+"</b>।</li>"+
-   "<li>"+esc(k)+" के कुल पद: गैर-अनुसूचित में <b>"+sN+"</b>"+(T?", अनुसूचित में <b>"+sT+"</b>":"")+" (सभी विभाग मिलाकर)।</li></ul>"+
-   "<p class='mu'>यह सरल गिनती है। महिला/विधवा/परित्यक्ता और क्षैतिज कोटे (R6, R10, R11) के कारण असली आवंटन में थोड़ा अंतर हो सकता है"+(F?"; आप महिला हैं, इसलिए महिला-आरक्षित सीटों की अलग गिनती भी चलती है, जो अगले खंड (महिला कोटे की गिनती) में दी है":"")+"। विभाग-वार असली गिनती आगे है।</p></div>"}
+   "<li>"+esc(k)+" के कुल पद: <b>"+nf0(sN+(T?sT:0))+"</b>"+(T?" (गैर-अनुसूचित "+nf0(sN)+" + अनुसूचित "+nf0(sT)+")":"")+"। जोड़ इस तरह बना (विभाग-वार): "+pbN.txt+(T?"; अनुसूचित में — "+pbT.txt:"")+"।</li>"+wdHTML+
+   "<li class='mu'>हर विभाग में "+esc(k)+" का पद = सामान्य (पुरुष) + सामान्य-महिला + विधवा + परित्यक्ता पद। महिला, विधवा और परित्यक्ता पद उसी कुल में शामिल हैं, अलग से नहीं जुड़ते। विभाग-वार बँटवारा 'विभाग-वार विश्लेषण' के 'पदों का बँटवारा' में है।</li></ul>"+
+   "<p class='mu'>यह सरल गिनती है। महिला/विधवा/परित्यक्ता और क्षैतिज कोटे (R6, R10, R11) के कारण असली आवंटन में थोड़ा अंतर हो सकता है"+(F?". <b>आप महिला हैं, इसलिए यह गिनती आप पर इस रूप में लागू नहीं होती</b> (यह पुरुषों वाला तरीका है: पहले खुली मेरिट, फिर अपनी श्रेणी)। महिला कोटा हर सीट-समूह के भीतर अलग से गिना जाता है — उसकी पूरी गिनती अगले खंड 'महिला कोटे की गिनती' में है":"")+"। विभाग-वार असली गिनती आगे है।</p></div>"}
  {const ws=rbWomenSec(c,D,sn+1);if(ws){h+=ws;sn++}}
  h+="<h3 class='nh'>"+(++sn)+". गिनती कैसे हुई</h3><p>मेरिट सूची के सभी <b>"+L.length+"</b> उम्मीदवार गिने गए (DV-अनुपस्थित आदि को अलग नहीं किया गया); आपसे आगे <b>"+ah.length+"</b> हैं। इन्हें रैंक 1 से क्रम में एक-एक करके जाँचा गया। हर उम्मीदवार के लिए विभाग इस क्रम में देखे गए: माध्यमिक → संस्कृत → कृषि → PHED → FSL (वरीयता का अनुमानित क्रम); हर विभाग में पहले खुली सीट, फिर उसकी अपनी श्रेणी की सीट (R4)। जिसे जहाँ पहले सीट मिली, उसका चयन वहीं माना गया और वह आगे के विभागों की गिनती से हट गया — इसी कारण अगले विभाग में पहुँचने वालों की संख्या घटती जाती है।</p>"+dp;
  h+="<h3 class='nh'>"+(++sn)+". नतीजा</h3><p>"+(placed?"आपकी रैंक <b>"+c.rank+"</b> तक पहुँचने पर आपको <b>"+nm(pl)+"</b> में <b>"+bn(placed.b.split("·")[0])+"</b> सीट मिली।":"आपकी रैंक <b>"+c.rank+"</b> तक पहुँचने पर "+(T?"दोनों पूलों के ":"")+"सभी विभागों में आपके लिए खुली सीट नहीं बची।"+(nr?" सबसे नज़दीक "+nm(nr.id)+" ("+bn(nr.b)+") का कटऑफ़ आपसे <b>"+nr.gap.toFixed(2)+"</b> अंक ऊपर रहा।":""))+"</p>"+
@@ -1886,12 +1947,42 @@ function rbPossHTML(c,D){try{
  return"<div class='card'><h2>संभावित चयन-दायरा (बॉर्डरलाइन अनुमान)</h2><p>"+msg+"</p><div class='sc'><table><tr><th>परिदृश्य</th><th>स्थिति</th><th>आपकी श्रेणी ("+esc(c.category)+", "+gl+") में अंतिम चयनित रैंक — सामान्य अनुमान</th><th>DV-अनुपस्थित सूची के सभी बाहर रहने पर</th></tr>"+rows+"</table></div>"+
  "<p>आपकी रैंक <b>"+c.rank+"</b> है। रैंक इसी पंक्ति की संख्या से मिलाएँ: हर परिदृश्य की अपनी अंतिम चयनित रैंक है।</p>"+
   "<p class='mu'>यह आधिकारिक वेटिंग लिस्ट नहीं है। आधार केवल बोर्ड की DV-अनुपस्थित सूची है: मुख्य गणना में इन सभी को यथावत गिना गया है, और यहाँ केवल यह देखा गया कि सूची के सभी अनुपस्थित अभ्यर्थी बाहर रहें तो आपकी स्थिति क्या बनेगी। अंतिम चयनित रैंक में आपकी श्रेणी-लिंग के सभी विभागों के चयन (क्षैतिज कोटा छोड़कर) गिने गए हैं।</p></div>"}catch(e){console.error("poss",e);return""}}
+/* ===== पद-बँटवारा: M सामान्य + GW सामान्य-महिला + W विधवा + D परित्यक्ता = कुल (VD डेटा से, GEN के साथ हर वर्ग के लिए) ===== */
+/* ===== पदों का जोड़ समझाने वाले सहायक: हर विभाग के पद अलग-अलग लिखकर जोड़ ===== */
+function rbWomenPosts(q){return q?(q.women!=null?(+q.women||0):((+q.GW||0)+(+q.W||0)+(+q.D||0))):0}
+function rbPostBreak(k,ids,fn){const parts=[];let tot=0;ids.filter(id=>VD.posts[id]).forEach(id=>{const q=VD.posts[id].cat[k],n=q?fn(q):0;tot+=n;parts.push(esc(RB_NAME[id])+" "+n)});return{tot,txt:parts.join(" + ")}}
+/* ===== विधवा/परित्यक्ता (WD) की सीटें: कितने पद, कितनी भरीं, कितनी खाली रहकर आगे गईं + 40% पात्रता की शर्त ===== */
+function rbWDSeatsHTML(c,D,k,T){try{
+ const r=D.R[0].r,L=r.L,by=new Map(L.map(z=>[z.roll,z])),nf=n=>Number(n).toLocaleString("en-IN"),
+ isWD=z=>z.gender==="FEMALE"&&/WID|DIV/.test(String(z.subcat||"")),pools=[[r.ns,RB_NS]].concat(T?[[r.ts,RB_S]]:[]);
+ const grp=(b)=>{let seats=0,w=0,d=0;pools.forEach(([W,ids])=>{ids.forEach(id=>{const e=VD.posts[id]&&VD.posts[id].cat[b==="OPEN"?"GEN":b];if(e)seats+=(e.W||0)+(e.D||0)});
+   W.res.forEach((v,roll)=>{if(v.rs!==2||v.b!==b)return;const z=by.get(roll);if(!z)return;if(/DIV/.test(String(z.subcat||"")))d++;else w++})});
+  return{seats,f:w+d,w,d,vac:Math.max(0,seats-w-d)}};
+ const o=grp("OPEN"),q=grp(k),all=L.filter(isWD),mine=all.filter(z=>rbCk(z)===k);
+ const li=(t,g)=>"<li>"+t+" की विधवा/परित्यक्ता सीटें: कुल <b>"+nf(g.seats)+"</b> पद (ऊपर के कुल में ही शामिल); इन पर विधवा/परित्यक्ता उम्मीदवार चुनी गईं: <b>"+nf(g.f)+"</b> (विधवा "+nf(g.w)+", परित्यक्ता "+nf(g.d)+")"+(g.vac?"; <b>"+nf(g.vac)+"</b> सीटें खाली रहीं, जो नियम R11.2 से उसी वर्ग की सामान्य महिला को और फिर पुरुष को गईं":"")+"।</li>";
+ const idsAll=RB_NS.concat(T?RB_S:[]).filter(id=>VD.posts[id]&&VD.posts[id].cat.GEN),sp={M:0,GW:0,W:0,D:0,total:0};
+ idsAll.forEach(id=>{const e=VD.posts[id].cat.GEN;["M","GW","W","D","total"].forEach(x=>sp[x]+=(e[x]||0))});
+ const got={m:0,w:0,wd:0};pools.forEach(([W])=>W.res.forEach((v,roll)=>{if(v.b!=="OPEN")return;const z=by.get(roll);if(!z)return;if(z.gender!=="FEMALE")got.m++;else if(v.rs===2)got.wd++;else got.w++}));
+ const open="<li><b>खुली (GEN) सीटों का पूरा बँटवारा:</b> कुल <b>"+nf(sp.total)+"</b> पद = "+nf(sp.M)+" सामान्य + "+nf(sp.GW)+" सामान्य-महिला + "+nf(sp.W)+" विधवा + "+nf(sp.D)+" परित्यक्ता। इन सीटों पर इंजन के नतीजे में असल में चुने गए (सभी रैंक मिलाकर): पुरुष <b>"+nf(got.m)+"</b>, सामान्य महिलाएँ <b>"+nf(got.w)+"</b> (किसी भी वर्ग की, अपनी मेरिट पर), विधवा/परित्यक्ता <b>"+nf(got.wd)+"</b>"+(sp.total-got.m-got.w-got.wd>0?", शेष <b>"+nf(sp.total-got.m-got.w-got.wd)+"</b> सीटें क्षैतिज कोटे (भूतपूर्व सैनिक/खिलाड़ी/दिव्यांग) वालों को गईं या आगे अग्रेषित हुईं":"")+"।</li>";
+ return open+li("खुली (GEN)",o)+(q.seats?li(esc(k),q):"<li>"+esc(k)+" में विधवा/परित्यक्ता के अलग पद नहीं हैं।</li>")+
+ "<li>पूरी सूची में विधवा/परित्यक्ता चिह्नित उम्मीदवार <b>"+nf(all.length)+"</b> हैं (इनमें "+esc(k)+" की <b>"+nf(mine.length)+"</b>)। खुली विधवा/परित्यक्ता सीटों पर सभी वर्गों की विधवा/परित्यक्ता मेरिट से मुक़ाबला करती हैं।</li>"+
+ "<li class='warn'>⚠ विधवा/परित्यक्ता के लिए 40% अंकों की पात्रता-शर्त है। इसका उम्मीदवार-वार डेटा हमारे पास नहीं है, इसलिए हमने सभी चिह्नित विधवा/परित्यक्ता को पात्र माना है। इनमें से कुछ बाहर भी हो सकती हैं; तब उनकी सीटें आगे की उम्मीदवारों को मिलेंगी और आपकी स्थिति बेहतर हो सकती है।</li>"}catch(e){console.error("wdseats",e);return""}}
+function rbSplitTxt(e){if(!e)return"";const P=[["M","सामान्य"],["GW","सामान्य-महिला"],["W","विधवा"],["D","परित्यक्ता"]];
+ const t=(e.M||0)+(e.GW||0)+(e.W||0)+(e.D||0);if(t!==e.total)return"";return P.map(a=>(e[a[0]]||0)+" "+a[1]).join(" + ")}
+function rbSplitHTML(ids,k,T){try{const nm=id=>esc(RB_NAME[id]),ks=k==="GEN"?["GEN"]:["GEN",k],li=[];
+ ids.filter(id=>VD.posts[id]).forEach(id=>{ks.forEach(kk=>{const e=VD.posts[id].cat[kk];if(!e||!e.total)return;const sp=rbSplitTxt(e);if(!sp)return;
+  li.push("<li><b>"+nm(id)+"</b> — "+(kk==="GEN"?"GEN (सामान्य / खुली)":esc(kk))+" के "+e.total+" पद = "+sp+"।</li>")})});
+ return li.length?"<details class='acc'><summary><b>पदों का बँटवारा — GEN"+(k==="GEN"?"":" और "+esc(k))+" (सामान्य / महिला / विधवा / परित्यक्ता)</b></summary><div class='acc-body'><ul class='dnote'>"+li.join("")+"</ul><p class='mu'>कुल पदों में महिला, विधवा और परित्यक्ता पद भी शामिल हैं; ये अलग से जुड़ने वाले अतिरिक्त पद नहीं हैं, इसलिए डबल काउंटिंग नहीं है। जिन वर्ग-विभागों में कोई पद नहीं, वे यहाँ नहीं दिखते।</p></div></details>":""}catch(e){console.error("split",e);return""}}
 /* ===== S07: विभाग-वार विश्लेषण — केवल rbRun (नए इंजन) के नतीजों से ===== */
 function rbDeptHTML(c){try{
  const D=rbData(c),T=Number(c.tsp)===1,k=rbCk(c),F=c.gender==="FEMALE",fm=n=>Number(n).toFixed(2),
  ids=RB_NS.concat(T?RB_S:[]),order=id=>RB_NS.includes(id)?RB_NS.indexOf(id):100+RB_S.indexOf(id);
  const rg=a=>{if(!a.length)return null;const lo=Math.min(...a),hi=Math.max(...a);return lo===hi?fm(lo):fm(lo)+" – "+fm(hi)};
- const sgn=a=>{if(!a.length)return"—";const lo=Math.min(...a),hi=Math.max(...a),f=v=>(v>=0?"+":"−")+Math.abs(v).toFixed(2);return lo===hi?f(lo):f(lo)+" से "+f(hi)};
+ const sgn=a=>{if(!a.length)return"—";const lo=Math.min(...a),hi=Math.max(...a),A=v=>Math.abs(v).toFixed(2);
+  if(lo>=0)return"<span class='kup'>"+(lo===hi?A(lo):A(lo)+" से "+A(hi))+" अंक ज़्यादा ▲</span>";
+  if(hi<0)return"<span class='kdn'>"+(lo===hi?A(lo):A(hi)+" से "+A(lo))+" अंक कम ▼</span>";
+  return"<span class='kdn'>कहीं "+A(lo)+" अंक कम ▼</span> / <span class='kup'>कहीं "+A(hi)+" अंक ज़्यादा ▲</span>"};
+ const kr=x=>"<span class='kct'>"+x+"</span>";
  const rows=ids.filter(id=>VD.posts[id]).map(id=>{
   const P=VD.posts[id],pool=RB_S.includes(id)?"ts":"ns",so=P.cat.GEN?P.cat.GEN.total:0,sc=k==="GEN"?null:(P.cat[k]?P.cat[k].total:0);
   const oc=[],cc=[];let here=0;const sts=[];
@@ -1899,18 +1990,19 @@ function rbDeptHTML(c){try{
    if(o)oc.push(o.m);if(q)cc.push(q.m);
    if(!x.pl)sts.push("N");else if(x.pl.v.p===id){here++;sts.push("H:"+rbBN(x.pl.v.b))}
    else if(order(x.pl.v.p)<order(id)||(pool==="ts"&&x.pl.pool==="NTSP"))sts.push("E");else sts.push("O")});
-   const lab=z=>z==="N"?"किसी विभाग में चयन नहीं":z==="E"?"पहले के विभाग में चयन हो चुका":z==="O"?"बाद के विभाग में चयन":"चयन यहीं ("+z.slice(2)+")";
+   const lab=(z,j)=>{const sn=D.R[j]&&D.R[j].pl?RB_NAME[D.R[j].pl.v.p]:"";return z==="N"?"✖ यहाँ आपका चयन नहीं बन रहा":z==="E"?"➜ इससे पहले ही <b>"+esc(sn)+"</b> में आपका चयन हो चुका, इसलिए यहाँ नहीं गिना जाएगा":z==="O"?"✖ यहाँ चयन नहीं; आपका चयन आगे <b>"+esc(sn)+"</b> में बनता है":"✔ आपका चयन यहीं बन रहा है ("+z.slice(2)+")"+(k!=="GEN"&&/खुली/.test(z)?" — अपनी मेरिट पर खुली सीट मिली, आपकी "+esc(k)+" सीट बची रही":"")}
    const st=[],z0=sts[0],cls=z0[0]==="H"?"ok":(z0==="N"&&!sts.some(z=>z!=="N")?"err":"mu");
-   st.push("<span class='"+cls+"'>"+(z0[0]==="H"?"<b>":"")+"सामान्य गणना: "+lab(z0)+(z0[0]==="H"?"</b>":"")+"</span>");
-   const dfs=D.R.slice(1,4).map((x,j)=>sts[j+1]!==z0?rbScn(x.t,x.l)+": "+lab(sts[j+1]):null).filter(Boolean);
+   st.push("<span class='"+cls+"'>"+(z0[0]==="H"?"<b>":"")+lab(z0,0)+(z0[0]==="H"?"</b>":"")+"</span>");
+   const dfs=D.R.slice(1,4).map((x,j)=>sts[j+1]!==z0?rbScn(x.t,x.l)+": "+lab(sts[j+1],j+1):null).filter(Boolean);
    if(dfs.length)st.push("<span class='mu'>दूसरे विकल्पों में अलग — "+dfs.join(" • ")+"</span>");
   const oR=rg(oc),cR=rg(cc);
-  return"<tr"+(here?" class='me'":"")+"><td><b>"+esc(RB_NAME[id])+"</b></td><td>GEN (सामान्य / खुली) "+so+(sc===null?"":" • "+esc(k)+" "+sc)+"</td><td>"+(oR?oR+"<br><span class='mu'>अंतर: "+sgn(oc.map(m=>c.marks-m))+"</span>":"—")+"</td><td>"+(sc===null?"<span class='mu'>लागू नहीं</span>":cR?cR+"<br><span class='mu'>अंतर: "+sgn(cc.map(m=>c.marks-m))+"</span>":(sc===0?"<span class='mu'>इस विभाग में "+esc(k)+" के पद नहीं हैं</span>":"<span class='mu'>इस श्रेणी में कोई मेरिट चयन नहीं</span>"))+"</td><td>"+st.join("<br>")+"</td></tr>"}).join("");
+  return"<tr"+(z0[0]==="H"?" class='me'":"")+"><td data-l='विभाग'><b>"+esc(RB_NAME[id])+"</b>"+(z0[0]==="H"?" <span class='ok'><b>✔ चयन यहीं</b></span>":"")+"</td><td data-l='पद'>GEN (सामान्य / खुली) "+so+(sc===null?"":" • "+esc(k)+" "+sc)+"</td><td data-l='खुली (GEN) सीट पर अंतिम चयनित के अंक'>"+(oR?kr(oR)+"<br><span class='mu'>आपके <span class='kmk'>"+c.marks+"</span> अंक → </span>"+sgn(oc.map(m=>c.marks-m)):so?"<span class='mu'>— (इस विभाग की खुली सीटों पर मेरिट से कोई चयन नहीं हुआ; ऊपर के विभागों में चयन हो चुका)</span>":"<span class='mu'>इस विभाग में GEN के पद नहीं हैं</span>")+"</td><td data-l='आपकी श्रेणी की सीट पर अंतिम चयनित के अंक'>"+(sc===null?"<span class='mu'>लागू नहीं</span>":cR?kr(cR)+"<br><span class='mu'>आपके <span class='kmk'>"+c.marks+"</span> अंक → </span>"+sgn(cc.map(m=>c.marks-m)):(sc===0?"<span class='mu'>इस विभाग में "+esc(k)+" के पद नहीं हैं</span>":"<span class='mu'>इस श्रेणी में कोई मेरिट चयन नहीं</span>"))+"</td><td data-l='इस विभाग में आपकी स्थिति'>"+st.join("<br>")+"</td></tr>"}).join("");
  const kd=x=>x.pl?rbLab(x.pl):"-",m0=D.M[0],diffAlt=D.M.slice(1).some(x=>kd(x)!==kd(m0)),anyAlt=D.M.slice(1).some(x=>x.pl),
   fin=m0.pl?"<p>सामान्य गणना में आपका नतीजा: <span class='hl'>"+rbLab(m0.pl)+"</span>"+(diffAlt?"; दूसरे विकल्पों में नतीजा अलग है (रिपोर्ट के अंत में 'दूसरे विकल्पों से तुलना' देखें)।":"; दूसरे विकल्पों में भी यही।")+"</p>":"<p><span class='err'>सामान्य गणना में किसी विभाग में चयन नहीं बन रहा।</span>"+(anyAlt?" कुछ दूसरे विकल्पों में चयन बनता है (रिपोर्ट के अंत में 'दूसरे विकल्पों से तुलना' देखें)।":"")+" नीचे हर विभाग का अंतिम मेरिट अंक है, ताकि आप अंतर देख सकें।</p>";
- return fin+"<p class='mu'>आपके अंक <b>"+c.marks+"</b>।</p><ul class='dnote'>"+"<li>हर उम्मीदवार को वरीयता-क्रम में एक-एक विभाग पर पहले खुली सीट, फिर अपनी श्रेणी की सीट के लिए जाँचा जाता है; जहाँ पहले सीट मिले वहीं चयन माना जाता है (R4)।</li>"+"<li>तालिका के अंक = उस सीट पर चयनित अंतिम उम्मीदवार के अंक (महिला-आरक्षित, विधवा/परित्यक्ता और क्षैतिज पदों को छोड़कर)"+(F?"; महिला होने से: जहाँ महिला-आरक्षण सच में लगा वहीं महिला उम्मीदवारों के अंतिम चयन का अलग अंक दिखाया गया है, बाकी जगह सबके लिए एक ही कटऑफ़":"")+"।</li>"+"<li>'अंतर' (आपके अंक − कटऑफ़) धन (+) हो तो आप उस सीमा से ऊपर हैं, ऋण (−) हो तो नीचे।</li>"+"<li>संख्याएँ चार परिदृश्यों (सामान्य / TSP अलग पूल × लैब बालक सहित-रहित) की न्यूनतम–अधिकतम सीमा हैं।</li></ul>"+
-  "<div class='sc'><table class='dtab nw3'><tr><th>विभाग</th><th>पद</th><th>GEN (सामान्य / खुली) में अंतिम मेरिट अंक</th><th>आपकी श्रेणी में अंतिम मेरिट अंक</th><th>आपका नतीजा</th></tr>"+rows+"</table></div>"+
-  (ids.includes("SE-NS")?"<p class='mu'>माध्यमिक (NTSP) में GEN (सामान्य / खुली) के 319 पद = 224 सामान्य + 70 सामान्य-महिला + 23 विधवा + 2 परित्यक्ता पद।</p>":"")+
+ const x0=D.R[0],selTxt=x0.pl?"<div class='vd ok kbx' style='padding:10px 12px;margin:8px 0'><div class='kbig'><b>✔ अनुमान के अनुसार आपका चयन बन रहा है</b></div>विभाग: <b>"+esc(RB_NAME[x0.pl.v.p])+"</b> ("+(x0.pl.pool==="TSP"?"TSP":"NTSP")+")<br>सीट: <b>"+rbBN(String(x0.pl.v.b).split("·")[0])+"</b>"+(String(x0.pl.v.b).split("·")[0]==="OPEN"?" (अपनी मेरिट से खुली सीट)":"")+"<br>आपके अंक: <span class='kmk'>"+c.marks+"</span><br><span class='mu'>आपको सिर्फ़ <b>एक</b> विभाग में गिना जाता है; उसके बाद वाले विभागों की पंक्तियाँ केवल तुलना के लिए हैं।</span></div>":"<div class='vd err kbx' style='padding:10px 12px;margin:8px 0'><div class='kbig'><b>✖ सामान्य गणना में किसी विभाग में चयन नहीं बन रहा</b></div>आपके अंक: <span class='kmk'>"+c.marks+"</span><br><span class='mu'>नीचे हर विभाग में कटऑफ़ और आपके अंक का अंतर दिया है।</span></div>";
+ return selTxt+"<ul class='dnote'>"+"<li><b>कैसे पढ़ें:</b> आपको विभाग-वरीयता के क्रम में, ऊपर से नीचे जाँचा जाता है। हर विभाग में पहले खुली सीट, फिर आपकी श्रेणी की सीट देखी जाती है। जहाँ पहली बार सीट मिले, वहीं चयन माना जाता है और आगे के विभागों में आप नहीं गिने जाते (R4)।</li>"+"<li><b>कटऑफ़</b> = उस सीट पर चुने गए आख़िरी उम्मीदवार के अंक (महिला-आरक्षित, विधवा/परित्यक्ता और क्षैतिज पद छोड़कर)"+(F?"। महिला होने से: जहाँ महिला-आरक्षण सच में लगा, वहाँ महिलाओं के अंतिम चयन का अंक दिखाया गया है":"")+"।</li>"+"<li><b>अंतर</b> = आपके अंक − कटऑफ़। जहाँ आपका चयन पहले हो चुका है, वहाँ अंतर सिर्फ़ तुलना के लिए है।</li>"+"<li>संख्याएँ चार परिदृश्यों (सामान्य / TSP अलग पूल × लैब बालक सहित-रहित) की न्यूनतम–अधिकतम सीमा हैं।</li></ul>"+"<div class='klg'><span><span class='kmk'>नीला</span> = आपके अंक</span><span><span class='kct'>नारंगी</span> = कटऑफ़</span><span><span class='kup'>हरा ▲</span> = आप कटऑफ़ से ऊपर</span><span><span class='kdn'>लाल ▼</span> = आप कटऑफ़ से नीचे</span></div>"+
+  "<div class='sc'><table class='dtab nw3'><tr><th>विभाग</th><th>पद (खुली GEN • आपकी श्रेणी)</th><th>खुली (GEN) सीट का कटऑफ़ (अंतिम चयनित के अंक)</th><th>आपकी श्रेणी ("+esc(k)+") की सीट का कटऑफ़</th><th>इस विभाग में आपकी स्थिति</th></tr>"+rows+"</table></div>"+
+  rbSplitHTML(ids,k,T)+
   "<p class='mu'>'लैब बालक सहित' परिदृश्य में माध्यमिक शिक्षा के पद कम गिने जाते हैं (R12), इसलिए वहाँ अंक की सीमा ऊपर खिसकती है।</p>"}catch(e){console.error("dept",e);return"<p class='mu'>विभाग-वार विश्लेषण उपलब्ध नहीं।</p>"}}
 
 /* ===== P5: ब्लू कार्ड — DV Absent सूची + लैब बॉय विकल्प की सूचना ===== */
