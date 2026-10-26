@@ -2056,8 +2056,16 @@ splash();
 (function(){
   const BASE="https://gpqrkxyypadgvguomfrr.supabase.co", KEY="sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq";
   const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  function load(){try{return JSON.parse(localStorage.getItem("jkx_auth")||"null")}catch(e){return null}}
-  function save(s){try{if(s)localStorage.setItem("jkx_auth",JSON.stringify(s));else localStorage.removeItem("jkx_auth")}catch(e){}}
+  /* FIX: localStorage bhar jaye to save() chup-chaap fail hota tha -> login ke baad bhi session nahi bachta tha aur login screen wapas aa jati thi.
+     Ab: (1) fail hone par regenerable cache hata kar dobara try, (2) phir bhi fail ho to is session ke liye memory me rakhte hain. */
+  let MEM=null;
+  function load(){try{const v=JSON.parse(localStorage.getItem("jkx_auth")||"null");if(v)return v}catch(e){}return MEM}
+  function freeSpace(){try{const ks=[];for(let i=0;i<localStorage.length;i++)ks.push(localStorage.key(i));ks.forEach(k=>{if(k==="jkx_qcache_v1"||k==="jkx_tests_v1"){try{localStorage.removeItem(k)}catch(e){}}})}catch(e){}}
+  function save(s){
+    if(!s){MEM=null;try{localStorage.removeItem("jkx_auth")}catch(e){}return}
+    MEM=s;const w=()=>localStorage.setItem("jkx_auth",JSON.stringify(s));
+    try{w()}catch(e){freeSpace();try{w()}catch(e2){}}
+  }
   async function call(path,body){
     /* Fix: 12 sec me jawab na aaye to rok do aur ek baar naye connection se dobara try karo (adhoora purana connection 45 sec latka deta tha) */
     let r;
