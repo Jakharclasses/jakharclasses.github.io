@@ -57,6 +57,25 @@
 
 .exbox{display:flex;flex-direction:column;gap:2px;max-height:260px;overflow:auto;border:1px solid var(--line,#d9e1ee);border-radius:10px;padding:6px 10px;margin-bottom:8px}
 .exopt{display:flex;align-items:center;gap:8px;font-size:14px;padding:5px 0;cursor:pointer}.exopt input{width:auto;margin:0}.exopt small{color:#64748b}
+/* Part 4: question preview (index.html jaisa) */
+.qpv{border:1px solid var(--bd);border-radius:12px;padding:12px;margin-top:8px;background:var(--card)}
+.qpv p.q{font-size:16px;font-weight:700;line-height:1.7;overflow-wrap:anywhere;margin:6px 0 12px}
+.qpv .po{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--bd);border-radius:10px;padding:8px 10px;margin-bottom:8px}
+.qpv .po.ok{border-color:var(--ok)}.qpv .pk{margin-left:auto;color:var(--ok);font-weight:700}
+.qpv .pl{flex:none;width:26px;height:26px;border-radius:50%;background:rgba(20,87,217,.14);display:grid;place-items:center;font-weight:700;font-size:13px}
+.qpv .pt{flex:1;min-width:0;overflow-wrap:anywhere;line-height:1.5}
+.qpv .pe{font-size:14px;line-height:1.6;margin-top:8px;color:var(--mut)}
+.qpv .pw{color:var(--bad);font-size:13px;margin-top:6px}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0;max-width:100%}
+.tw table,table.qt{border-collapse:collapse;width:100%;font-size:14px;font-weight:500;line-height:1.45}
+.tw th,.tw td,table.qt th,table.qt td{border:1px solid var(--bd);padding:6px 9px;text-align:left;vertical-align:top;min-width:64px}
+.tw th,table.qt th{background:rgba(20,87,217,.12);font-weight:700}
+/* Part 8: Community Moderation */
+.ctabs{display:flex;gap:6px;overflow-x:auto;margin-top:8px;padding-bottom:2px}
+.ctabs button{background:var(--card);color:var(--tx);border:1px solid var(--bd);width:auto;white-space:nowrap;flex:1 0 auto;padding:8px 12px;font-size:14px}
+.ctabs button.act{background:var(--pri);color:#fff;border-color:var(--pri)}
+.cbody{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0}.cimg{display:block;max-width:100%;max-height:260px;border-radius:10px;margin:6px 0}
+#comStats span{background:var(--bg);border:1px solid var(--bd);border-radius:99px;padding:2px 10px}
 </style>
 </head>
 <body>
@@ -85,6 +104,7 @@
         <button data-go="dv" style="background:linear-gradient(135deg,#0f766e,#14b8a6)"><span>📑</span><b>Lab Assistant Geography</b><small id="cD"></small></button>
         <button data-go="ntf" style="background:#0ea5e9"><span>🔔</span><b>Notifications</b><small>App ki bell me dikhao</small></button>
         <button data-go="rem" style="background:#db2777"><span>💬</span><b>Admin Remarks</b><small>Mistake Analysis me</small></button>
+        <button data-go="com" style="background:linear-gradient(135deg,#7c3aed,#db2777)"><span>🛡️</span><b>Community Moderation</b><small id="cCom">Reports · Users · Blue Tick</small></button>
         <button data-go="usr" style="background:#475569"><span>👥</span><b>Login Data</b><small>Users · Performance</small></button>
         <button data-go="d" style="background:#f59e0b"><span>💾</span><b>Backup / Export</b><small>JSON · CSV</small></button>
       </div>
@@ -138,13 +158,14 @@
     <div class="card">
       <button class="sec" id="toggleBulk" style="width:100%">📥 Ek saath kai sawal jodo (CSV)</button>
       <div id="bulkBox" class="hide" style="margin-top:12px">
-        <div class="meta" style="margin-bottom:8px">Sheets/Excel me sawal likho (columns: subject, chapter, question, option1, option2, option3, option4, answer, explanation, exams), "CSV" me save karke yahan chuno. Answer 1-4 ya A-D likho. Pehle template download kar lo.</div>
-        <button class="sec" id="tplBtn" style="margin-bottom:10px">Template download karo</button>
+        <div class="meta" style="margin-bottom:8px">Sheets/Excel me sawal likho (columns: subject, chapter, question, option1, option2, option3, option4, answer, explanation, exams), "CSV" me save karke yahan chuno. Answer 1-4 ya A-D likho. Line todne ke liye <b>&lt;br&gt;</b>, table ke liye <b>&lt;table class="qt"&gt;</b> use karo. Template me 6 prakar ke example hain (kathan, assertion-reason, table, sumelan...). <b>AI se CSV banwana ho to</b> neeche wala <b>AI Prompt copy karo</b> button dabao aur AI ko prompt + apni PDF/photo do.</div>
+        <div id="bkTools"></div>
         <input id="bkFile" type="file" accept=".csv,.txt,text/csv,text/plain">
         <textarea id="bkText" rows="4" placeholder="Ya yahan CSV text paste karo"></textarea>
         <label style="display:block;margin-bottom:10px;font-size:14px"><input id="bkAct" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Import ke baad turant active karo (live app me dikhe)</label>
         <div class="row"><button id="bkCheck" class="sec">1. Jaanch karo</button><button id="bkGo" disabled>2. Import karo</button></div>
         <div id="bkMsg" class="msg" style="white-space:pre-wrap"></div>
+        <div id="bkPrev"></div>
       </div>
     </div>
       
@@ -152,6 +173,7 @@
 
     <div class="pane hide" data-pane="fst"></div>
     <div class="pane hide" data-pane="fmk"></div>
+    <div class="pane hide" data-pane="com"></div>
 
     <div class="pane hide" data-pane="pdf">
       <button class="sec bk" data-go="dash">← Dashboard</button>
@@ -223,7 +245,7 @@
     <div class="pane hide" data-pane="rem">
       <button class="sec bk" data-go="dash">← Dashboard</button>
       <div class="card"><div class="q">💬 Admin Remarks</div><div class="meta" style="margin:4px 0 10px">User chuno aur uske liye remark likho. Wo user ki app me Mistake Analysis › Remark by Admin me dikhega.</div>
-        <input id="rmSearch" type="search" placeholder="User khojo (email / id)...">
+        <input id="rmSearch" type="search" placeholder="User khojo (email / @username / naam / id)...">
         <div id="rmUsers"></div>
       </div>
       <div id="rmBox"></div>
@@ -232,7 +254,7 @@
     <div class="pane hide" data-pane="usr">
       <button class="sec bk" data-go="dash">← Dashboard</button>
       <div class="card"><div class="q">👥 Login Data</div><div class="meta" style="margin:4px 0 10px">Registered users — recently active sabse upar. User par tap karke uski performance dekho.</div>
-        <input id="uSearch" type="search" placeholder="User khojo (email / id)...">
+        <input id="uSearch" type="search" placeholder="User khojo (email / @username / naam / id)...">
         <div id="uNote" class="meta" style="margin-bottom:8px"></div>
         <div id="uStat" class="stats"></div>
       </div>
@@ -512,10 +534,11 @@ function parseCSV(text) {
     else if (c !== "\r") f += c;
   }
   if (f !== "" || row.length) { row.push(f); rows.push(row); }
+  while (rows.length && (rows[0][0] || "").trim().startsWith("#")) rows.shift();   // template ki shuru ki "# ..." instruction lines
   return rows.filter(r => r.some(x => x.trim() !== ""));
 }
 function bulkCheck() {
-  const msg = $("bkMsg"); msg.style.color = "var(--bad)"; BULK = []; $("bkGo").disabled = true;
+  const msg = $("bkMsg"); msg.style.color = "var(--bad)"; BULK = []; $("bkGo").disabled = true; qPreview("bkPrev", []);
   const rows = parseCSV($("bkText").value);
   if (rows.length < 2) { msg.textContent = "Pehli line header ki aur uske neeche kam se kam ek sawal chahiye."; return; }
   const hdr = rows[0].map(x => x.trim().toLowerCase());
@@ -530,6 +553,7 @@ function bulkCheck() {
     const e = [], subject = g("subject"), chapter = g("chapter"), question = g("question");
     const options = [1,2,3,4].map(i => g("option" + i));
     const a = amap[g("answer").toUpperCase()];
+    if (EX_Q().has(question)) e.push("ye template ka EXAMPLE sawal hai — hata do, upload nahi hoga");
     if (!question) e.push("sawal khaali");
     if (options.some(o => !o)) e.push("option khaali");
     else if (new Set(options).size < 4) e.push("options alag-alag nahi");
@@ -544,6 +568,7 @@ function bulkCheck() {
   msg.style.color = errs.length ? "var(--bad)" : "var(--ok)";
   msg.textContent = "Sahi: " + BULK.length + "   Galat: " + errs.length + (errs.length ? "\n\n" + errs.slice(0, 15).join("\n") + (errs.length > 15 ? "\n...aur " + (errs.length - 15) + " line" : "") : "");
   $("bkGo").disabled = BULK.length === 0;
+  qPreview("bkPrev", BULK);
 }
 async function bulkGo() {
   if (!BULK.length) return;
@@ -557,7 +582,7 @@ async function bulkGo() {
       done += chunk.length; msg.style.color = ""; msg.textContent = "Import ho raha hai... " + done + "/" + BULK.length;
     }
     msg.style.color = "var(--ok)"; msg.textContent = "Import ho gaya: " + done + " sawal. Ab ek Backup le lo.";
-    BULK = []; $("bkText").value = ""; $("bkFile").value = "";
+    BULK = []; $("bkText").value = ""; $("bkFile").value = ""; qPreview("bkPrev", []);
     await loadQuestions();
   } catch (e) {
     msg.style.color = "var(--bad)"; msg.textContent = "Import beech me ruka (" + done + " ho chuke): " + e.message + "\nList dekho, fir bachhe hue ko dobara Jaanch karke import karo (duplicate apne-aap pakde jayenge).";
@@ -565,16 +590,211 @@ async function bulkGo() {
   }
   $("bkCheck").disabled = false;
 }
-function bulkTemplate() {
-  const s = "subject,chapter,question,option1,option2,option3,option4,answer,explanation,exams\n" +
-    '"' + ($("aSub").value || "विषय") + '","' + ($("aChap").value || "चैप्टर") + '","यहाँ सवाल लिखो","विकल्प 1","विकल्प 2","विकल्प 3","विकल्प 4",2,"यहाँ व्याख्या","RPSC RAS 2021; Patwari 2021"\n';
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["\uFEFF" + s], { type: "text/csv;charset=utf-8" }));
-  a.download = "jakhar_questions_template.csv"; document.body.appendChild(a); a.click(); a.remove();
+/* ---------- Part 4: CBSE/AI templates, AI prompt, preview ---------- */
+/* fmtQ — index.html wale function ki hu-ba-hu copy (dono jagah sync rakho) */
+const FMQ_C=new Map();
+function fmtQ(h,lite){
+  let s=h==null?"":String(h);if(!s)return s;
+  const key=(lite?"1":"0")+s,hit=FMQ_C.get(key);if(hit!==undefined)return hit;
+  s=s.replace(/\r\n?/g,"\n");
+  const parts=s.split(/(<table[\s\S]*?<\/table>)/i),n=parts.length;
+  const out=parts.map((p,i)=>{
+    if(i%2)return'<div class="tw">'+p.replace(/\n+/g,"")+'</div>';
+    let t=p;
+    if(!/<br/i.test(t)&&/\n/.test(t))t=t.trim().replace(/\n{2,}/g,"<br><br>").replace(/\n/g,"<br>");
+    else t=t.replace(/\n+/g," ");
+    if(i>0)t=t.replace(/^(\s*<br\s*\/?>)+/i,"");
+    if(i<n-1)t=t.replace(/(<br\s*\/?>\s*)+$/i,"");
+    return t;
+  });
+  let r=out.join("");
+  if(!lite&&n===1&&!/\n/.test(s))r=fmtAuto(r);
+  FMQ_C.set(key,r);return r;
 }
+function fmtAuto(t){
+  if(t.length<30||/<br|<\/?(p|div|li|ol|ul|table)\b/i.test(t))return t;
+  const ins=[];  /* [pos, removeLen, html] */
+  const chain=(re,labels)=>{
+    const ms=[...t.matchAll(re)];let k=0,first=true,last=null;
+    for(const m of ms){
+      if(m[2]!==labels[k])continue;
+      if(m.index===0&&m[1]==="")ins.push([0,0,""]);   /* string ke shuru me break nahi */
+      else ins.push([m.index,m[1].length,first?"<br><br>":"<br>"]);
+      first=false;last=m;k++;if(k>=labels.length)break;
+    }
+    if(k<2){for(let j=0;j<k;j++)ins.pop();return null}
+    return last;
+  };
+  const numLast=chain(/(^|\s)(\d)[.)]\s+(?=\S)/g,["1","2","3","4","5","6","7","8","9"]);
+  const enLast=chain(/(^|\s)\(?([A-E])[.)]\s+(?=\S)/g,["A","B","C","D","E"]);
+  const hiLast=chain(/(^|\s)\(?([कखगघ])[.)]\s+(?=\S)/g,["क","ख","ग","घ"]);
+  const lastEnd=Math.max(...[numLast,enLast,hiLast].filter(Boolean).map(m=>m.index+m[0].length),-1);
+  if(lastEnd>=0){
+    const tail=t.slice(lastEnd),m=tail.match(/(\s)(उपर्युक्त|उपरोक्त|उपयुक्त|इनमें से|इन में से|सही कूट|सही विकल्प|नीचे दिए|Which of the (?:above|following)|Select the correct|Choose the correct|How many)/);
+    if(m)ins.push([lastEnd+m.index,1,"<br><br>"]);
+  }
+  if(/\(A\)/.test(t)&&/\(R\)/.test(t)){
+    const mr=t.match(/(\s)(कारण|Reason)\s*\(R\)/);
+    if(mr){ins.push([mr.index,1,"<br><br>"]);
+      const after=t.slice(mr.index+mr[0].length),mc=after.match(/(\s)(कूट|सही उत्तर|सही विकल्प|Select the correct|Choose the correct|Codes?)/);
+      if(mc)ins.push([mr.index+mr[0].length+mc.index,1,"<br><br>"]);}
+  }
+  const clean=ins.filter(x=>x[2]);if(!clean.length)return t;
+  const seen=new Set();
+  clean.filter(x=>!seen.has(x[0])&&seen.add(x[0])).sort((a,b)=>b[0]-a[0]).forEach(x=>{t=t.slice(0,x[0])+x[2]+t.slice(x[0]+x[1])});
+  return t;
+}
+
+function csvCell(s) { return '"' + String(s == null ? "" : s).replace(/"/g, '""') + '"'; }
+function dlFile(name, text, mime) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\uFEFF" + text], { type: (mime || "text/csv") + ";charset=utf-8" }));
+  a.download = name; document.body.appendChild(a); a.click(); a.remove();
+}
+/* kind: "bulk" (chapter-wise) | "fst" (full subject test) | "fmk" (full mock) */
+const TPL_COLS = {
+  bulk: ["subject", "chapter", "question", "option1", "option2", "option3", "option4", "answer", "explanation", "exams"],
+  fst:  ["question", "option1", "option2", "option3", "option4", "answer", "explanation", "chapter", "exams"],
+  fmk:  ["question", "option1", "option2", "option3", "option4", "answer", "explanation", "subject", "chapter", "exams"]
+};
+const TPL_FILE = { bulk: "jakhar_questions_template.csv", fst: "jakhar_full_subject_test_template.csv", fmk: "jakhar_full_mock_test_template.csv" };
+const TPL_TITLE = { bulk: "Chapter-wise questions", fst: "Full Subject Test", fmk: "Full Mock Test" };
+/* 6 example types: simple, statement, assertion-reason, match (table), table-based, multi-line options */
+const TPL_EX = [
+  { t: "सरल MCQ",
+    q: "क्षेत्रफल की दृष्टि से राजस्थान का सबसे बड़ा जिला कौन-सा है?",
+    o: ["जैसलमेर", "बीकानेर", "बाड़मेर", "जोधपुर"], a: 1, e: "जैसलमेर राजस्थान का क्षेत्रफल की दृष्टि से सबसे बड़ा जिला है।", x: "RPSC RAS 2021" },
+  { t: "कथन आधारित (हर कथन नई लाइन)",
+    q: "निम्नलिखित कथनों पर विचार कीजिए:<br><br>1. अरावली विश्व की प्राचीनतम वलित पर्वतमालाओं में से एक है।<br>2. गुरुशिखर अरावली की सबसे ऊँची चोटी है।<br>3. अरावली राजस्थान को दो बराबर भागों में बाँटती है।<br><br>उपर्युक्त कथनों में से कौन-सा/से सही है/हैं?",
+    o: ["केवल 1 और 2", "केवल 2 और 3", "केवल 1 और 3", "1, 2 और 3"], a: 1, e: "कथन 3 गलत है; अरावली राज्य को लगभग 60:40 के अनुपात में बाँटती है।", x: "" },
+  { t: "अभिकथन-कारण (Assertion-Reason)",
+    q: "<b>अभिकथन (A):</b> राजस्थान के पश्चिमी भाग में वर्षा कम होती है।<br><br><b>कारण (R):</b> अरब सागर की मानसूनी शाखा अरावली के समानांतर चलती है।<br><br>सही उत्तर चुनिए:",
+    o: ["A और R दोनों सही हैं और R, A की सही व्याख्या है", "A और R दोनों सही हैं, परंतु R, A की सही व्याख्या नहीं है", "A सही है, परंतु R गलत है", "A गलत है, परंतु R सही है"], a: 1, e: "", x: "" },
+  { t: "सुमेलन (Match the following) — HTML table",
+    q: "सूची-I (नदी) को सूची-II (उद्गम स्थल) से सुमेलित कीजिए:<br><br><table class=\"qt\"><tr><th>सूची-I (नदी)</th><th>सूची-II (उद्गम)</th></tr><tr><td>A. चंबल</td><td>1. नाग पहाड़ (अजमेर)</td></tr><tr><td>B. बनास</td><td>2. जानापाव पहाड़ी</td></tr><tr><td>C. माही</td><td>3. खमनोर की पहाड़ियाँ</td></tr><tr><td>D. लूनी</td><td>4. विंध्याचल की पहाड़ियाँ</td></tr></table><br>सही कूट चुनिए:",
+    o: ["A-1, B-2, C-3, D-4", "A-2, B-3, C-4, D-1", "A-2, B-1, C-4, D-3", "A-4, B-3, C-2, D-1"], a: 2, e: "चंबल-जानापाव, बनास-खमनोर, माही-विंध्याचल, लूनी-नाग पहाड़।", x: "" },
+  { t: "तालिका आधारित (Table based)",
+    q: "निम्न तालिका देखिए:<br><br><table class=\"qt\"><tr><th>झील</th><th>जिला</th></tr><tr><td>सांभर</td><td>जयपुर–नागौर</td></tr><tr><td>पिछोला</td><td>उदयपुर</td></tr><tr><td>जयसमंद</td><td>उदयपुर</td></tr></table><br>तालिका के आधार पर कौन-सी झील उदयपुर जिले में स्थित नहीं है?",
+    o: ["सांभर", "पिछोला", "जयसमंद", "तीनों उदयपुर में हैं"], a: 1, e: "", x: "" },
+  { t: "बहु-पंक्ति विकल्प (option के अंदर <br>)",
+    q: "निम्नलिखित में से सही युग्म चुनिए:",
+    o: ["चंबल – कोटा<br>बनास – टोंक", "चंबल – टोंक<br>बनास – कोटा", "लूनी – जोधपुर<br>माही – जयपुर", "बनास – कोटा<br>लूनी – टोंक"], a: 1, e: "चंबल कोटा से और बनास टोंक से होकर बहती है।", x: "" }
+];
+const EX_Q = () => new Set(TPL_EX.map(x => x.q));
+function tplRow(kind, ex) {
+  const v = {
+    subject: kind === "bulk" ? (document.getElementById("aSub") && document.getElementById("aSub").value) || "विषय" : "",
+    chapter: kind === "bulk" ? (document.getElementById("aChap") && document.getElementById("aChap").value) || "चैप्टर" : "",
+    question: ex.q, option1: ex.o[0], option2: ex.o[1], option3: ex.o[2], option4: ex.o[3], answer: ex.a, explanation: ex.e, exams: ex.x
+  };
+  return TPL_COLS[kind].map(c => c === "answer" ? String(v[c]) : csvCell(v[c])).join(",");
+}
+function tplCsv(kind) {
+  const info = aiPrompt(kind, true).split("\n").filter(l => l.trim() !== "").map(l => csvCell("# " + l)).join("\n");
+  return info + "\n" + TPL_COLS[kind].join(",") + "\n" + TPL_EX.map(ex => tplRow(kind, ex)).join("\n") + "\n";
+}
+function tplDownload(kind) { dlFile(TPL_FILE[kind], tplCsv(kind), "text/csv"); }
+
+function aiPrompt(kind, inFile) {
+  const cols = TPL_COLS[kind].join(",");
+  const kindNote = {
+    bulk: "subject aur chapter: main jo naam bataunga wahi EXACT likho (spelling/matra mat badlo). Har row me wahi subject aur chapter.",
+    fst: "chapter column optional hai (pata ho to likho, warna khaali chhodo). 'subject' column mat banao — subject admin panel me alag se chuna jata hai.",
+    fmk: "subject aur chapter columns optional hain (pata ho to likho, warna khaali chhodo)."
+  }[kind];
+  return [
+    "Tum ek exam-question formatter ho. Main tumhe (PDF / photo / text) me sawal dunga. Tumhe unhe Jakhar Study App ke CSV format me badalna hai (" + TPL_TITLE[kind] + ").",
+    "",
+    "OUTPUT: sirf ek CSV (ek hi code block). Aage-peeche koi explanation mat likho.",
+    "HEADER (pehli line, bilkul yahi, isi order me): " + cols,
+    "",
+    "FORMAT RULES:",
+    "1. Har cell double-quote (\") me likho. Cell ke andar agar quote aaye to use double karo (\"\"). Answer column me sirf number (bina quote ke bhi chalega).",
+    "2. Cell ke andar asli Enter/new line KABHI mat dalo. Line todni ho to sirf <br> likho. Ek blank line ke liye <br><br>.",
+    "3. Sawal ka text PDF jaisa hi rakho (Hindi/English jo bhi ho). Apni taraf se kuch jodo ya hatao mat. Spelling sudharo mat.",
+    "4. KATHAN-BASED sawal: pehle sawal ki line, phir <br><br>, phir HAR KATHAN APNI NAYI LINE par (1. ... <br>2. ... <br>3. ...), phir <br><br> aur last line (jaise 'उपर्युक्त कथनों में से कौन-सा/से सही है/हैं?'). Kabhi bhi 1. aur 2. (ya A. aur B.) ek hi line me mat chhodo.",
+    "5. ASSERTION-REASON: <b>अभिकथन (A):</b> ...<br><br><b>कारण (R):</b> ...<br><br>सही उत्तर चुनिए:  — aur 4 options PDF jaise standard A/R wale.",
+    "6. TABLE / SUMELAN (match the following) / data table: compact HTML table likho: <table class=\"qt\"><tr><th>..</th><th>..</th></tr><tr><td>..</td><td>..</td></tr></table>. Table me inline style, width, border, <p>, <div> kuch mat lagao. Table ke pehle aur baad <br><br> rakho. Table ki har row ek hi line me (cell ke andar new line nahi).",
+    "7. OPTIONS: option1..option4 me sirf option ka text. Shuru ka '(A)', 'A.', '1)' jaisa label HATA do. Hamesha 4 alag-alag options. Option lamba ya multi-line ho to <br> use karo.",
+    "8. answer: sahi option ka number 1-4 (option1=1, option2=2, option3=3, option4=4). Agar PDF me answer key hai to wahi lo. Agar nahi hai aur tum 100% sure nahi ho to answer khaali chhod do (main khud check kar loonga). Andaza mat lagao.",
+    "9. explanation: optional. Chhota (1-3 line) rakho, line todne ke liye <br>. Pata na ho to khaali \"\".",
+    "10. exams: jis exam ka sawal hai (jaise RPSC RAS 2021). Ek se zyada ho to semicolon (;) se alag karo. Pata na ho to khaali \"\".",
+    "11. Sirf ye HTML tags allowed hain: <br>, <b>, <i>, <u>, <sup>, <sub>, <table class=\"qt\"> (with tr/th/td). Markdown (**bold**, | --- | tables, # headings) bilkul mat use karo. Math/formula ho to plain text (x², H₂O) ya <sup>/<sub> use karo.",
+    "12. Ek sawal = CSV ki ek row. Koi sawal dobara mat likho. Jo sawal adhura/kata hua ya padhne me na aaye use skip karke last me alag se bata do (CSV ke bahar).",
+    "13. " + kindNote,
+    ""
+  ].concat(inFile ? [
+    "⚠ EXAMPLE: is file me '#' wali lines ke theek neeche header aur 6 example rows diye hain. Ye 6 rows SIRF FORMAT SAMJHANE ke liye hain — inhe apne output/CSV me SHAMIL MAT KARO aur inhe app me upload bhi mat karo. Bas inhi jaisa format apne sawalon par lagao. Apne output me '#' wali lines bhi mat likho.",
+    "Ab main tumhe sawal dunga (PDF / photo / text) — unhe isi format me CSV banao."
+  ] : [
+    "⚠ EXAMPLE (sirf format samjhane ke liye — inhe apne output me SHAMIL MAT KARO):",
+    TPL_COLS[kind].join(","),
+    TPL_EX.map(ex => tplRow(kind, ex)).join("\n"),
+    "",
+    "Ab neeche diye sawal isi format me convert karo:",
+    ""
+  ]).join("\n");
+}
+async function copyPrompt(kind, btn) {
+  const t = aiPrompt(kind); let ok = false;
+  try { await navigator.clipboard.writeText(t); ok = true; }
+  catch (e) {
+    const ta = document.createElement("textarea"); ta.value = t; ta.style.cssText = "position:fixed;opacity:0;top:0";
+    document.body.appendChild(ta); ta.select(); try { ok = document.execCommand("copy"); } catch (_) {} ta.remove();
+  }
+  const o = btn.dataset.o || (btn.dataset.o = btn.textContent);
+  btn.textContent = ok ? "✓ Prompt copy ho gaya" : "Copy fail — .txt download karo";
+  setTimeout(() => { btn.textContent = o; }, 2200);
+}
+function promptTxt(kind) { dlFile("jakhar_ai_prompt_" + kind + ".txt", aiPrompt(kind), "text/plain"); }
+function tplButtons(kind) {
+  return '<div class="row" style="margin-bottom:10px">' +
+    '<button class="sec" data-tpl="' + kind + '">⬇ Template (CSV + AI instructions)</button>' +
+    '<button class="sec" data-aip="' + kind + '">🤖 Sirf prompt copy karo</button>' +
+    '</div>';
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-tpl],[data-aip],[data-aitxt]"); if (!t) return;
+  if (t.dataset.tpl) tplDownload(t.dataset.tpl);
+  else if (t.dataset.aip) copyPrompt(t.dataset.aip, t);
+  else promptTxt(t.dataset.aitxt);
+});
+
+/* Upload se pehle preview: app me sawal kaisa dikhega */
+function pvSafe(h) {
+  return String(h == null ? "" : h)
+    .replace(/<\s*(script|style|iframe|object|embed|link|meta)\b[\s\S]*?(<\/\s*\1\s*>|$)/gi, "")
+    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "").replace(/javascript:/gi, "");
+}
+function pvWarn(q) {
+  const w = [], plain = !/<br|<table|\n/i.test(q.question);
+  if (plain && /(^|\s)1[.)]\s[\s\S]*\s2[.)]\s/.test(q.question)) w.push("Kathan (1. 2. 3.) ek hi line me hain — CSV me har kathan ke beech <br> lagao (app apne-aap todega, par <br> behtar).");
+  if (plain && /(^|\s)\(?A[.)]\s[\s\S]*\sB[.)]\s/.test(q.question)) w.push("A. aur B. ek hi line me hain — <br> se alag karo.");
+  if (/\*\*|\|\s*-{3,}/.test(q.question + q.options.join(" "))) w.push("Markdown (** ya |---|) mila — iski jagah HTML (<b>, <table class=\"qt\">) use karo.");
+  if (/<table/i.test(q.question) && /<table[^>]*style=/i.test(q.question)) w.push("Table me inline style hai — hata do, class=\"qt\" kaafi hai.");
+  return w;
+}
+function qPreview(id, rows) {
+  const el = document.getElementById(id); if (!el) return;
+  if (!rows || !rows.length) { el.innerHTML = ""; return; }
+  let pick = rows.slice(0, 2);
+  const cx = rows.findIndex(q => /<table/i.test(q.question));
+  if (cx > 1) pick = [rows[0], rows[cx]];
+  else if (cx < 0) { const b = rows.findIndex((q, i) => i > 1 && /<br/i.test(q.question)); if (b > 1) pick = [rows[0], rows[b]]; }
+  const L = "ABCD";
+  el.innerHTML = '<div class="meta" style="margin-top:12px;font-weight:600">👁 Preview — app me aise dikhega (pehle ' + pick.length + ' sawal):</div>' +
+    pick.map(q => {
+      const n = rows.indexOf(q) + 1, w = pvWarn(q);
+      return '<div class="qpv"><div class="meta">Sawal #' + n + '</div><p class="q">' + fmtQ(pvSafe(q.question)) + '</p>' +
+        q.options.map((o, i) => '<div class="po' + (i === q.answer ? " ok" : "") + '"><span class="pl">' + L[i] + '</span><div class="pt">' + fmtQ(pvSafe(o), 1) + '</div>' + (i === q.answer ? '<span class="pk">✓</span>' : "") + '</div>').join("") +
+        (q.explanation ? '<div class="pe"><b>व्याख्या:</b> ' + fmtQ(pvSafe(q.explanation), 1) + '</div>' : "") +
+        w.map(x => '<div class="pw">⚠ ' + esc(x) + '</div>').join("") + '</div>';
+    }).join("");
+}
+function bulkTemplate() { tplDownload("bulk"); }
 $("toggleBulk").onclick = () => $("bulkBox").classList.toggle("hide");
 $("bkFile").onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $("bkText").value = r.result; bulkCheck(); }; r.readAsText(f, "utf-8"); };
-$("bkCheck").onclick = bulkCheck; $("bkGo").onclick = bulkGo; $("tplBtn").onclick = bulkTemplate;
+$("bkCheck").onclick = bulkCheck; $("bkGo").onclick = bulkGo; $("bkTools").innerHTML = tplButtons("bulk");
 
 let MATS = [];
 const PUB = SB_URL + "/storage/v1/object/public/study-material/";
@@ -1165,16 +1385,16 @@ function mountTestPane(kind) {
           <div style="flex:1;min-width:120px"><div class="meta">Har sawal ke marks</div><input id="${kind}Mk" type="number" min="0.25" step="0.25" value="1" style="margin:0"></div>
           <div style="flex:1;min-width:140px"><div class="meta">Negative marking</div><select id="${kind}Neg">${T_NEG.map(o => '<option value="' + o[0] + '">' + esc(o[1]) + '</option>').join("")}</select></div>
         </div>
-        <div class="meta" style="margin-bottom:8px">CSV columns: question, option1, option2, option3, option4, answer, explanation (+ optional: chapter, ${isSub ? "exams" : "subject, exams"}). Answer 1-4 ya A-D. Pehle template download kar lo.</div>
-        <button class="sec" id="${kind}Tpl" style="margin-bottom:10px">Template download karo</button>
+        <div class="meta" style="margin-bottom:8px">CSV columns: question, option1, option2, option3, option4, answer, explanation (+ optional: chapter, ${isSub ? "exams" : "subject, exams"}). Answer 1-4 ya A-D. Line todne ke liye &lt;br&gt;, table ke liye &lt;table class="qt"&gt;. Template me 6 prakar ke example hain; AI se CSV banwana ho to <b>AI Prompt copy karo</b>.</div>
+        ${tplButtons(kind)}
         <input id="${kind}File" type="file" accept=".csv,.txt,text/csv,text/plain">
         <textarea id="${kind}Text" rows="4" placeholder="Ya yahan CSV text paste karo"></textarea>
         <label style="display:block;margin-bottom:10px;font-size:14px"><input id="${kind}Act" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Upload ke baad turant active karo (app me dikhe)</label>
         <div class="row"><button id="${kind}Chk" class="sec">1. Jaanch karo</button><button id="${kind}Go" disabled>2. Upload karo</button></div>
         <div id="${kind}Msg" class="msg" style="white-space:pre-wrap"></div>
+        <div id="${kind}Prev"></div>
       </div>
       <div class="card"><div class="q">Upload hue tests</div><div id="${kind}List" class="meta">Load ho raha hai...</div></div>`;
-    $(kind + "Tpl").onclick = () => testTemplate(kind);
     $(kind + "File").onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $(kind + "Text").value = r.result; testCheck(kind); }; r.readAsText(f, "utf-8"); };
     $(kind + "Chk").onclick = () => testCheck(kind);
     $(kind + "Go").onclick = () => testUpload(kind);
@@ -1220,7 +1440,7 @@ async function testDelete(kind, id) {
 
 function testCheck(kind) {
   const S = TP[kind], isSub = kind === "fst", dbKind = isSub ? "subject" : "mock";
-  const msg = $(kind + "Msg"); msg.style.color = "var(--bad)"; S.rows = []; $(kind + "Go").disabled = true;
+  const msg = $(kind + "Msg"); msg.style.color = "var(--bad)"; S.rows = []; $(kind + "Go").disabled = true; qPreview(kind + "Prev", []);
   const exams = isSub ? [] : selExams(kind), sel = isSub ? $(kind + "Sel").value : (exams[0] || ""), title = $(kind + "Title").value.trim();
   const mk = parseFloat($(kind + "Mk").value), durRaw = $(kind + "Dur").value.trim();
   if (!sel) { msg.textContent = isSub ? "Pehle Subject chuno." : "Pehle Exam chuno."; return; }
@@ -1239,6 +1459,7 @@ function testCheck(kind) {
   rows.slice(1).forEach((r, k) => {
     const g = n => ix(n) >= 0 ? (r[ix(n)] || "").trim() : "";
     const e = [], question = g("question"), options = [1, 2, 3, 4].map(i => g("option" + i)), a = amap[g("answer").toUpperCase()];
+    if (EX_Q().has(question)) e.push("ye template ka EXAMPLE sawal hai — hata do, upload nahi hoga");
     if (!question) e.push("sawal khaali");
     if (options.some(o => !o)) e.push("option khaali"); else if (new Set(options).size < 4) e.push("options alag-alag nahi");
     if (a === undefined) e.push("answer 1-4 ya A-D hona chahiye");
@@ -1253,6 +1474,7 @@ function testCheck(kind) {
   msg.textContent = (isSub ? "Subject: " + sel : "Exams (" + exams.length + "): " + exams.map(exShortA).join(", ")) + "\nSahi: " + out.length + "   Galat: " + errs.length + "   Total marks: " + +(out.length * mk).toFixed(2) +
     (errs.length ? "\n\n" + errs.slice(0, 15).join("\n") + (errs.length > 15 ? "\n...aur " + (errs.length - 15) + " line" : "") + "\n\nGalat lines sahi karke dobara Jaanch karo (galat lines upload nahi hongi)." : "");
   $(kind + "Go").disabled = out.length === 0;
+  qPreview(kind + "Prev", out);
 }
 
 async function testUpload(kind) {
@@ -1281,7 +1503,7 @@ async function testUpload(kind) {
     }
     if (!r || !r.length) throw new Error("Test save nahi hua (admin permission / tests table check karo).");
     msg.style.color = "var(--ok)"; msg.textContent = "Upload ho gaya: " + title + " (" + S.rows.length + " sawal)." + note;
-    S.rows = []; $(kind + "Text").value = ""; $(kind + "File").value = ""; $(kind + "Title").value = ""; if (!isSub) document.querySelectorAll("#" + kind + "Ex input").forEach(c => c.checked = false), exCount(kind);
+    S.rows = []; qPreview(kind + "Prev", []); $(kind + "Text").value = ""; $(kind + "File").value = ""; $(kind + "Title").value = ""; if (!isSub) document.querySelectorAll("#" + kind + "Ex input").forEach(c => c.checked = false), exCount(kind);
   } catch (e) {
     msg.style.color = "var(--bad)"; msg.textContent = "Upload fail: " + e.message + "\nAgar 'tests' table nahi hai to tests_setup.sql Supabase SQL Editor me ek baar chalao.";
   }
@@ -1289,16 +1511,7 @@ async function testUpload(kind) {
   testList(kind);
 }
 
-function testTemplate(kind) {
-  const isSub = kind === "fst";
-  const s = isSub
-    ? "question,option1,option2,option3,option4,answer,explanation,chapter,exams\n" + '"यहाँ सवाल लिखो","विकल्प 1","विकल्प 2","विकल्प 3","विकल्प 4",2,"यहाँ व्याख्या","चैप्टर का नाम (optional)","RPSC RAS 2021 (optional)"\n'
-    : "question,option1,option2,option3,option4,answer,explanation,subject,chapter,exams\n" + '"यहाँ सवाल लिखो","विकल्प 1","विकल्प 2","विकल्प 3","विकल्प 4",2,"यहाँ व्याख्या","विषय (optional)","चैप्टर (optional)","RPSC RAS 2021 (optional)"\n';
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["\uFEFF" + s], { type: "text/csv;charset=utf-8" }));
-  a.download = isSub ? "jakhar_full_subject_test_template.csv" : "jakhar_full_mock_test_template.csv";
-  document.body.appendChild(a); a.click(); a.remove();
-}
+function testTemplate(kind) { tplDownload(kind); }
 
 function showTab(n) {
   CURTAB = n;
@@ -1310,6 +1523,8 @@ function showTab(n) {
   if (n === "ntf") loadNotifs();
   if (n === "rem") enterRemarks();
   if (n === "usr") loadUsers();
+  if (n === "com") mountCom();
+  if (n === "dash" && typeof comCounts === "function" && TOKEN) comCounts();
 }
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-go]"); if (!b) return;
@@ -1485,7 +1700,7 @@ $("ntList").addEventListener("click", async e => {
 });
 
 /* ---------- Users (Login Data + Remarks ke liye shared) ---------- */
-let USERS = [], UH = [], UBY = {}, RM = [], U_NOTES = [], USR_SHOWN = 50, RM_USER = null, RM_MODAL = null, UV = null;
+let UPF = {}, USERS = [], UH = [], UBY = {}, RM = [], U_NOTES = [], USR_SHOWN = 50, RM_USER = null, RM_MODAL = null, UV = null;
 const uLabel = u => u.email || ("User " + String(u.id).slice(0, 8));
 const hTime = h => { const t = h.taken_at ? new Date(h.taken_at).getTime() : (h.ts ? +h.ts : NaN); return isNaN(t) ? 0 : t; };
 const num = v => (v === null || v === undefined || v === "" || isNaN(+v)) ? null : +v;
@@ -1498,9 +1713,13 @@ async function loadUsers(force) {
   try { UH = await fetchAllRows("/rest/v1/user_history?select=user_id,taken_at,n:data->>n,m:data->>m,r:data->>r,w:data->>w,s:data->>s,sc:data->>sc,ts:data->>ts&order=taken_at.desc"); }
   catch (e) { UH = []; U_NOTES.push("Test history load nahi hui: " + e.message); }
   try { RM = await api("/rest/v1/admin_remarks?select=*&order=created_at.desc&limit=5000"); } catch (e) { RM = []; }
+  UPF = {};
+  try { (await fetchAllRows("/rest/v1/profiles?select=id,username,display_name,verified")).forEach(p => { UPF[p.id] = p; }); }
+  catch (e) { U_NOTES.push("Profiles (username) load nahi hui: " + e.message + " — Part 5 ki profiles_setup.sql Supabase SQL Editor me chalao."); }
   UBY = {}; (reg || []).forEach(u => { UBY[u.id] = { id: u.id, email: u.email, created_at: u.created_at, last_sign_in_at: u.last_sign_in_at, h: [] }; });
   UH.forEach(h => { if (!h.user_id) return; (UBY[h.user_id] = UBY[h.user_id] || { id: h.user_id, email: null, created_at: null, last_sign_in_at: null, h: [] }).h.push(h); });
   USERS = Object.values(UBY);
+  USERS.forEach(u => { const p = UPF[u.id]; u.un = p ? p.username : ""; u.dn = p ? p.display_name : ""; });
   USERS.forEach(u => {
     u.h.sort((a, b) => hTime(b) - hTime(a));
     const t1 = u.h.length ? hTime(u.h[0]) : 0, t2 = u.last_sign_in_at ? new Date(u.last_sign_in_at).getTime() : 0;
@@ -1512,7 +1731,7 @@ async function loadUsers(force) {
     U_NOTES.push("Sirf aapka (admin) data aa raha hai — baaki users ka data dekhne ke liye supabase_update2.sql ki admin-read policy chalao.");
   USR_SHOWN = 50; renderUsers();
 }
-function uMatch(u, t) { return !t || (uLabel(u) + " " + u.id).toLowerCase().includes(t); }
+function uMatch(u, t) { return !t || (uLabel(u) + " " + u.id + " " + (u.un || "") + " " + (u.dn || "")).toLowerCase().includes(t.replace(/^@/, "")); }
 function renderUsers() {
   const t = $("uSearch").value.trim().toLowerCase(), rows = USERS.filter(u => uMatch(u, t));
   $("uNote").innerHTML = U_NOTES.map(n => '<div style="color:var(--bad);margin-bottom:4px">' + esc(n) + '</div>').join("");
@@ -1520,7 +1739,7 @@ function renderUsers() {
   $("uList").innerHTML = rows.slice(0, USR_SHOWN).map(u => {
     const tests = u.h.filter(h => h.m === "test").length, rc = RM.filter(r => r.user_id === u.id).length;
     return '<div class="card urow" data-uid="' + u.id + '" style="cursor:pointer;margin-bottom:8px"><div class="q" style="word-break:break-all">' + esc(uLabel(u)) + '</div>' +
-      '<div class="meta">' + (u.last ? 'Last active: <b>' + esc(fmtAgo(u.last)) + '</b> · ' + esc(fmtD(u.last)) : 'Activity data nahi') + '</div>' +
+      (u.un ? '<div class="meta">@' + esc(u.un) + ' · ' + esc(u.dn || "") + '</div>' : '') + '<div class="meta">' + (u.last ? 'Last active: <b>' + esc(fmtAgo(u.last)) + '</b> · ' + esc(fmtD(u.last)) : 'Activity data nahi') + '</div>' +
       '<div style="margin-top:6px"><span class="tag">' + u.h.length + ' attempt</span><span class="tag">' + tests + ' test</span>' +
       (rc ? '<span class="tag on">' + rc + ' remark</span>' : '') + '</div></div>';
   }).join("") || '<div class="card meta">Koi user nahi mila.</div>';
@@ -1551,7 +1770,7 @@ function renderUser(flags) {
   const fl = flags ? Object.keys(flags).sort().map(k => '<span class="tag">' + esc(k) + ': ' + flags[k] + '</span>').join("") : "";
   const rc = RM.filter(x => x.user_id === u.id).length;
   let html = '<div class="card"><div class="q" style="word-break:break-all">' + esc(uLabel(u)) + '</div>' +
-    '<div class="meta" style="word-break:break-all">ID: ' + esc(u.id) + '</div>' +
+    (u.un ? '<div class="meta">@' + esc(u.un) + ' · ' + esc(u.dn || "") + '</div>' : '') + '<div class="meta" style="word-break:break-all">ID: ' + esc(u.id) + '</div>' +
     '<div class="meta">Registered: ' + (u.created_at ? esc(fmtD(u.created_at)) : "—") + ' · Last sign-in: ' + (u.last_sign_in_at ? esc(fmtD(u.last_sign_in_at)) : "—") + '</div>' +
     '<div class="meta">Last active: ' + (u.last ? esc(fmtAgo(u.last)) + ' (' + esc(fmtD(u.last)) + ')' : "—") + '</div>' +
     (flags ? '<div style="margin-top:6px"><span class="meta">Progress marks:</span> ' + (fl || '<span class="meta">koi nahi</span>') + '</div>' : '') +
@@ -1634,6 +1853,132 @@ $("rmMSave").onclick = async () => {
   $("rmMSave").disabled = false;
 };
 { const _l2 = window.logout; window.logout = function () { USERS = []; UH = []; UBY = {}; RM = []; NT = []; UV = null; RM_USER = null; return _l2.apply(this, arguments); }; $("logoutBtn").onclick = window.logout; }
+
+
+/* ===================== Part 8: Community Moderation (Supabase: moderation_setup.sql) ===================== */
+const COMW = "https://jakhar-files.nvinu2259.workers.dev";   // community.js ke UPLOAD_API ke jaisa — sirf screenshot/photo dikhane ke liye
+const rpcA = (fn, b) => api("/rest/v1/rpc/" + fn, { method: "POST", body: JSON.stringify(b || {}) });
+const COM = { tab: "reports", rep: "open", usr: "all", q: "", vs: "pending", busy: false };
+const COMTABS = [["reports", "🚩 Reports"], ["hidden", "🙈 Hidden"], ["groups", "👥 Groups"], ["users", "🙍 Users"], ["words", "🔤 Words"], ["tick", "✔ Blue Tick"]];
+const cdt = t => t ? new Date(t).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+const cfile = k => COMW + "/f/" + k;
+
+function mountCom() {
+  const pane = document.querySelector('[data-pane="com"]');
+  if (!pane.dataset.m) {
+    pane.dataset.m = "1";
+    pane.innerHTML = '<button class="sec bk" data-go="dash">← Dashboard</button>' +
+      '<div class="card"><div class="q">🛡️ Community Moderation</div><div class="stats" id="comStats"></div><div class="ctabs" id="comTabs"></div></div><div id="comBody"></div>';
+    $("comTabs").onclick = e => { const b = e.target.closest("[data-ct]"); if (b) { COM.tab = b.dataset.ct; COM.q = ""; comShow(); } };
+    $("comBody").addEventListener("click", comClick);
+    $("comBody").addEventListener("change", e => { if (e.target.id === "comRepF") { COM.rep = e.target.value; comShow(); } if (e.target.id === "comUsrF") { COM.usr = e.target.value; comShow(); } if (e.target.id === "comVsF") { COM.vs = e.target.value; comShow(); } });
+  }
+  comShow();
+}
+async function comCounts() {
+  try {
+    const c = await rpcA("admin_mod_counts"), n = c.reports + c.verif;
+    if ($("cCom")) $("cCom").textContent = n ? n + " pending" : "Sab saaf ✓";
+    if ($("comStats")) $("comStats").innerHTML = '<span>🚩 Open reports <b>' + c.reports + '</b></span><span>🙈 Hidden <b>' + c.hidden + '</b></span><span>✔ Tick requests <b>' + c.verif + '</b></span><span>⛔ Banned <b>' + c.banned + '</b></span><span>👥 Groups <b>' + c.groups + '</b></span><span>🔤 Words <b>' + c.words + '</b></span>';
+  } catch (e) { if ($("comStats")) $("comStats").innerHTML = '<span class="msg">Counts load nahi hue: ' + esc(e.message) + ' — moderation_setup.sql chalaya hai?</span>'; }
+}
+function comShow() {
+  $("comTabs").innerHTML = COMTABS.map(t => '<button data-ct="' + t[0] + '" class="' + (COM.tab === t[0] ? "act" : "") + '">' + t[1] + "</button>").join("");
+  comCounts();
+  const box = $("comBody"); box.innerHTML = '<div class="card meta">Load ho raha hai…</div>';
+  ({ reports: comReports, hidden: comHidden, groups: comGroups, users: comUsers, words: comWords, tick: comTick })[COM.tab]().catch(e => { box.innerHTML = '<div class="card msg">' + esc(e.message) + (/function|does not exist|schema cache/i.test(e.message) ? " — Supabase me moderation_setup.sql chalayein." : "") + "</div>"; });
+}
+/* ek post/message/group ka content block */
+function comContent(c, type) {
+  if (!c) return '<div class="meta">(yeh ab maujood nahi — hata diya gaya)</div>';
+  const att = c.file_key ? ((c.mime || "").indexOf("image/") === 0 ? '<a href="' + esc(cfile(c.file_key)) + '" target="_blank" rel="noopener"><img class="cimg" loading="lazy" src="' + esc(cfile(c.file_key)) + '"></a>' : '<div><a href="' + esc(cfile(c.file_key)) + '" target="_blank" rel="noopener">📄 ' + esc(c.file_name || "file") + "</a></div>") : "";
+  return '<div class="cbody">' + (c.body ? esc(c.body.length > 500 ? c.body.slice(0, 500) + "…" : c.body) : '<i class="meta">(sirf file)</i>') + "</div>" + att +
+    '<div class="meta">' + (c.author ? "@" + esc(c.author) : "") + (c.group && type !== "group" ? " · 👥 " + esc(c.group) : "") + (c.at ? " · " + cdt(c.at) : "") + (c.hidden ? ' · <span class="tag hid">hidden</span>' : "") + (c.why ? " · " + esc(c.why) : "") + "</div>";
+}
+const ICON = { post: "📰 Post", message: "💬 Message", group: "👥 Group" };
+function acts(type, id, c, extra) {
+  const d = ' data-t="' + esc(type) + '" data-id="' + esc(id) + '" data-u="' + esc((c && c.author_id) || "") + '"';
+  if (!c) return '<div class="row" style="margin-top:8px"><button class="sec" data-a="done"' + d + '>✔ Reports band karo</button></div>';
+  return '<div class="row" style="margin-top:8px">' +
+    '<button class="sec" data-a="' + (c.hidden ? "show" : "hide") + '"' + d + ">" + (c.hidden ? "👁 Dikhao" : "🙈 Chhupao") + "</button>" +
+    (type !== "group" && c.author_id ? '<button class="sec" data-a="mute"' + d + '>🔇 Mute</button><button class="danger" data-a="ban"' + d + ">⛔ Ban</button>" : "") +
+    '<button class="danger" data-a="del"' + d + ">🗑 Delete</button>" + (extra || "") + "</div>";
+}
+async function comReports() {
+  const rows = await rpcA("admin_reports", { p_status: COM.rep, p_limit: 120 }), by = new Map();
+  rows.forEach(r => { const k = r.type + "|" + r.target; const o = by.get(k) || { type: r.type, target: r.target, c: r.c, n: r.n, why: [], who: [], status: r.status, at: r.at }; o.why.push(r.reason); if (r.reporter) o.who.push("@" + r.reporter); by.set(k, o); });
+  const list = [...by.values()];
+  $("comBody").innerHTML = '<div class="card"><select id="comRepF"><option value="open"' + (COM.rep === "open" ? " selected" : "") + '>Open reports</option><option value="resolved"' + (COM.rep === "resolved" ? " selected" : "") + '>Resolved</option><option value="dismissed"' + (COM.rep === "dismissed" ? " selected" : "") + '>Dismissed</option><option value="all"' + (COM.rep === "all" ? " selected" : "") + ">Sab</option></select></div>" +
+    (list.map(o => '<div class="card"><div class="q">' + ICON[o.type] + ' <span class="tag hid">' + o.n + ' report</span><span class="tag">' + esc(o.status) + "</span></div>" +
+      comContent(o.c, o.type) + '<div class="meta" style="margin-top:6px">Karan: ' + esc([...new Set(o.why)].join(" | ")) + " · Reporter: " + esc([...new Set(o.who)].join(", ") || "-") + "</div>" +
+      acts(o.type, o.target, o.c, o.status === "open" ? '<button class="sec" data-a="resolve" data-t="' + esc(o.type) + '" data-id="' + esc(o.target) + '">✔ Theek hai (resolved)</button><button class="sec" data-a="dismiss" data-t="' + esc(o.type) + '" data-id="' + esc(o.target) + '">✖ Galat report</button>' : "") + "</div>").join("") || '<div class="card meta">Koi report nahi 🎉</div>');
+}
+async function comHidden() {
+  const rows = await rpcA("admin_hidden_list", { p_limit: 150 });
+  $("comBody").innerHTML = rows.map(r => '<div class="card"><div class="q">' + ICON[r.type] + "</div>" + comContent(r, r.type) + acts(r.type, r.id, r)).join("") || '<div class="card meta">Koi hidden item nahi.</div>';
+}
+async function comGroups() {
+  const rows = await rpcA("admin_groups", { p_q: COM.q || null, p_limit: 100 });
+  $("comBody").innerHTML = '<div class="card"><div class="row"><input id="comQ" placeholder="Group ka naam khojo" value="' + esc(COM.q) + '" style="flex:1;margin:0"><button id="comQb" style="width:auto">Khojo</button></div></div>' +
+    (rows.map(g => '<div class="card"><div class="q">' + (g.type === "private" ? "🔒 " : "🌐 ") + esc(g.name) + (g.active ? "" : ' <span class="tag hid">band</span>') + '</div><div class="meta">Owner @' + esc(g.owner || "?") + " · " + g.members + " members · " + g.posts + " posts" + (g.open_reports ? ' · <span class="tag hid">' + g.open_reports + " report</span>" : "") + " · " + cdt(g.at) + "</div>" +
+      '<div class="row" style="margin-top:8px"><button class="sec" data-a="' + (g.active ? "hide" : "show") + '" data-t="group" data-id="' + esc(g.id) + '">' + (g.active ? "🙈 Band karo" : "👁 Chalu karo") + '</button><button class="danger" data-a="del" data-t="group" data-id="' + esc(g.id) + '">🗑 Delete</button></div></div>').join("") || '<div class="card meta">Koi group nahi mila.</div>');
+}
+async function comUsers() {
+  const rows = await rpcA("admin_users", { p_q: COM.q || null, p_filter: COM.usr, p_limit: 40 });
+  const F = [["all", "Sab"], ["banned", "Banned"], ["muted", "Muted"], ["verified", "Blue tick"]];
+  $("comBody").innerHTML = '<div class="card"><div class="row"><input id="comQ" placeholder="@username ya naam" value="' + esc(COM.q) + '" style="flex:1;margin:0"><button id="comQb" style="width:auto">Khojo</button></div>' +
+    '<select id="comUsrF" style="margin-top:8px">' + F.map(f => '<option value="' + f[0] + '"' + (COM.usr === f[0] ? " selected" : "") + ">" + f[1] + "</option>").join("") + "</select></div>" +
+    (rows.map(u => { const d = ' data-t="user" data-u="' + esc(u.id) + '"';
+      return '<div class="card"><div class="q">' + esc(u.name || "-") + ' <span class="meta">@' + esc(u.username) + "</span>" + (u.verified ? ' <span class="tag on">✔ tick</span>' : "") + (u.banned ? ' <span class="tag hid">⛔ banned</span>' : "") + (u.muted_until ? ' <span class="tag hid">🔇 ' + cdt(u.muted_until) + " tak</span>" : "") + "</div>" +
+        '<div class="meta">' + u.posts + " posts · " + u.msgs + " msgs · " + u.hidden + " hidden" + (u.reason ? " · Karan: " + esc(u.reason) : "") + "</div>" +
+        '<div class="row" style="margin-top:8px">' + (u.banned ? '<button class="sec" data-a="unban"' + d + ">✅ Unban</button>" : '<button class="danger" data-a="ban"' + d + ">⛔ Ban</button>") +
+        (u.muted_until ? '<button class="sec" data-a="unmute"' + d + ">🔊 Unmute</button>" : '<button class="sec" data-a="mute"' + d + ">🔇 Mute</button>") +
+        '<button class="sec" data-a="' + (u.verified ? "untick" : "tick") + '"' + d + ">" + (u.verified ? "Tick hatao" : "✔ Tick do") + "</button></div></div>"; }).join("") || '<div class="card meta">Koi user nahi mila.</div>');
+}
+async function comWords() {
+  const rows = await rpcA("admin_words");
+  $("comBody").innerHTML = '<div class="card"><div class="q">Shabd jodo</div><div class="meta" style="margin-bottom:6px">Har line/comma par ek shabd. Hindi, English aur Hinglish (jaise spelling variations) alag-alag jodo.</div>' +
+    '<textarea id="wNew" rows="4" placeholder="ek line me ek shabd"></textarea><select id="wAct"><option value="block">Block — bhejne hi na do</option><option value="flag">Flag — post chale par turant chhup ke queue me</option></select>' +
+    '<label style="display:block;margin:6px 0;font-size:14px"><input id="wWhole" type="checkbox" style="width:auto;margin:0 6px 0 0"> Poora shabd hi match ho (sirf chhote English shabdon ke liye)</label><button id="wAdd">Jodo</button><div class="msg" id="wMsg"></div></div>' +
+    '<div class="card"><div class="q">Test</div><input id="wTest" placeholder="Koi text likho, dekho filter kya karega"><div class="meta" id="wTestR"></div></div>' +
+    '<div class="card"><div class="q">Saari list (' + rows.length + ")</div>" + (rows.map(w => '<div class="srow"><span>' + esc(w.word) + (w.whole ? ' <span class="meta">(poora shabd)</span>' : "") + '</span><span class="row" style="flex-wrap:nowrap"><button class="sec" data-a="wset" data-id="' + esc(w.id) + '" data-v="' + (w.action === "block" ? "flag" : "block") + '" title="badlo">' + (w.action === "block" ? "⛔ block" : "🚩 flag") + '</button><button class="danger" data-a="wdel" data-id="' + esc(w.id) + '">✕</button></span></div>').join("") || '<div class="meta">Abhi koi shabd nahi.</div>') + "</div>";
+  let tm; $("wTest").oninput = () => { clearTimeout(tm); tm = setTimeout(async () => { const t = $("wTest").value; if (!t.trim()) { $("wTestR").textContent = ""; return; } try { const r = await rpcA("mod_scan", { p_text: t }); $("wTestR").textContent = r === "block" ? "⛔ BLOCK hoga" : r === "flag" ? "🚩 FLAG hoga (chhup ke queue me jayega)" : "✅ theek hai"; } catch (e) { $("wTestR").textContent = e.message; } }, 350); };
+}
+async function comTick() {
+  const rows = await rpcA("admin_verifications", { p_status: COM.vs, p_limit: 80 });
+  $("comBody").innerHTML = '<div class="card"><select id="comVsF"><option value="pending"' + (COM.vs === "pending" ? " selected" : "") + '>Pending</option><option value="approved"' + (COM.vs === "approved" ? " selected" : "") + '>Approved</option><option value="rejected"' + (COM.vs === "rejected" ? " selected" : "") + '>Rejected</option><option value="all"' + (COM.vs === "all" ? " selected" : "") + ">Sab</option></select>" +
+    '<div class="meta" style="margin-top:6px">Pehle apne UPI app me check karo ki UTR + amount sahi aaya hai, phir Approve karo.</div></div>' +
+    (rows.map(v => '<div class="card"><div class="q">' + esc(v.name || "-") + ' <span class="meta">@' + esc(v.username) + "</span>" + (v.verified ? ' <span class="tag on">✔ tick hai</span>' : "") + ' <span class="tag">' + esc(v.status) + "</span></div>" +
+      '<div>₹<b>' + esc(v.amount) + "</b> · UTR: <b>" + esc(v.txn) + "</b></div>" + (v.note ? '<div class="meta">Note: ' + esc(v.note) + "</div>" : "") + (v.admin_note ? '<div class="meta">Admin note: ' + esc(v.admin_note) + "</div>" : "") +
+      (v.shot ? '<a href="' + esc(cfile(v.shot)) + '" target="_blank" rel="noopener"><img class="cimg" loading="lazy" src="' + esc(cfile(v.shot)) + '"></a>' : '<div class="meta">(screenshot nahi diya)</div>') + '<div class="meta">' + cdt(v.at) + "</div>" +
+      (v.status === "pending" ? '<div class="row" style="margin-top:8px"><button data-a="vok" data-id="' + esc(v.id) + '" style="flex:1">✅ Approve</button><button class="danger" data-a="vno" data-id="' + esc(v.id) + '">❌ Reject</button></div>' : "") + "</div>").join("") || '<div class="card meta">Koi request nahi.</div>');
+}
+async function comClick(e) {
+  if (e.target.id === "comQb") { COM.q = $("comQ").value.trim(); return comShow(); }
+  if (e.target.id === "wAdd") {
+    const b = e.target, m = $("wMsg"); m.textContent = ""; b.disabled = true;
+    try { const r = await rpcA("admin_word_add", { p_words: $("wNew").value, p_action: $("wAct").value, p_whole: $("wWhole").checked }); m.style.color = "var(--ok)"; m.textContent = r.added + " naye shabd jude."; $("wNew").value = ""; setTimeout(comShow, 700); }
+    catch (er) { m.style.color = ""; m.textContent = er.message; b.disabled = false; }
+    return;
+  }
+  const b = e.target.closest("[data-a]"); if (!b || COM.busy) return;
+  const a = b.dataset.a, t = b.dataset.t, id = b.dataset.id, u = b.dataset.u;
+  try {
+    if (a === "hide" || a === "show") { let why = null; if (a === "hide" && t !== "group") why = prompt("Chhupane ka karan (optional):", "") ; if (why === null && a === "hide" && t !== "group") return; await rpcA("admin_hide", { p_type: t, p_id: id, p_hidden: a === "hide", p_reason: why || null }); }
+    else if (a === "del") { if (!confirm("Hamesha ke liye DELETE karein? Yeh wapas nahi aayega.")) return; if (t === "group" && !confirm("Group ke saare post/chat bhi hat jaayenge. Pakka delete?")) return; await rpcA("admin_delete", { p_type: t, p_id: id }); }
+    else if (a === "resolve" || a === "dismiss" || a === "done") await rpcA("admin_resolve_target", { p_type: t, p_target: id, p_status: a === "dismiss" ? "dismissed" : "resolved" });
+    else if (a === "ban") { const why = prompt("Ban ka karan (user ko dikhega, optional):", ""); if (why === null) return; const all = confirm("Is user ki saari post/messages bhi chhupa dein?\nOK = haan chhupao, Cancel = sirf ban"); await rpcA("admin_sanction", { p_user: u, p_action: "ban", p_reason: why || null, p_hide_all: all }); }
+    else if (a === "unban" || a === "unmute") await rpcA("admin_sanction", { p_user: u, p_action: a });
+    else if (a === "mute") { const h = prompt("Kitne ghante ke liye mute? (24 = 1 din, 168 = 1 hafta)", "24"); if (h === null) return; await rpcA("admin_sanction", { p_user: u, p_action: "mute", p_hours: Math.max(1, parseInt(h, 10) || 24) }); }
+    else if (a === "tick" || a === "untick") { if (a === "untick" && !confirm("Blue tick hata dein?")) return; await rpcA("admin_set_verified", { p_user: u, p_verified: a === "tick" }); }
+    else if (a === "wset") await rpcA("admin_word_set", { p_id: id, p_action: b.dataset.v });
+    else if (a === "wdel") { if (!confirm("Yeh shabd list se hataein?")) return; await rpcA("admin_word_delete", { p_id: id }); }
+    else if (a === "vok") { if (!confirm("UTR aur amount check kar liya? Approve karte hi user ko blue tick mil jayega.")) return; await rpcA("admin_review_verification", { p_id: id, p_approve: true, p_note: null }); }
+    else if (a === "vno") { const why = prompt("Reject ka karan (user ko dikhega):", ""); if (why === null) return; await rpcA("admin_review_verification", { p_id: id, p_approve: false, p_note: why || null }); }
+    else return;
+    comShow();
+  } catch (er) { alert("Fail: " + er.message); }
+}
 
 </script>
 </body>

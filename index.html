@@ -276,6 +276,41 @@ a.row{text-decoration:none;color:inherit}
 @keyframes nbp{50%{transform:scale(1.1)}}
 .nbadge.inl{margin-left:6px;vertical-align:middle}
 .scard .nbadge{position:absolute;top:10px;left:10px}
+/* Part 2: NEW badge — hilta-dulta (wiggle) + ring taaki card ke color par bhi alag dikhe. Badge ka rang JS (nbStyle) card ke rang se match hone par badal deta hai */
+.nbadge.wg{animation:nbw 2.2s ease-in-out infinite;transform-origin:50% 50%;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 2px 7px rgba(0,0,0,.35)}
+.dark .nbadge.wg{box-shadow:0 0 0 2px rgba(15,23,42,.9),0 2px 7px rgba(0,0,0,.5)}
+@keyframes nbw{0%,55%,100%{transform:rotate(0) scale(1)}12%{transform:rotate(-9deg) scale(1.1)}24%{transform:rotate(9deg) scale(1.1)}36%{transform:rotate(-6deg) scale(1.06)}46%{transform:rotate(6deg) scale(1.04)}}
+@media (prefers-reduced-motion:reduce){.nbadge.wg{animation:none}}
+/* Part 3: Privacy policy lists + copyright footer */
+.pol ul{margin:6px 0 0;padding-left:20px}.pol li{margin:5px 0;font-size:14px;line-height:1.55}.pol p+p{margin-top:8px}.pol p,.pol li{overflow-wrap:anywhere}
+.vtk{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:#1d9bf0;color:#fff;font-size:10px;margin-left:4px;vertical-align:1px}
+.cprt{text-align:center;color:var(--mute);font-size:12px;margin:22px 0 8px}
+/* Part 4: question formatting — statements alag lines, table (side-scroll), assertion/reason, multi-line options */
+p.q{line-height:1.7;overflow-wrap:anywhere;margin:6px 0 16px}
+.q .st{display:block;margin:6px 0}.q b,.q strong{font-weight:800}
+.q ol,.q ul,.opt .t ol,.opt .t ul{margin:8px 0;padding-left:22px}.q li{margin:5px 0}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0;max-width:100%}
+.tw table,table.qt{border-collapse:collapse;width:100%;margin:0;font-size:14px;font-weight:500;line-height:1.45;color:var(--ink)}
+.tw th,.tw td,table.qt th,table.qt td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top;min-width:64px}
+.tw th,table.qt th{background:#eaf1ff;color:var(--navy);font-weight:700}
+.dark .tw th,.dark table.qt th{background:#162540;color:#cfe0ff}
+.opt .t{min-width:0;overflow-wrap:anywhere;line-height:1.5}.opt .t .tw{margin:6px 0 2px}
+.exp p{line-height:1.65;overflow-wrap:anywhere}.exp .tw{margin:8px 0}
+/* Part 5: profile card + edit screen */
+.pfc{cursor:pointer;position:relative;padding-right:38px}.pfc .pfx{min-width:0}.pfc .pfx b{font-size:17px;overflow-wrap:anywhere}.pfc .pfx small{display:block}
+.pfc .pfun{color:var(--main);font-weight:700}.pfc .go{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:24px;color:var(--mute)}
+.pfa{flex:none;width:56px;height:56px;border-radius:50%;object-fit:cover;display:grid;place-items:center;color:#fff;font-weight:800;font-size:24px;background:var(--main)}
+.pfa.big{width:96px;height:96px;font-size:40px}
+.pfchip{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:10px;background:#eaf1ff;color:var(--navy);margin-top:5px}
+.pfbio{font-size:13px;margin-top:5px;white-space:pre-line;overflow-wrap:anywhere}
+.pfp{text-align:center}.pfp .pfa{margin:0 auto 10px}.pfb2{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.pfb2 .btn{flex:none;padding:9px 14px;font-size:14px}
+.pfl{display:block;font-weight:700;font-size:14px;margin:14px 0 6px}
+.pfi,.pfe select,.pfe textarea{display:block;width:100%;box-sizing:border-box;padding:11px 12px;border-radius:10px;border:1.5px solid var(--line);background:#fff;color:var(--ink);font:inherit}
+.pfe textarea{resize:none}.pfi:focus,.pfe select:focus,.pfe textarea:focus,.pfu:focus-within{outline:0;border-color:var(--main)}
+.pfu{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;background:#fff;padding-left:12px}.pfu span{color:var(--mute);font-weight:700}
+.pfu input{border:0;outline:0;flex:1;padding:11px 8px;background:transparent;color:var(--ink);font:inherit;min-width:0}
+.pfm{font-size:12.5px;color:var(--mute);margin-top:5px;min-height:16px;overflow-wrap:anywhere}.pfm.ok{color:var(--ok)}.pfm.bad{color:var(--bad)}
+.dark .pfchip{background:#26324e;color:#cfe0ff}.dark .pfi,.dark .pfe select,.dark .pfe textarea,.dark .pfu{background:#0f1726;color:#e6ebf5;border-color:#2b3956}.dark .pfu input{color:#e6ebf5}
 .nw{flex:none;background:#ef4444;color:#fff;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px}
 .bell{position:relative}.bdot{position:absolute;top:7px;right:8px;width:11px;height:11px;border-radius:50%;background:#ef4444;border:2px solid #fff}
 .bg.dn{background:#16a34a}
@@ -857,7 +892,7 @@ const QUESTIONS = (function(){
   try{
     const o=JSON.parse(localStorage.getItem("jkx_qcache_v1")||"null");
     if(o&&Array.isArray(o.qs)&&o.qs.length>0&&o.qs.every(r=>r&&typeof r.question==="string"&&typeof r.subject==="string"&&typeof r.chapter==="string"&&Array.isArray(r.options)&&r.options.length===4&&Number.isInteger(r.answer)&&r.answer>=0&&r.answer<4&&Array.isArray(r.exams))){
-      return o.qs.map(r=>({id:r.id,subject:r.subject,chapter:r.chapter,question:r.question,exams:r.exams,options:r.options,answer:r.answer,explanation:r.explanation||""}));
+      return o.qs.map(r=>({id:r.id,subject:r.subject,chapter:r.chapter,question:r.question,exams:r.exams,options:r.options,answer:r.answer,explanation:r.explanation||"",created_at:r.created_at}));
     }
   }catch(e){}
   return QUESTIONS_BUILTIN;
@@ -902,10 +937,70 @@ const SUBJECTS=[
  {name:"कंप्यूटर",icon:"💻",color:"#0891b2",chapters:[]}
 ];
 const CONTACT={yt:"https://youtube.com/@vinodkumarnath007",tg:"https://t.me/vinodkumarnath007",mail:"nvinu2259@gmail.com"};
+/* Part 8: Donate / Blue Tick. UPI ID owner se milte hi yahin bharo (khaali = screen par "UPI ID jald hi"). qr = QR image ka URL (optional). */
+const DONATE={upi:"vinodnath@ptyes",name:"",qr:""};
 const NEG=1/3;const CFG0=()=>({mark:1,neg:NEG,dur:0,kind:""});let CFG=CFG0(),TESTQ={};const qFind=t=>QS.find(x=>x.question===t)||TESTQ[t]||TQX(t);const doIntro=()=>CFG.kind?tintro():intro();   // टेस्ट मोड में नेगेटिव मार्किंग
 const YT='<svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="5" fill="#f00"/><path d="M10 8.6v6.8l6-3.4z" fill="#fff"/></svg>';
 const QS=QUESTIONS.filter(q=>SUBJECTS.some(s=>s.name===q.subject&&s.chapters.includes(q.chapter)));
 if(QS.length!==QUESTIONS.length)console.warn((QUESTIONS.length-QS.length)+" प्रश्न नहीं दिख रहे: subject/chapter का नाम SUBJECTS से मेल नहीं खाता");
+/* ---------- Part 4: fmtQ — question/option/explanation HTML ko padhne layak banata hai ----------
+   (admin.html me bhi yahi function hai — dono jagah sync rakho)
+   1) Table (<table>) ko .tw wrapper me daalta hai (mobile par side-scroll).
+   2) Asli newline (\n) ko <br> banata hai — sirf jab text me pehle se <br> na ho.
+   3) lite=false (sirf question): agar <br>/block tag/newline kuch nahi hai aur statements ek hi line me chipke hain
+      ("1. .. 2. .." / "A. .. B. .." / "(क) .. (ख) .." / "कारण (R)"), to unhe alag lines me todta hai. */
+const FMQ_C=new Map();
+function fmtQ(h,lite){
+  let s=h==null?"":String(h);if(!s)return s;
+  const key=(lite?"1":"0")+s,hit=FMQ_C.get(key);if(hit!==undefined)return hit;
+  s=s.replace(/\r\n?/g,"\n");
+  const parts=s.split(/(<table[\s\S]*?<\/table>)/i),n=parts.length;
+  const out=parts.map((p,i)=>{
+    if(i%2)return'<div class="tw">'+p.replace(/\n+/g,"")+'</div>';
+    let t=p;
+    if(!/<br/i.test(t)&&/\n/.test(t))t=t.trim().replace(/\n{2,}/g,"<br><br>").replace(/\n/g,"<br>");
+    else t=t.replace(/\n+/g," ");
+    if(i>0)t=t.replace(/^(\s*<br\s*\/?>)+/i,"");
+    if(i<n-1)t=t.replace(/(<br\s*\/?>\s*)+$/i,"");
+    return t;
+  });
+  let r=out.join("");
+  if(!lite&&n===1&&!/\n/.test(s))r=fmtAuto(r);
+  FMQ_C.set(key,r);return r;
+}
+function fmtAuto(t){
+  if(t.length<30||/<br|<\/?(p|div|li|ol|ul|table)\b/i.test(t))return t;
+  const ins=[];  /* [pos, removeLen, html] */
+  const chain=(re,labels)=>{
+    const ms=[...t.matchAll(re)];let k=0,first=true,last=null;
+    for(const m of ms){
+      if(m[2]!==labels[k])continue;
+      if(m.index===0&&m[1]==="")ins.push([0,0,""]);   /* string ke shuru me break nahi */
+      else ins.push([m.index,m[1].length,first?"<br><br>":"<br>"]);
+      first=false;last=m;k++;if(k>=labels.length)break;
+    }
+    if(k<2){for(let j=0;j<k;j++)ins.pop();return null}
+    return last;
+  };
+  const numLast=chain(/(^|\s)(\d)[.)]\s+(?=\S)/g,["1","2","3","4","5","6","7","8","9"]);
+  const enLast=chain(/(^|\s)\(?([A-E])[.)]\s+(?=\S)/g,["A","B","C","D","E"]);
+  const hiLast=chain(/(^|\s)\(?([कखगघ])[.)]\s+(?=\S)/g,["क","ख","ग","घ"]);
+  const lastEnd=Math.max(...[numLast,enLast,hiLast].filter(Boolean).map(m=>m.index+m[0].length),-1);
+  if(lastEnd>=0){
+    const tail=t.slice(lastEnd),m=tail.match(/(\s)(उपर्युक्त|उपरोक्त|उपयुक्त|इनमें से|इन में से|सही कूट|सही विकल्प|नीचे दिए|Which of the (?:above|following)|Select the correct|Choose the correct|How many)/);
+    if(m)ins.push([lastEnd+m.index,1,"<br><br>"]);
+  }
+  if(/\(A\)/.test(t)&&/\(R\)/.test(t)){
+    const mr=t.match(/(\s)(कारण|Reason)\s*\(R\)/);
+    if(mr){ins.push([mr.index,1,"<br><br>"]);
+      const after=t.slice(mr.index+mr[0].length),mc=after.match(/(\s)(कूट|सही उत्तर|सही विकल्प|Select the correct|Choose the correct|Codes?)/);
+      if(mc)ins.push([mr.index+mr[0].length+mc.index,1,"<br><br>"]);}
+  }
+  const clean=ins.filter(x=>x[2]);if(!clean.length)return t;
+  const seen=new Set();
+  clean.filter(x=>!seen.has(x[0])&&seen.add(x[0])).sort((a,b)=>b[0]-a[0]).forEach(x=>{t=t.slice(0,x[0])+x[2]+t.slice(x[0]+x[1])});
+  return t;
+}
 
 const COLORS=["#1d4ed8","#c2410c","#0f766e","#7e22ce","#be185d","#4d7c0f"];
 const examColor={};let ci=0;
@@ -936,7 +1031,7 @@ function view(html,tab,keep,bf){
 function goTab(k){clearInterval(tick);({home:home,subj:subjSubjects,pyq:pyqSubjects,tests:tests,mist:mistakes,prof:profile})[k]()}
 /* एक पंक्ति (row): o = {c रंग, i आइकन, raw (SVG हो तो), t, s, b बैज, soon, on क्लिक, href, ext} */
 function R(o){
-  const inner=`<span class="ic${o.raw?" raw":""}">${o.i}</span><span class="tx"><b>${o.t}</b><small>${o.s||""}</small></span>${o.n?`<span class="nw">${o.n}</span>`:""}${o.b?`<span class="bg${o.soon?" soon":""}">${o.b}</span>`:""}<i>›</i>`;
+  const inner=`<span class="ic${o.raw?" raw":""}">${o.i}</span><span class="tx"><b>${o.t}</b><small>${o.s||""}</small></span>${o.n?`<span class="nw"${o.nc?` style="${nbStyle(o.nc)}"`:""}>${o.n}</span>`:""}${o.b?`<span class="bg${o.soon?" soon":""}">${o.b}</span>`:""}<i>›</i>`;
   return o.href?`<a class="row" style="--c:${o.c}" href="${o.href}"${o.ext?' target="_blank" rel="noopener"':""}>${inner}</a>`:`<button class="row" style="--c:${o.c}" onclick="${o.on}">${inner}</button>`;
 }
 function comingSoon(t,bf,tab,sub){
@@ -985,7 +1080,7 @@ function home(){
    <button style="background:#7c3aed" data-cat="mock" onclick="mockList('home')">${nb("mock")}<span>🎯</span><b>Full Mock Test</b><small>All Subjects Combined</small></button>
    <button style="background:#f59e0b" onclick="mistakes()"><span>🔍</span><b>Mistake Analysis</b><small>गलतियाँ सुधारें</small></button>
    <button style="background:#e11d1d" onclick="youtube()"><span class="yti">${YT}</span><b>YouTube</b><small>Videos &amp; PDF</small></button>
-   <button class="dvt" style="background:linear-gradient(135deg,#be123c,#f43f5e)" onclick="location.href='rank-analyzer.html'"><span class="nbadge">NEW</span><span>📊</span><b>Rank Analysis करें</b><small>Lab Assistant · रैंक व कटऑफ़</small></button></div>
+   <button class="dvt" style="background:linear-gradient(135deg,#be123c,#f43f5e)" onclick="location.href='rank-analyzer.html'">${nbNew("rank","linear-gradient(135deg,#be123c,#f43f5e)")}<span>📊</span><b>Rank Analysis करें</b><small>Lab Assistant · रैंक व कटऑफ़</small></button></div>
   <button class="seemore" onclick="seeMore()">See More &nbsp;→</button>
   <div class="sh"><h3>हाल की गतिविधि</h3><a onclick="goTab('tests')">सभी देखें →</a></div>
   <div class="card act">${H.length?H.slice(0,3).map(actRow).join(""):"<small>अभी कोई टेस्ट नहीं दिया — ऊपर से शुरू करें।</small>"}</div></main>`,"home");homeExtras();
@@ -994,16 +1089,16 @@ const studySoon=()=>comingSoon("Study Material",()=>goTab("home"),"home","स्
 
 /* ---------- 1. Chapter Wise PYQ Test: विषय → चैप्टर → Test/Practice ---------- */
 let pyqFrom="home";
-const subjGrid=fn=>`<div class="sg">${SUBJECTS.map((S,i)=>`<button class="scard" style="--c:${S.color}" onclick="${fn}(${i})">${fn==="pyqChapters"&&NEWSNAP.pyq&&NEWSNAP.pyq.sub.has(S.name)?'<span class="nbadge">NEW</span>':""}${S.chapters.length?"":'<span class="soonb">Coming Soon</span>'}<span class="si">${S.icon}</span><span><b>${S.name}</b><small>${S.chapters.length?S.chapters.length+" चैप्टर":"जल्द आ रहा है"}</small></span></button>`).join("")}</div>`;
+const subjGrid=fn=>`<div class="sg">${SUBJECTS.map((S,i)=>`<button class="scard" style="--c:${S.color}" onclick="${fn}(${i})">${fn==="pyqChapters"&&newSub(S.name)?`<span class="nbadge wg" style="${nbStyle(S.color)}">NEW</span>`:""}${S.chapters.length?"":'<span class="soonb">Coming Soon</span>'}<span class="si">${S.icon}</span><span><b>${S.name}</b><small>${S.chapters.length?S.chapters.length+" चैप्टर":"जल्द आ रहा है"}</small></span></button>`).join("")}</div>`;
 function pyqSubjects(f){
-  clearInterval(tick);if(f==="home"||f==="tests")pyqFrom=f;newOpen("pyq");
+  clearInterval(tick);if(f==="home"||f==="tests")pyqFrom=f;
   view(hdr(BACK,"","Chapter Wise PYQ Test")+`<main class="pg"><div class="sub">विषय चुनें</div>${subjGrid("pyqChapters")}</main>`,pyqFrom,false,pyqFrom==="tests"?()=>tests():()=>home());
 }
 function pyqChapters(si){
   clearInterval(tick);const S=SUBJECTS[si];
   if(!S.chapters.length)return comingSoon(S.name,()=>pyqSubjects(pyqFrom),pyqFrom,"चैप्टर जल्द जोड़े जाएँगे");
   view(hdr(BACK,"",S.name)+`<main class="pg"><div class="sub">${S.chapters.length} चैप्टर · ${sc_(S.name)} प्रश्न</div><div class="list">
-  ${S.chapters.map((c,ci)=>{const n=qc(S.name,c);return R({c:S.color,i:ci+1,t:c,s:n?n+" प्रश्न उपलब्ध":"जल्द आ रहा है",n:NEWSNAP.pyq&&NEWSNAP.pyq.ch.has(S.name+"||"+c)?"NEW":"",b:n?n+" प्रश्न":"Coming Soon",soon:!n,on:n?`chapterModes(${si},${ci})`:`chapSoon(${si},${ci})`})}).join("")}</div></main>`,pyqFrom,false,()=>pyqSubjects(pyqFrom));
+  ${S.chapters.map((c,ci)=>{const n=qc(S.name,c);return R({c:S.color,i:ci+1,t:c,s:n?n+" प्रश्न उपलब्ध":"जल्द आ रहा है",n:newChap(S.name,c)?"NEW":"",nc:S.color,b:n?n+" प्रश्न":"Coming Soon",soon:!n,on:n?`chapterModes(${si},${ci})`:`chapSoon(${si},${ci})`})}).join("")}</div></main>`,pyqFrom,false,()=>pyqSubjects(pyqFrom));
 }
 function chapSoon(si,ci){comingSoon(SUBJECTS[si].chapters[ci],()=>pyqChapters(si),pyqFrom,SUBJECTS[si].name)}
 function chapterModes(si,ci){
@@ -1051,10 +1146,10 @@ function tstLoad(){
 }
 const tmeta=x=>[x.q_count?x.q_count+" प्रश्न":"",x.q_count&&x.marks_per_q?+(x.q_count*x.marks_per_q).toFixed(2)+" अंक":"",x.duration_min?x.duration_min+" मिनट":""].filter(Boolean).join(" · ");
 function fstSubjects(){
-  clearInterval(tick);newOpen("subject");
-  const draw=keep=>{const sn=NEWSNAP.subject;view(hdr(BACK,"","Full Subject Test")+`<main class="pg" id="fstroot"><div class="sub">हर विषय का पूरा टेस्ट, उसके सभी चैप्टर मिलाकर</div><div class="list">
-  ${SUBJECTS.map((S,i)=>{const n=TL.filter(x=>x.kind==="subject"&&x.subject===S.name).length;return R({c:S.color,i:S.icon,t:S.name,s:n?n+" टेस्ट उपलब्ध":"सभी चैप्टर मिलाकर पूर्ण टेस्ट",n:sn&&sn.sub.has(S.name)?"NEW":"",b:n?n+" टेस्ट":"Coming Soon",soon:!n,on:`fstTests(${i})`})}).join("")}</div></main>`,"tests",keep,()=>goTab("tests"))};
-  draw();tstLoad().then(()=>{if(document.getElementById("fstroot")){newOpen("subject",true);draw(true)}}).catch(()=>{});
+  clearInterval(tick);
+  const draw=keep=>{view(hdr(BACK,"","Full Subject Test")+`<main class="pg" id="fstroot"><div class="sub">हर विषय का पूरा टेस्ट, उसके सभी चैप्टर मिलाकर</div><div class="list">
+  ${SUBJECTS.map((S,i)=>{const n=TL.filter(x=>x.kind==="subject"&&x.subject===S.name).length;return R({c:S.color,i:S.icon,t:S.name,s:n?n+" टेस्ट उपलब्ध":"सभी चैप्टर मिलाकर पूर्ण टेस्ट",n:TL.some(x=>x.kind==="subject"&&x.subject===S.name&&newTest(x))?"NEW":"",nc:S.color,b:n?n+" टेस्ट":"Coming Soon",soon:!n,on:`fstTests(${i})`})}).join("")}</div></main>`,"tests",keep,()=>goTab("tests"))};
+  draw();tstLoad().then(()=>{if(document.getElementById("fstroot")){draw(true)}}).catch(()=>{});
 }
 function fstTests(si){
   clearInterval(tick);const S=SUBJECTS[si],L=TL.filter(x=>x.kind==="subject"&&x.subject===S.name);
@@ -1066,7 +1161,6 @@ let mockFlt="";window.__mockEx=[];
 function mockSet(i){mockFlt=i<0?"":(window.__mockEx[i]||"");mockList("__flt")}
 function mockList(f){
   clearInterval(tick);if(f==="home"||f==="tests")mockFrom=f;
-  if(f!=="__flt")newOpen("mock");
   const draw=keep=>{
     let L=TL.filter(x=>x.kind==="mock");const all=[];
     L.forEach(x=>examsOf(x).forEach(e=>{if(all.indexOf(e)<0)all.push(e)}));all.sort((a,b)=>exRank(a)-exRank(b));window.__mockEx=all;
@@ -1076,7 +1170,7 @@ function mockList(f){
     const flt=all.length>1?`<div class="chips fl"><button class="${mockFlt?"":"on"}" onclick="mockSet(-1)">सभी</button>${all.map((e,i)=>`<button class="${mockFlt===e?"on":""}" onclick="mockSet(${i})">${smE(exShort(e))}</button>`).join("")}</div>`:"";
     view(hdr(BACK,"","Full Mock Test")+`<main class="pg" id="mockroot"><div class="sub">परीक्षा के अनुसार Full Mock Test · Test Mode</div>${flt}${L.length?`<div class="list">
     ${L.map(x=>tstCard(x,"#7c3aed","🎯")).join("")}</div>`:`<div class="card cs"><div class="csi">🎯</div><p>${TLOK?"अभी कोई Full Mock Test नहीं है।<br>जल्द ही जोड़े जाएँगे।":"लोड हो रहा है…"}</p></div>`}</main>`,mockFrom,keep,mockFrom==="tests"?()=>tests():()=>home())};
-  draw();tstLoad().then(()=>{if(document.getElementById("mockroot")){newOpen("mock",true);draw(true)}}).catch(()=>{});
+  draw();tstLoad().then(()=>{if(document.getElementById("mockroot")){draw(true)}}).catch(()=>{});
 }
 function tstBack(x){return x.kind==="subject"?(()=>{const i=SUBJECTS.findIndex(s=>s.name===x.subject);i<0?fstSubjects():fstTests(i)}):(()=>mockList())}
 async function tstOpen(id,opt){
@@ -1165,16 +1259,22 @@ let SMX=[],SMC=[],SMOK=false;
 const smE=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const smUrl=m=>m.file_path?SM_BASE+"/storage/v1/object/public/study-material/"+m.file_path.split("/").map(encodeURIComponent).join("/"):m.url;
 function smMerge(){
+  /* Newest-first: SMX created_at.desc aata hai -> DB videos hardcoded YT_VIDEOS ke AAGE (upar) jaati hain, unka order same rehta hai */
+  const cur=ytCur>=0&&YT_VIDEOS[ytCur]?ytId(YT_VIDEOS[ytCur].url):"";
   for(let i=YT_VIDEOS.length-1;i>=0;i--)if(YT_VIDEOS[i].db)YT_VIDEOS.splice(i,1);
-  SMX.filter(m=>m.kind==="youtube"&&ytId(m.url)).reverse().forEach(m=>{
-    if(!YT_VIDEOS.some(v=>ytId(v.url)===ytId(m.url)))YT_VIDEOS.push({url:m.url,title:m.title,db:1});
+  const nv=[];
+  SMX.filter(m=>m.kind==="youtube"&&ytId(m.url)).forEach(m=>{
+    const id=ytId(m.url);
+    if(!YT_VIDEOS.some(v=>ytId(v.url)===id)&&!nv.some(v=>ytId(v.url)===id))nv.push({url:m.url,title:m.title,db:1});
   });
+  YT_VIDEOS.unshift(...nv);
+  if(cur){const k=YT_VIDEOS.findIndex(v=>ytId(v.url)===cur);if(k>=0)ytCur=k}/* chalti video ka index shift na ho */
 }
 /* Video ke saath attach PDFs: materials.video_id (YouTube video id). Column na ho to chup-chaap khali rehta hai */
 let VPX=[];
 const vpVid=m=>{const v=String(m.video_id||"").trim();return /^[A-Za-z0-9_-]{11}$/.test(v)?v:ytId(v)};
 function vpLoad(){
-  return fetch(SM_BASE+"/rest/v1/materials?select=id,title,category,kind,url,file_path,video_id&is_active=eq.true&video_id=not.is.null&order=created_at.asc&limit=1000",{headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}})
+  return fetch(SM_BASE+"/rest/v1/materials?select=id,title,category,kind,url,file_path,video_id&is_active=eq.true&video_id=not.is.null&order=created_at.desc&limit=1000",{headers:{apikey:SM_KEY,Authorization:"Bearer "+SM_KEY}})
   .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
   .then(d=>{VPX=(d||[]).filter(m=>m.kind!=="youtube"&&vpVid(m));return VPX})
   .catch(()=>{VPX=[];return VPX});
@@ -1275,6 +1375,7 @@ function smCat(i){
      {url:"https://youtu.be/XXXXXXXXXXX"},
    title लिखना चाहें तो:  {url:"...", title:"वीडियो का नाम"}
    title न लिखें तो ऐप खुद YouTube से नाम ले आएगा।
+   (लिस्ट नई-पहले दिखती है: Admin panel की वीडियो सबसे ऊपर, फिर यहाँ की — यहाँ सबसे नीचे जोड़ी वीडियो सबसे ऊपर दिखेगी।)
    ===================================================== */
 const YT_VIDEOS=[
   {url:"https://youtu.be/V--UqOPZINs?si=qFxzpM5UARoBNw3E"},
@@ -1290,7 +1391,8 @@ const YT_CHANNEL="Vinod Kumar Nath";
 const YT_API_KEY="";
 const ytStats={};let ytSq="",ytSon=false,ytCur=-1;
 const ytEsc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const ytList=()=>YT_VIDEOS.map((v,i)=>({i:i,id:ytId(v.url),v:v})).filter(x=>x.id);
+/* Newest-first: pehle admin (DB) videos, phir hardcoded videos ulti (jo sabse end me jodi wo sabse upar). i = YT_VIDEOS ka asli index, isliye ytPlay/ytCur same rehte hain */
+const ytList=()=>{const a=YT_VIDEOS.map((v,i)=>({i:i,id:ytId(v.url),v:v})).filter(x=>x.id);return a.filter(x=>x.v.db).concat(a.filter(x=>!x.v.db).reverse())};
 const ytTitle=x=>x.v.title||ytTitles[x.id]||(ytStats[x.id]&&ytStats[x.id].title)||"Video "+(x.i+1);
 function ytViews(x){
   const r=x.v.views!=null?x.v.views:(ytStats[x.id]&&ytStats[x.id].views);
@@ -1525,7 +1627,7 @@ function seeMore(){
   ${SQ({c:"#0891b2",i:"📖",t:"Study Material & PDF",s:"स्टडी मटेरियल और PDF",b:"Coming Soon",soon:1,on:"smSoon('Study Material & PDF')"})}
   ${SQ({c:"#1457d9",i:"🎓",t:"Courses",s:"अपनी तैयारी के लिए Courses",b:"Coming Soon",soon:1,on:"smSoon('Courses')"})}
   ${SQ({c:"#e8590c",i:"🧭",t:"Prepare According to Your Exam",s:"अपनी परीक्षा के अनुसार तैयारी",b:EXAMS.length+" परीक्षाएँ",on:"examList()"})}
-  ${SQ({c:"#7c3aed",i:"👥",t:"Student Community",s:"विद्यार्थियों का समुदाय",b:"Coming Soon",soon:1,on:"smSoon('Student Community')"})}
+  ${SQ({c:"#7c3aed",i:"👥",t:"Student Community",s:"ग्रुप · चैट · फ़ीड",on:"openCommunity()"})}
   ${SQ({c:"#f59e0b",i:"💡",t:"Your Suggestion",s:"अपना सुझाव ईमेल से भेजें",href:"mailto:"+CONTACT.mail+"?subject="+encodeURIComponent("JAKHAR App - Suggestion")})}
   ${SQ({c:"#64748b",i:"✨",t:"Future Features",s:"आने वाले नए फ़ीचर्स",b:"Coming Soon",soon:1,on:"smSoon('Future Features')"})}</div></main>`,"",false,home);
 }
@@ -1541,26 +1643,123 @@ const examSoon=i=>comingSoon(exShort(EXAMS[i]),examList,"","इस परीक�
 function profile(){
   clearInterval(tick);
   const H=store.get("jk_hist"),R_=H.reduce((a,h)=>a+h.r,0),A=H.reduce((a,h)=>a+h.r+h.w,0);
-  view(hdr(BACK,"","प्रोफ़ाइल")+`<main class="pg"><div class="card hello"><span class="av">👤</span><div><b>JAKHAR विद्यार्थी</b><br><small>तैयारी जारी है 💪</small></div></div>
+  view(hdr(BACK,"","प्रोफ़ाइल")+`<main class="pg">${window.pfHello?pfHello():'<div class="card hello"><span class="av">👤</span><div><b>JAKHAR विद्यार्थी</b><br><small>तैयारी जारी है 💪</small></div></div>'}
   <div class="card"><div class="stat" style="margin:0"><div><b>${cnt("jk_done")}</b>हल किए प्रश्न</div><div><b>${A?Math.round(R_/A*100)+"%":"--"}</b>सटीकता</div><div><b>${streak()}</b>Day Streak</div></div>
   <p style="margin:12px 0 0;font-size:13px;color:var(--mute)">टेस्ट दिए: ${H.length} · सेव: ${cnt("pyq_saved")} · गलत: ${cnt("pyq_wrong")}</p></div>
   <div class="card" id="acct"></div>
   <div class="card"><b>🌐 ${lang==="en"?"Language":"भाषा · Language"}</b><div class="lgs"><button class="${lang==="en"?"":"on"}" onclick="setLang('hi')">हिंदी</button><button class="${lang==="en"?"on":""}" onclick="setLang('en')">English</button></div></div>
   <div class="list">${R({c:"#334155",i:"🌙",t:"Dark Theme",s:"आँखों को आराम — डार्क मोड",b:document.documentElement.classList.contains("dark")?"चालू":"बंद",on:"toggleDark()"})}
+  ${R({c:"#e11d48",i:"💝",t:"Donate Us",s:"सहयोग करें · ब्लू टिक पाएँ",on:"openDonate()"})}
   ${R({c:"#64748b",i:"🔒",t:"Privacy Policy",s:"आपका डेटा कैसे सुरक्षित रहता है",on:"privacy()"})}
-  ${R({c:"#1457d9",i:"📞",t:"Contact Us",s:"YouTube · Telegram · Email",on:"contact()"})}</div></main>`,"prof",false,home);
+  ${R({c:"#1457d9",i:"📞",t:"Contact Us",s:"YouTube · Telegram · Email",on:"contact()"})}</div><div class="cprt">${cpr()}</div></main>`,"prof",false,home);
   if(window.acctRender)acctRender();
+  if(window.pfRefresh)pfRefresh();
 }
 function toggleDark(){const on=!document.documentElement.classList.contains("dark");document.documentElement.classList.toggle("dark",on);store.set("jk_theme",[on?"dark":"light"]);profile()}
+/* ---------- Privacy Policy (Part 3) ----------
+   Naya section jodna ho to PRIV_SECS me [heading, html] jodo. English mode me har text-node Google Translate se jata hai
+   (URL limit), isliye har <p>/<li> chhota (~450 akshar se kam) rakho. Community/moderation/blue tick ki dhara 5-8 hain — Part 7/8 ke saath sync rakho. */
+const PRIV_DATE="26 अक्टूबर 2026";
+const cpr=()=>"© "+new Date().getFullYear()+" Jakhar Academy. All rights reserved.";
+const PRIV_SECS=[
+["1. परिचय",`<p>JAKHAR Classes (“हम”, “ऐप”) राजस्थान की प्रतियोगी परीक्षाओं की तैयारी के लिए PYQ प्रैक्टिस, टेस्ट, विश्लेषण और वीडियो/PDF सामग्री देने वाला मंच है। यह नीति बताती है कि हम कौन-सी जानकारी लेते हैं, उसका उपयोग कैसे होता है और आपके पास क्या विकल्प हैं।</p>
+<p>यह नीति ऐप की मौजूदा और आने वाली सुविधाओं (प्रोफ़ाइल, कम्युनिटी, फ़ाइल अपलोड, डोनेशन/ब्लू टिक) दोनों पर लागू होती है। जो सुविधा आपके ऐप में अभी उपलब्ध नहीं है, उससे जुड़ी बातें उसके शुरू होने पर ही लागू होंगी। ऐप का उपयोग करके आप इस नीति से सहमत माने जाते हैं।</p>`],
+["2. हम कौन-सी जानकारी लेते हैं",`<ul>
+<li><b>बिना लॉगिन:</b> आपका प्रोग्रेस (हल किए, सेव/रिव्यू और गलत प्रश्न), टेस्ट रिकॉर्ड और भाषा/थीम की पसंद सिर्फ़ आपके डिवाइस की लोकल स्टोरेज में रहती है। यह हमारे सर्वर पर नहीं जाती।</li>
+<li><b>लॉगिन करने पर:</b> आपका ईमेल और पासवर्ड। पासवर्ड सुरक्षित (हैश) रूप में रखा जाता है और सादे रूप में किसी को नहीं दिखता।</li>
+<li><b>प्रोग्रेस सिंक:</b> जब आप “प्रोग्रेस सर्वर पर सेव करें” चुनते हैं, तब आपका प्रोग्रेस, सेव/गलत प्रश्नों के निशान और टेस्ट रिकॉर्ड आपके अकाउंट से जोड़कर सर्वर पर रखे जाते हैं।</li>
+<li><b>प्रोफ़ाइल:</b> यूज़रनेम, नाम, प्रोफ़ाइल फ़ोटो, बायो और चुनी हुई परीक्षा जैसी जानकारी, जो आप खुद भरते हैं। प्रोफ़ाइल फ़ोटो हमारे स्टोरेज (Supabase Storage) में रखी जाती है।</li>
+<li><b>कम्युनिटी:</b> आपकी पोस्ट, ग्रुप चैट संदेश, लाइक, ग्रुप की सदस्यता, रिपोर्ट और आपके अपलोड किए PDF/फ़ोटो।</li>
+<li><b>डोनेशन/ब्लू टिक:</b> सत्यापन के लिए आपकी दी हुई UPI ट्रांज़ैक्शन आईडी या भुगतान का स्क्रीनशॉट। हम आपका UPI पिन, कार्ड या बैंक का पासवर्ड नहीं माँगते।</li>
+<li><b>तकनीकी जानकारी:</b> सेवा चलाने के दौरान हमारे सेवा प्रदाताओं के सर्वर पर सामान्य लॉग (जैसे समय, IP पता, डिवाइस/ब्राउज़र का प्रकार) बन सकते हैं।</li>
+</ul>
+<p>वर्तमान में ऐप आपसे फ़ोन नंबर, लोकेशन या कॉन्टैक्ट लिस्ट नहीं माँगता।</p>`],
+["3. जानकारी का उपयोग क्यों",`<ul>
+<li>ऐप, लॉगिन और आपका अकाउंट चलाने के लिए।</li>
+<li>आपका प्रोग्रेस सेव करने और डिवाइस बदलने पर वापस दिखाने के लिए।</li>
+<li>प्रोफ़ाइल और कम्युनिटी की सुविधाएँ देने के लिए।</li>
+<li>कम्युनिटी के नियम लागू करने, दुरुपयोग/स्पैम रोकने और मॉडरेशन के लिए।</li>
+<li>ब्लू टिक के अनुरोध जाँचने के लिए।</li>
+<li>ऐप की गलतियाँ ठीक करने, उसे बेहतर बनाने और आपके सवाल/शिकायत का जवाब देने के लिए।</li>
+<li>कानूनी ज़िम्मेदारियाँ निभाने के लिए।</li>
+</ul>`],
+["4. जानकारी कहाँ रखी जाती है",`<p>सर्वर पर रखा जाने वाला डेटा (अकाउंट, प्रोग्रेस, प्रोफ़ाइल, कम्युनिटी सामग्री) हमारे क्लाउड सेवा प्रदाता Supabase के डेटाबेस और स्टोरेज में रखा जाता है। अपलोड की गई फ़ाइलें (PDF/फ़ोटो) Supabase Storage या किसी अन्य क्लाउड स्टोरेज प्रदाता (जैसे Cloudflare R2) पर रखी जा सकती हैं।</p>
+<p>ये प्रदाता हमारी ओर से तकनीकी सेवा देते हैं और इनके सर्वर भारत के बाहर भी हो सकते हैं। इन पर इनकी अपनी सुरक्षा और गोपनीयता की शर्तें लागू होती हैं।</p>`],
+["5. आपकी जानकारी कौन देख सकता है",`<ul>
+<li>आपका ईमेल और पासवर्ड दूसरे उपयोगकर्ताओं को नहीं दिखाए जाते।</li>
+<li>आपका यूज़रनेम, नाम, फ़ोटो, बायो और ब्लू टिक (यदि हो) दूसरे उपयोगकर्ताओं को दिख सकते हैं।</li>
+<li>पब्लिक ग्रुप और पब्लिक फ़ीड की पोस्ट ऐप के सभी उपयोगकर्ता देख सकते हैं। प्राइवेट ग्रुप की सामग्री सिर्फ़ उसके सदस्य देख सकते हैं।</li>
+<li>ग्रुप चैट एंड-टू-एंड एन्क्रिप्टेड नहीं हैं। रिपोर्ट होने पर या नियम-उल्लंघन की जाँच के लिए ग्रुप एडमिन/मॉडरेटर और ऐप के एडमिन संबंधित सामग्री देख सकते हैं।</li>
+<li>आपका प्रोग्रेस और टेस्ट रिकॉर्ड आपके अकाउंट से जुड़ा रहता है। ऐप का एडमिन सेवा चलाने के लिए अकाउंट से जुड़ी जानकारी देख सकता है और आपकी परफ़ॉर्मेंस पर रिमार्क लिख सकता है, जो सिर्फ़ आपको दिखता है।</li>
+<li>जो कुछ आप सार्वजनिक रूप से पोस्ट करते हैं, उसे दूसरे लोग कॉपी या स्क्रीनशॉट कर सकते हैं। इसलिए अपना फ़ोन नंबर, पता या पहचान-पत्र जैसी निजी जानकारी साझा न करें।</li>
+</ul>`],
+["6. कम्युनिटी के नियम",`<p>कम्युनिटी पढ़ाई और सकारात्मक चर्चा के लिए है। इनकी अनुमति नहीं है:</p>
+<ul>
+<li>हिंसा, धमकी, आत्म-हानि को बढ़ावा देने वाली या किसी को नुकसान पहुँचाने वाली सामग्री।</li>
+<li>गाली-गलौज, अपमान या किसी को परेशान करना (चाहे हिंदी, अंग्रेज़ी या हिंग्लिश में हो)।</li>
+<li>जाति, धर्म, लिंग, क्षेत्र, भाषा या विकलांगता के आधार पर नफ़रत या भेदभाव।</li>
+<li>अश्लील या वयस्क सामग्री।</li>
+<li>स्पैम, बार-बार एक जैसी पोस्ट, अनचाहा प्रचार या संदिग्ध लिंक।</li>
+<li>फ़र्ज़ी या भ्रामक जानकारी (जैसे झूठी भर्ती/रिज़ल्ट की ख़बर) या किसी और का रूप धरना।</li>
+<li>दूसरों की निजी जानकारी उनकी अनुमति के बिना साझा करना।</li>
+<li>ऐसी सामग्री जिसे साझा करने का आपको अधिकार नहीं है (जैसे दूसरों की कॉपीराइट वाली पेड किताबें/नोट्स)।</li>
+<li>कोई भी गैरकानूनी सामग्री या गतिविधि।</li>
+</ul>`],
+["7. मॉडरेशन, सामग्री हटाना और बैन",`<p>नियमों के पालन के लिए हम ऑटोमैटिक फ़िल्टर (आपत्तिजनक शब्दों की सूची), उपयोगकर्ताओं की रिपोर्ट और मैनुअल समीक्षा का उपयोग कर सकते हैं।</p>
+<ul>
+<li>नियम तोड़ने वाली पोस्ट, संदेश या फ़ाइल को बिना पूर्व सूचना के छिपाया या हटाया जा सकता है।</li>
+<li>उल्लंघन की गंभीरता के अनुसार चेतावनी, कुछ समय के लिए म्यूट, ग्रुप से हटाना, या अकाउंट/कम्युनिटी का स्थायी बैन किया जा सकता है।</li>
+<li>ग्रुप एडमिन/मॉडरेटर अपने ग्रुप में सदस्यों को हटा या म्यूट कर सकते हैं और पोस्ट छिपा सकते हैं। ऐप के एडमिन के पास सभी ग्रुप, पोस्ट और उपयोगकर्ताओं पर यह अधिकार है।</li>
+<li>आपत्तिजनक शब्दों वाला टेक्स्ट भेजा नहीं जा सकता; कुछ मामलों में पोस्ट/मैसेज अपने-आप छिप जाता है और हमारी समीक्षा के बाद ही दिखता है। म्यूट/बैन की स्थिति और उसका कारण हमारे रिकॉर्ड में रखा जाता है।</li>
+<li>ऑटोमैटिक फ़िल्टर कभी-कभी गलती कर सकता है। यदि आपको लगे कि आपकी सामग्री या अकाउंट पर गलत कार्रवाई हुई है, तो ईमेल से संपर्क करें। हम समीक्षा करेंगे, पर अंतिम निर्णय हमारा रहेगा।</li>
+<li>गंभीर मामलों में या कानूनी माँग पर संबंधित जानकारी अधिकारियों को दी जा सकती है।</li>
+</ul>`],
+["8. ब्लू टिक और डोनेशन",`<ul>
+<li>ब्लू टिक प्रोफ़ाइल पर दिखने वाला वेरिफ़ाइड बैज है, जो ऐप को सहयोग (डोनेशन) देने वाले उपयोगकर्ता को मिल सकता है। न्यूनतम सहयोग ₹5 है, अधिक देने की कोई सीमा नहीं।</li>
+<li>ब्लू टिक कोई सरकारी या आधिकारिक पहचान-सत्यापन नहीं है, और न ही उपयोगकर्ता की बातों के सही होने की गारंटी।</li>
+<li>शुरुआत में भुगतान की जाँच मैन्युअल होती है (UPI ट्रांज़ैक्शन आईडी/स्क्रीनशॉट से), इसलिए स्वीकृति में समय लग सकता है। गलत या फ़र्ज़ी भुगतान जानकारी देने पर अनुरोध अस्वीकार किया जा सकता है।</li>
+<li>डोनेशन स्वैच्छिक सहयोग है और सामान्यतः वापस नहीं होता। गलती से हुए गलत या दोहरे भुगतान के लिए हमें ईमेल करें।</li>
+<li>नियम तोड़ने या फ़र्ज़ी जानकारी देने पर ब्लू टिक हटाया जा सकता है।</li>
+<li>भुगतान आपके अपने UPI ऐप/बैंक से होता है और उस पर उनकी अपनी शर्तें लागू होती हैं। भविष्य में ऑनलाइन पेमेंट गेटवे जुड़ने पर ये शर्तें अपडेट की जाएँगी।</li>
+</ul>`],
+["9. डेटा साझा करना",`<p>हम आपका व्यक्तिगत डेटा किसी को बेचते नहीं हैं। आपकी जानकारी सिर्फ़ इन स्थितियों में साझा या उजागर हो सकती है:</p>
+<ul>
+<li>सेवा प्रदाताओं (Supabase, क्लाउड स्टोरेज) के साथ, उतनी ही जितनी सेवा चलाने के लिए ज़रूरी हो।</li>
+<li>जो सामग्री आप खुद सार्वजनिक करते हैं (जैसे पब्लिक प्रोफ़ाइल या पब्लिक पोस्ट)।</li>
+<li>कानूनी प्रक्रिया, अदालत/सरकारी आदेश या किसी की सुरक्षा के लिए ज़रूरी होने पर।</li>
+<li>आपकी सहमति से।</li>
+</ul>`],
+["10. आपके विकल्प, डेटा रखना और हटाना",`<ul>
+<li><b>लोकल डेटा:</b> प्रोफ़ाइल में “सारा डेटा रीसेट करें” दबाने से, या ऐप/ब्राउज़र का डेटा क्लियर करने से आपके डिवाइस का डेटा हट जाता है।</li>
+<li><b>सर्वर का डेटा:</b> अपना अकाउंट और उससे जुड़ा डेटा हटवाने या सुधरवाने के लिए हमें ईमेल करें। हम उचित समय के भीतर कार्रवाई करेंगे।</li>
+<li>जहाँ ऐप में पोस्ट या ग्रुप हटाने का विकल्प उपलब्ध है, वहाँ आप उसे खुद हटा सकते हैं।</li>
+<li>अकाउंट हटने के बाद भी रिपोर्ट/मॉडरेशन का रिकॉर्ड और भुगतान-सत्यापन का रिकॉर्ड सुरक्षा, विवाद-निपटान या कानूनी कारणों से सीमित समय तक रखा जा सकता है। बैकअप से हटने में भी कुछ समय लग सकता है।</li>
+<li>लॉगिन वैकल्पिक है। प्रोफ़ाइल और कम्युनिटी जैसी सुविधाओं के लिए लॉगिन ज़रूरी होगा।</li>
+</ul>`],
+["11. बच्चों की निजता",`<p>ऐप मुख्यतः परीक्षा की तैयारी करने वाले विद्यार्थियों के लिए है। 13 वर्ष से कम आयु के बच्चों के लिए लॉगिन, प्रोफ़ाइल और कम्युनिटी की सुविधाएँ नहीं हैं, और हम जानबूझकर उनसे व्यक्तिगत जानकारी नहीं लेते।</p>
+<p>13 से 18 वर्ष के उपयोगकर्ता माता-पिता/अभिभावक की जानकारी और सहमति से ही लॉगिन और कम्युनिटी का उपयोग करें, और अपनी निजी जानकारी (फ़ोन, पता, स्कूल) सार्वजनिक रूप से साझा न करें।</p>
+<p>अभिभावक अपने बच्चे का डेटा हटवाने के लिए हमें ईमेल कर सकते हैं। यदि हमें पता चले कि 13 वर्ष से कम आयु के बच्चे का अकाउंट बना है, तो हम उसे हटा सकते हैं।</p>`],
+["12. सुरक्षा",`<p>आपके डेटा की सुरक्षा के लिए हम इंटरनेट पर सुरक्षित कनेक्शन (HTTPS) और डेटाबेस के एक्सेस-नियमों का उपयोग करते हैं, ताकि हर उपयोगकर्ता सिर्फ़ अपनी अनुमत जानकारी तक पहुँचे। फिर भी कोई भी इंटरनेट सेवा पूरी तरह सुरक्षित होने की गारंटी नहीं दे सकती।</p>
+<p>अपना पासवर्ड गोपनीय रखें और साझा डिवाइस पर उपयोग के बाद लॉगआउट करें। कोई संदिग्ध गतिविधि दिखे तो हमें तुरंत बताएँ।</p>`],
+["13. कॉपीराइट और सामग्री के अधिकार",`<ul>
+<li>ऐप का हमारा तैयार किया कंटेंट (व्याख्या, नोट्स, टेस्ट, डिज़ाइन, लोगो और वीडियो) JAKHAR Academy की संपत्ति है। अपनी निजी पढ़ाई के लिए आप इसे उपयोग कर सकते हैं, पर बिना अनुमति इसे कॉपी, बेचना या दोबारा प्रकाशित करना मना है।</li>
+<li>आप जो सामग्री पोस्ट या अपलोड करते हैं, उसका स्वामित्व आपका रहता है। पर आप हमें उसे ऐप में दिखाने, स्टोर करने और मॉडरेट करने की अनुमति देते हैं, और आपकी ज़िम्मेदारी है कि उसे साझा करने का आपको अधिकार हो।</li>
+<li>यदि आपको लगे कि ऐप में कोई सामग्री आपके कॉपीराइट का उल्लंघन करती है, तो प्रमाण सहित हमें ईमेल करें। जाँच के बाद हम उसे हटा सकते हैं।</li>
+</ul>`],
+["14. तृतीय-पक्ष सेवाएँ और लिंक",`<ul>
+<li><b>YouTube:</b> ऐप में वीडियो YouTube के प्लेयर से चलते हैं। वीडियो चलाने पर YouTube/Google अपनी नीति के अनुसार आपके डिवाइस से जुड़ी जानकारी ले सकते हैं।</li>
+<li><b>अनुवाद:</b> English मोड या अनुवाद बटन का उपयोग करने पर स्क्रीन पर दिख रहा हिंदी टेक्स्ट (जैसे प्रश्न, पोस्ट) अनुवाद के लिए Google की अनुवाद सेवा को भेजा जा सकता है।</li>
+<li><b>अन्य सेवाएँ:</b> वीडियो का शीर्षक लाने और PDF व्यूअर चलाने के लिए ऐप कुछ बाहरी सेवाओं (जैसे noembed, Cloudflare CDN) से जुड़ता है।</li>
+<li>YouTube, Telegram और Email के लिंक दूसरी ऐप/वेबसाइट खोलते हैं। वहाँ उनकी अपनी नीति लागू होती है और उनकी सामग्री के लिए हम ज़िम्मेदार नहीं हैं।</li>
+</ul>`],
+["15. नीति में बदलाव",`<p>नई सुविधाएँ जुड़ने या कानून/सेवा में बदलाव होने पर हम यह नीति अपडेट कर सकते हैं। ऊपर दी “अंतिम अपडेट” की तारीख तब बदल जाएगी। बदलाव के बाद ऐप का उपयोग जारी रखने का अर्थ है कि आप नई नीति से सहमत हैं। ज़रूरी बदलावों की सूचना ऐप में दी जा सकती है।</p>`],
+["16. शिकायत और संपर्क",`<p>गोपनीयता, डेटा हटवाने, किसी सामग्री की रिपोर्ट, मॉडरेशन के फ़ैसले की समीक्षा या कॉपीराइट शिकायत के लिए हमें ईमेल करें: <a href="mailto:${CONTACT.mail}">${CONTACT.mail}</a></p>
+<p>Telegram: <a href="${CONTACT.tg}" target="_blank" rel="noopener">@vinodkumarnath007</a>। हम यथासंभव जल्द जवाब देने का प्रयास करेंगे।</p>`]
+];
 function privacy(){
   clearInterval(tick);
-  view(hdr(BACK,"","Privacy Policy")+`<main class="pg"><div class="card pol"><b>JAKHAR Classes</b><br><small style="color:var(--mute)">अंतिम अपडेट: 4 अक्टूबर 2026</small>
-  <h4>1. हम कौन सी जानकारी रखते हैं</h4><p>लॉगिन वैकल्पिक है। लॉगिन करने पर ही आपका ईमेल और पासवर्ड लिया जाता है; यह ऐप आपसे नाम, फ़ोन नंबर या लोकेशन नहीं माँगता। आपका प्रोग्रेस (हल किए, सेव/रिव्यू और गलत प्रश्न) और टेस्ट का रिकॉर्ड आपके अपने डिवाइस की लोकल स्टोरेज में रहता है। सिर्फ़ तब, जब आप लॉगिन करके “प्रोग्रेस सर्वर पर सेव करें” दबाते हैं, यह प्रोग्रेस और टेस्ट रिकॉर्ड हमारे सुरक्षित सर्वर पर भेजा जाता है।</p>
-  <h4>2. डेटा साझा करना</h4><p>सर्वर पर रखा गया आपका डेटा सिर्फ़ आपके अकाउंट को दिखता है (सर्वर: Supabase) और किसी तीसरे पक्ष को बेचा या दिया नहीं जाता।</p>
-  <h4>3. डेटा हटाना</h4><p>प्रोफ़ाइल में "सारा डेटा रीसेट करें" दबाने से, या ऐप/ब्राउज़र का डेटा क्लियर करने से आपका सारा डेटा हट जाता है।</p>
-  <h4>4. बाहरी लिंक</h4><p>YouTube, Telegram और Email के लिंक दूसरी ऐप/वेबसाइट खोलते हैं। वहाँ उनकी अपनी प्राइवेसी पॉलिसी लागू होती है।</p>
-  <h4>5. बदलाव</h4><p>भविष्य में लॉगिन या डेटा सिंक जैसे फीचर जुड़ने पर यह पॉलिसी अपडेट की जाएगी।</p>
-  <h4>6. संपर्क</h4><p>किसी भी सवाल के लिए: <a href="mailto:${CONTACT.mail}">${CONTACT.mail}</a></p></div></main>`,"prof",false,profile);
+  view(hdr(BACK,"","Privacy Policy")+`<main class="pg"><div class="card pol"><b>JAKHAR Classes</b><br><small style="color:var(--mute)">अंतिम अपडेट: ${PRIV_DATE}</small>
+  ${PRIV_SECS.map(s=>`<h4>${s[0]}</h4>${s[1]}`).join("")}</div><div class="cprt">${cpr()}</div></main>`,"prof",false,profile);
 }
 function contact(){
   clearInterval(tick);
@@ -1680,7 +1879,7 @@ function enNode(n){const v=n.nodeValue;if(!HAS.test(v))return;const k=v.trim();
   const r=v.replace(DEV,m=>EN[m]||m);if(!HAS.test(r)){n.nodeValue=r;return}
   if(enC[k]){n.nodeValue=v.replace(k,()=>enC[k]);return}
   gtr(k,"en").then(t=>{enC[k]=t;enSave();if(n.isConnected&&lang==="en"&&n.nodeValue.indexOf(k)>=0)n.nodeValue=n.nodeValue.replace(k,()=>t)}).catch(()=>{})}
-const enSkip=n=>{const p=n.parentElement;return !p||/^(SCRIPT|STYLE|TEXTAREA)$/.test(p.tagName)||!!p.closest("p.q,.opt .t,.exp p,.exp b")};
+const enSkip=n=>{const p=n.parentElement;return !p||/^(SCRIPT|STYLE|TEXTAREA)$/.test(p.tagName)||!!p.closest("p.q,.opt .t,.exp p,.exp b,.pfx")};
 function enWalk(root){const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),a=[];while(w.nextNode())a.push(w.currentNode);a.forEach(n=>{if(!enSkip(n))enNode(n)})}
 new MutationObserver(ms=>{if(lang!=="en")return;ms.forEach(m=>{if(m.type==="characterData"){if(!enSkip(m.target))enNode(m.target)}else m.addedNodes.forEach(n=>{if(n.nodeType===3){if(!enSkip(n))enNode(n)}else if(n.nodeType===1)enWalk(n)})})}).observe(document.body||document.documentElement,{childList:true,subtree:true,characterData:true});
 function setLang(l){lang=l;store.set("jk_lang",[l]);trQ=null;trOff=null;profile();if(l==="en")enWalk(document.body)}
@@ -1699,7 +1898,7 @@ function trPaint(h){const q=Q[cur],n=q.options.length;
 async function trRun(q){
   const tb=document.getElementById("tr");if(tb)tb.textContent="…";
   try{let c=trCache[q.question];
-    if(!c){const parts=[q.question,...q.options,q.explanation||""],part=new Array(parts.length);
+    if(!c){const parts=[fmtQ(q.question),...q.options.map(o=>fmtQ(o,1)),fmtQ(q.explanation||"",1)],part=new Array(parts.length);
       c=await Promise.all(parts.map((h,i)=>trHTML(h,"en").then(r=>{part[i]=r;if(Q[cur]===q&&trOff!==q.question){trQ=q.question;trPaint(part)}return r})));
       trCache[q.question]=c}
     if(Q[cur]===q&&trOff!==q.question){trQ=q.question;trPaint(c)}}
@@ -1715,10 +1914,10 @@ function render(keep){
   <div class="pal" id="pal">${Q.map((qq,i)=>{const s=state[i];let c=(i===cur?"cur ":"")+(s.review?"rv ":"");if(s.picked!==null)c+=hide?"an":(s.picked===qq.answer?"ok":"no");return `<button class="pb ${c}" data-n="${i}">${i+1}</button>`}).join("")}</div>
   <div class="legend">${hide?"🟦 उत्तर दिया &nbsp; ⬜ बाकी &nbsp; 🟧 रिव्यू":"🟩 सही &nbsp; 🟥 गलत &nbsp; ⬜ बाकी &nbsp; 🟧 रिव्यू"}</div>
   <div class="card"><div class="tools"><div class="crumb" style="flex:1;min-width:0;align-self:center">${q.subject} › ${q.chapter}</div>${hide&&done?'<button class="tool" id="clr">✖ हटाएँ</button>':""}</div>
-  <p class="q">${q.question}</p>
+  <p class="q">${fmtQ(q.question)}</p>
   <div class="tags">${q.exams.map(e=>`<span class="tag" style="background:${colorFor(e)}">${e}</span>`).join("")}<span class="acts3"><button class="trb" id="tr" title="Translate" aria-label="Translate">${TRI}</button><button class="tool ${st.review?"on":""}" id="rv">Review</button><button class="tool mn" id="mn" aria-label="Sort questions">⋮</button></span></div>
-  ${q.options.map((o,i)=>`<button class="opt" data-i="${i}"><span class="l">${"ABCD"[i]}</span><span class="t">${o}</span><span class="r"></span></button>`).join("")}
-  <div class="exp" id="exp"><div class="exh"><h4>सही उत्तर</h4></div><div class="exr"><b>${"ABCD"[q.answer]}. ${q.options[q.answer]}</b>${VERIFIED_CHAPTERS.includes(q.chapter)?VB:""}</div><p>${q.explanation}</p></div></div>
+  ${q.options.map((o,i)=>`<button class="opt" data-i="${i}"><span class="l">${"ABCD"[i]}</span><span class="t">${fmtQ(o,1)}</span><span class="r"></span></button>`).join("")}
+  <div class="exp" id="exp"><div class="exh"><h4>सही उत्तर</h4></div><div class="exr"><b>${"ABCD"[q.answer]}. ${q.options[q.answer]}</b>${VERIFIED_CHAPTERS.includes(q.chapter)?VB:""}</div><p>${fmtQ(q.explanation,1)}</p></div></div>
   <div class="nav"><button class="btn ghost" id="prev" ${cur===0?"disabled":""}>← पिछला</button>
   <button class="btn" id="next">${last?(finished?"रिज़ल्ट पर लौटें":"✔ सबमिट करें"):"अगला →"}</button></div><div id="askbox"></div></main>`,"",keep);
   const pal=document.getElementById("pal");pal.querySelectorAll(".pb").forEach(x=>x.onclick=()=>go(+x.dataset.n));
@@ -1740,7 +1939,7 @@ function render(keep){
   if(trQ===q.question&&trCache[trQ])trPaint(trCache[trQ]);
   else if(lang==="en"&&trOff!==q.question)trRun(q);
   document.getElementById("tr").onclick=()=>{
-    if(trQ===q.question){trQ=null;trOff=q.question;trPaint([q.question,...q.options,q.explanation||""]);return}
+    if(trQ===q.question){trQ=null;trOff=q.question;trPaint([fmtQ(q.question),...q.options.map(o=>fmtQ(o,1)),fmtQ(q.explanation||"",1)]);return}
     trOff=null;trRun(q)};
   rv.onclick=()=>{st.review=!st.review;rv.classList.toggle("on",st.review);const c=document.querySelector(".pb.cur");if(c)c.classList.toggle("rv",st.review);
     const rs=new Set(store.get("jk_review"));if(st.review)rs.add(q.question);else rs.delete(q.question);store.set("jk_review",[...rs]);jvTrack(q,"r",st.review,st.picked)};
@@ -1820,7 +2019,7 @@ splash();
   async function fetchAll(){
     let all=[],from=0,step=500;
     while(true){
-      const r=await fetch(URL_BASE+"?select=id,subject,chapter,question,options,answer,explanation,exams&is_active=eq.true&order=created_at.asc,id.asc",{cache:"no-store",headers:{apikey:KEY,Authorization:"Bearer "+KEY,Range:from+"-"+(from+step-1)}});
+      const r=await fetch(URL_BASE+"?select=id,subject,chapter,question,options,answer,explanation,exams,created_at&is_active=eq.true&order=created_at.asc,id.asc",{cache:"no-store",headers:{apikey:KEY,Authorization:"Bearer "+KEY,Range:from+"-"+(from+step-1)}});
       if(!r.ok&&r.status!==206)throw new Error("HTTP "+r.status);
       const d=await r.json();all=all.concat(d);if(d.length<step)break;from+=step;
     }
@@ -1841,9 +2040,10 @@ splash();
           if(Array.isArray(QUESTIONS)&&QUESTIONS.some(q=>q.id)){
             for(let i=QUESTIONS.length-1;i>=0;i--){if(QUESTIONS[i].id&&!live.has(QUESTIONS[i].id))QUESTIONS.splice(i,1)}
             for(let i=QS.length-1;i>=0;i--){if(QS[i].id&&!live.has(QS[i].id))QS.splice(i,1)}
-            const have=new Set(QUESTIONS.map(q=>q.id).filter(Boolean));let added=0;
-            good.forEach(r=>{if(have.has(r.id))return;const q={id:r.id,subject:r.subject,chapter:r.chapter,question:r.question,exams:r.exams,options:r.options,answer:r.answer,explanation:r.explanation||""};QUESTIONS.push(q);if(SUBJECTS.some(z=>z.name===q.subject&&z.chapters.includes(q.chapter)))QS.push(q);added++});
-            if(added&&document.querySelector(".tiles2")&&window.newRefresh)newRefresh();
+            const have=new Set(QUESTIONS.map(q=>q.id).filter(Boolean)),byId=new Map(QUESTIONS.filter(q=>q.id).map(q=>[q.id,q]));let added=0;
+            good.forEach(r=>{if(have.has(r.id)){const o=byId.get(r.id);if(o&&r.created_at)o.created_at=r.created_at;return}const q={id:r.id,subject:r.subject,chapter:r.chapter,question:r.question,exams:r.exams,options:r.options,answer:r.answer,explanation:r.explanation||"",created_at:r.created_at};QUESTIONS.push(q);if(SUBJECTS.some(z=>z.name===q.subject&&z.chapters.includes(q.chapter)))QS.push(q);added++});
+            /* NEW badge time-based hai (created_at); data aate hi home tiles dobara bana do */
+            if(window.nmBump)nmBump();if(document.querySelector(".tiles2")&&window.newRefresh)newRefresh();
           }
         }
       }catch(e){}
@@ -2001,6 +2201,7 @@ splash();
     email=String(email||"").trim();if(!validEmail(email))throw new Error("BADEMAIL");
     await call("/auth/v1/recover?redirect_to="+encodeURIComponent(location.origin+location.pathname),{email});return true})}
   function signOut(){
+    try{localStorage.removeItem("jk_profile")}catch(e){}
     const s=load();save(null);   /* pehle device se hatao, taaki offline me bhi logout ho jaye */
     if(s&&s.access_token){try{fetch(BASE+"/auth/v1/logout?scope=local",{method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+s.access_token}}).catch(()=>{})}catch(e){}}
   }
@@ -2059,6 +2260,255 @@ splash();
     document.getElementById("acUp").onclick=()=>go("up");
   };
   window.addEventListener("load",refresh);
+})();
+</script>
+<script>
+/* ===== Part 5: Profile (JKProfile) — `profiles` table ka single source of truth =====
+   JKProfile.get() (cache, turant) / load() (server) / update(fields) / available(username) / setAvatar(file) / avatar(p,big)
+   Community (Part 7) me naam/@username/photo/blue tick yahin se aayenge — alag copy mat banana.
+   Naam/@username/bio hamesha smE() se escape karke, `.pfx` wrapper me dikhao (English mode me translate na ho). */
+(function(){
+  const BASE=SM_BASE,KEY=SM_KEY,CK="jk_profile",DEF_NAME="JAKHAR विद्यार्थी",$=id=>document.getElementById(id);
+  const RESERVED=["admin","administrator","owner","root","support","help","moderator","official","jakhar","jakharacademy","jakharclasses","vinodkumarnath"];
+  const PF_EXAMS=["RPSC RAS"].concat(EXAMS.slice(0,-1));
+  const cache=()=>{try{return JSON.parse(localStorage.getItem(CK)||"null")}catch(e){return null}};
+  const setCache=p=>{try{if(p)localStorage.setItem(CK,JSON.stringify(p));else localStorage.removeItem(CK)}catch(e){}};
+  function get(){const p=cache(),u=window.JKAuth?JKAuth.uid():"";return p&&u&&p.id===u?p:null}
+  async function tok(){
+    if(!window.JKAuth)return null;
+    try{await JKAuth.refresh()}catch(e){}
+    let s=JKAuth.getSession();if(!s)return null;
+    if(!s.uid){await JKAuth.ensureUid();s=JKAuth.getSession()}
+    return s&&s.uid?s:null;
+  }
+  async function rest(method,path,s,body,extra){
+    const h={apikey:KEY,Authorization:"Bearer "+s.access_token,"Content-Type":"application/json"};if(extra)Object.assign(h,extra);
+    const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),12000);let r;
+    try{r=await fetch(BASE+path,{method,headers:h,body:body==null?undefined:JSON.stringify(body),signal:ac.signal})}
+    catch(e){throw new Error("NET")}finally{clearTimeout(tm)}
+    const j=await r.json().catch(()=>null);
+    if(!r.ok){const e=new Error((j&&(j.message||j.msg||j.error))||("HTTP "+r.status));e.code=j&&j.code;e.status=r.status;throw e}
+    return j;
+  }
+  /* username niyam (DB constraint jaise hi). "" = theek, warna Hindi error */
+  function unErr(u){
+    if(!/^[a-z0-9_.]+$/.test(u))return"सिर्फ़ a-z, 0-9, _ और . चलेंगे (कोई space या बड़ा अक्षर नहीं)";
+    if(u.length<3||u.length>20)return"यूज़रनेम 3 से 20 अक्षर का होना चाहिए";
+    if(/(^\.|\.$|\.\.)/.test(u))return"यूज़रनेम की शुरुआत/अंत में '.' या लगातार '..' नहीं चलेगा";
+    if(RESERVED.includes(u))return"यह यूज़रनेम सुरक्षित है, कोई दूसरा चुनें";
+    return"";
+  }
+  let LP=null;
+  function load(){return LP||(LP=loadOnce().finally(()=>{LP=null}))}
+  async function loadOnce(){
+    const s=await tok();if(!s)return null;
+    const a=await rest("GET","/rest/v1/profiles?id=eq."+s.uid+"&select=*",s);
+    if(a&&a[0]){setCache(a[0]);return a[0]}
+    return create(s);
+  }
+  /* Row na mile (purana user / trigger na chala) to app khud default profile bana leta hai */
+  async function create(s){
+    for(let t=0;t<6;t++){
+      const un="jakhar"+String(Math.floor(Math.random()*1e6)).padStart(6,"0");
+      try{const r=await rest("POST","/rest/v1/profiles",s,{id:s.uid,username:un,display_name:DEF_NAME},{Prefer:"return=representation"});if(r&&r[0]){setCache(r[0]);return r[0]}}
+      catch(e){
+        if(e.code==="23505"||e.status===409){const a=await rest("GET","/rest/v1/profiles?id=eq."+s.uid+"&select=*",s).catch(()=>null);if(a&&a[0]){setCache(a[0]);return a[0]}continue}
+        throw e}
+    }
+    return null;
+  }
+  async function update(f){
+    const s=await tok();if(!s)throw new Error("NOLOGIN");
+    try{
+      const r=await rest("PATCH","/rest/v1/profiles?id=eq."+s.uid,s,f,{Prefer:"return=representation"});
+      if(!r||!r[0])throw new Error("NOROW");
+      setCache(r[0]);return r[0];
+    }catch(e){
+      if(e.code==="23505"||e.status===409)throw new Error("TAKEN");
+      if(e.code==="23514")throw new Error("INVALID");
+      throw e}
+  }
+  async function available(u){
+    const s=await tok();if(!s)throw new Error("NOLOGIN");
+    const a=await rest("GET","/rest/v1/profiles?username=eq."+encodeURIComponent(u)+"&select=id",s);
+    return !(a&&a.length&&a[0].id!==s.uid);
+  }
+  /* Photo: 256x256 square crop, JPEG ~20-40 KB, bucket `avatars/<uid>/avatar.jpg` */
+  function compress(file){return new Promise((res,rej)=>{
+    const img=new Image(),url=URL.createObjectURL(file);
+    img.onload=()=>{URL.revokeObjectURL(url);const S=256,c=document.createElement("canvas");c.width=c.height=S;const x=c.getContext("2d");
+      const m=Math.min(img.width,img.height),sx=(img.width-m)/2,sy=(img.height-m)/2;x.fillStyle="#fff";x.fillRect(0,0,S,S);x.drawImage(img,sx,sy,m,m,0,0,S,S);
+      c.toBlob(b=>b?res(b):rej(new Error("IMG")),"image/jpeg",.82)};
+    img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error("IMG"))};img.src=url})}
+  async function setAvatar(file){
+    const s=await tok();if(!s)throw new Error("NOLOGIN");
+    const blob=await compress(file);let r;
+    try{r=await fetch(BASE+"/storage/v1/object/avatars/"+s.uid+"/avatar.jpg",{method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+s.access_token,"Content-Type":"image/jpeg","x-upsert":"true"},body:blob})}
+    catch(e){throw new Error("NET")}
+    if(!r.ok){const j=await r.json().catch(()=>null);console.warn("avatar upload",r.status,j);throw new Error("UPLOAD")}
+    return update({avatar_url:BASE+"/storage/v1/object/public/avatars/"+s.uid+"/avatar.jpg?v="+Date.now()});
+  }
+  async function removeAvatar(){
+    const s=await tok();if(!s)throw new Error("NOLOGIN");
+    try{await fetch(BASE+"/storage/v1/object/avatars/"+s.uid+"/avatar.jpg",{method:"DELETE",headers:{apikey:KEY,Authorization:"Bearer "+s.access_token}})}catch(e){}
+    return update({avatar_url:null});
+  }
+  const COL=["#1457d9","#c2410c","#0f766e","#7e22ce","#be185d","#4d7c0f","#b45309","#0369a1"];
+  function colorOf(u){let h=0;String(u||"").split("").forEach(c=>{h=(h*31+c.charCodeAt(0))>>>0});return COL[h%COL.length]}
+  function avatar(p,big){
+    const cls="pfa"+(big?" big":"");
+    if(p&&p.avatar_url)return'<img class="'+cls+'" src="'+smE(p.avatar_url)+'" alt="">';
+    const n=Array.from(String((p&&p.display_name)||"J").trim())[0]||"J";
+    return'<span class="'+cls+'" style="background:'+colorOf(p&&p.username)+'">'+smE(n.toUpperCase())+'</span>';
+  }
+  window.JKProfile={get,load,update,available,setAvatar,removeAvatar,avatar,unErr,exams:PF_EXAMS};
+
+  /* ---------- profile screen: upar ka card ---------- */
+  function inner(p){
+    return avatar(p)+'<div class="pfx"><b>'+smE(p.display_name)+(p.verified?'<span class="vtk" title="Verified">✔</span>':'')+'</b><small class="pfun">@'+smE(p.username)+'</small>'+
+      (p.exam?'<span class="pfchip">'+smE(p.exam)+'</span>':'')+(p.bio?'<div class="pfbio">'+smE(p.bio)+'</div>':'<small>तैयारी जारी है 💪</small>')+'</div><span class="go">›</span>';
+  }
+  window.pfHello=function(){
+    if(!window.JKAuth||!JKAuth.isLoggedIn())
+      return'<div class="card hello"><span class="av">👤</span><div><b>JAKHAR विद्यार्थी</b><br><small>लॉगिन करके अपनी प्रोफ़ाइल बनाएँ</small></div></div>';
+    const p=get()||{display_name:DEF_NAME,username:"…",exam:"",bio:"",avatar_url:null};
+    return'<div class="card hello pfc" id="pfCard" onclick="profileEdit()">'+inner(p)+'</div>';
+  };
+  window.pfRefresh=async function(){
+    if(!window.JKAuth||!JKAuth.isLoggedIn())return;
+    const before=JSON.stringify(get());
+    try{const p=await load();const el=$("pfCard");if(el&&p&&JSON.stringify(p)!==before)el.innerHTML=inner(p)}
+    catch(e){console.warn("profile load:",e.message)}
+  };
+
+  /* ---------- profile edit screen ---------- */
+  const EDIT_HDR=()=>hdr(BACK,"","प्रोफ़ाइल एडिट");
+  window.profileEdit=async function(){
+    if(!window.JKAuth||!JKAuth.isLoggedIn()){window.loginScreen&&loginScreen();return}
+    let p=get();
+    if(!p){
+      view(EDIT_HDR()+'<main class="pg"><div class="card pfm" id="pfL">लोड हो रही है...</div></main>',"prof",false,profile);
+      try{p=await load()}catch(e){console.warn("profile load:",e.message);p=null}
+      const L=$("pfL");if(!L)return;
+      if(!p){L.textContent="प्रोफ़ाइल अभी लोड नहीं हो पा रही। इंटरनेट जाँचकर थोड़ी देर बाद फिर कोशिश करें।";return}
+    }
+    draw(p);
+  };
+  function draw(p){
+    const inList=!p.exam||PF_EXAMS.includes(p.exam);
+    const opts='<option value="">— चुनें —</option>'+PF_EXAMS.map(e=>'<option value="'+smE(e)+'"'+(e===p.exam?" selected":"")+'>'+smE(e)+'</option>').join("")+'<option value="__o"'+(inList?"":" selected")+'>अन्य (खुद लिखें)</option>';
+    view(EDIT_HDR()+`<main class="pg pfe">
+      <div class="card pfp"><div id="pfAv">${avatar(p,1)}</div>
+        <div class="pfb2"><button class="btn" id="pfPick">📷 फ़ोटो बदलें</button><button class="btn ghost" id="pfDel" style="${p.avatar_url?"":"display:none"}">हटाएँ</button></div>
+        <input type="file" id="pfF" accept="image/*" style="display:none"><div class="pfm" id="pfPm">फ़ोटो अपने-आप छोटी (256×256) करके सेव होती है।</div></div>
+      <div class="card">
+        <label class="pfl" for="pfN">नाम</label><input class="pfi pfx" id="pfN" maxlength="40" autocomplete="off" value="${smE(p.display_name)}">
+        <label class="pfl" for="pfU">यूज़रनेम (यूनिक)</label><div class="pfu"><span>@</span><input class="pfx" id="pfU" maxlength="20" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" value="${smE(p.username)}"></div>
+        <div class="pfm" id="pfUm">3-20 अक्षर: a-z, 0-9, _ और .</div>
+        <label class="pfl" for="pfB">बायो</label><textarea class="pfx" id="pfB" rows="3" maxlength="150" placeholder="अपने बारे में छोटा-सा लिखें">${smE(p.bio)}</textarea><div class="pfm" id="pfBc"></div>
+        <label class="pfl" for="pfX">आपकी परीक्षा (Your Exam)</label><select id="pfX">${opts}</select>
+        <input class="pfi" id="pfXo" maxlength="60" placeholder="परीक्षा का नाम लिखें" style="margin-top:8px;${inList?"display:none":""}" value="${inList?"":smE(p.exam)}">
+        <button class="btn" id="pfS" style="width:100%;margin-top:16px">सेव करें</button><div class="pfm" id="pfSm"></div>
+      </div></main>`,"prof",false,profile);
+    const N=$("pfN"),U=$("pfU"),B=$("pfB"),X=$("pfX"),Xo=$("pfXo"),Um=$("pfUm"),Sm=$("pfSm"),cur=p.username;
+    const setM=(el,t,c)=>{el.className="pfm"+(c?" "+c:"");el.textContent=t};
+    const bc=()=>{setM($("pfBc"),B.value.length+"/150")};bc();B.oninput=bc;
+    X.onchange=()=>{Xo.style.display=X.value==="__o"?"block":"none"};
+    let seq=0,tm;
+    U.oninput=()=>{
+      clearTimeout(tm);
+      const v=U.value.toLowerCase().replace(/^@+/,"").replace(/\s+/g,"");if(v!==U.value)U.value=v;
+      if(v===cur){setM(Um,"आपका मौजूदा यूज़रनेम");return}
+      const er=unErr(v);if(er){setM(Um,er,"bad");return}
+      setM(Um,"जाँच रहे हैं...");const my=++seq;
+      tm=setTimeout(async()=>{
+        try{const a=await available(v);if(my!==seq)return;setM(Um,a?"✅ उपलब्ध है":"❌ यह यूज़रनेम ले लिया गया है",a?"ok":"bad")}
+        catch(e){if(my!==seq)return;setM(Um,"जाँच नहीं हो पाई — इंटरनेट देखें","bad")}
+      },450);
+    };
+    /* photo */
+    $("pfPick").onclick=()=>$("pfF").click();
+    $("pfF").onchange=async e=>{
+      const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;
+      const pm=$("pfPm");setM(pm,"फ़ोटो अपलोड हो रही है...");$("pfPick").disabled=true;
+      try{const r=await setAvatar(f);if(!$("pfAv"))return;$("pfAv").innerHTML=avatar(r,1);$("pfDel").style.display="";setM(pm,"✅ फ़ोटो सेव हो गई","ok")}
+      catch(er){if(!$("pfPm"))return;setM(pm,er.message==="IMG"?"यह फ़ोटो पढ़ी नहीं जा सकी। JPG/PNG फ़ोटो चुनें।":er.message==="NET"?"इंटरनेट नहीं है। फिर कोशिश करें।":"फ़ोटो अपलोड नहीं हो पाई। थोड़ी देर बाद फिर कोशिश करें।","bad")}
+      if($("pfPick"))$("pfPick").disabled=false;
+    };
+    $("pfDel").onclick=async()=>{
+      if(!confirm("प्रोफ़ाइल फ़ोटो हटाएँ?"))return;
+      try{const r=await removeAvatar();$("pfAv").innerHTML=avatar(r,1);$("pfDel").style.display="none";setM($("pfPm"),"फ़ोटो हटा दी गई","ok")}
+      catch(er){setM($("pfPm"),"फ़ोटो नहीं हट पाई। फिर कोशिश करें।","bad")}
+    };
+    /* save */
+    $("pfS").onclick=async()=>{
+      const btn=$("pfS"),name=N.value.replace(/\s+/g," ").trim(),un=U.value.trim().toLowerCase(),bio=B.value.replace(/\s*\n\s*/g," ").trim();
+      const exam=X.value==="__o"?Xo.value.replace(/\s+/g," ").trim():X.value;
+      if(Array.from(name).length<2||Array.from(name).length>40){setM(Sm,"नाम 2 से 40 अक्षर का होना चाहिए","bad");N.focus();return}
+      const er=unErr(un);if(er){setM(Sm,er,"bad");U.focus();return}
+      if(bio.length>150){setM(Sm,"बायो 150 अक्षर से ज़्यादा नहीं हो सकता","bad");return}
+      if(X.value==="__o"&&!exam){setM(Sm,"परीक्षा का नाम लिखें या सूची से चुनें","bad");Xo.focus();return}
+      const f={};
+      if(name!==p.display_name)f.display_name=name;
+      if(un!==p.username)f.username=un;
+      if(bio!==p.bio)f.bio=bio;
+      if(exam!==p.exam)f.exam=exam;
+      if(!Object.keys(f).length){toast("कोई बदलाव नहीं");profile();return}
+      btn.disabled=true;setM(Sm,"सेव हो रहा है...");
+      try{
+        if(f.username&&!(await available(f.username))){setM(Um,"❌ यह यूज़रनेम ले लिया गया है","bad");setM(Sm,"दूसरा यूज़रनेम चुनें","bad");btn.disabled=false;return}
+        await update(f);toast("प्रोफ़ाइल सेव हो गई ✅");profile();
+      }catch(e){
+        const m=e.message==="TAKEN"?"यह यूज़रनेम अभी किसी और ने ले लिया। दूसरा चुनें।":e.message==="BANNED_WORD"?"नाम/यूज़रनेम/बायो में ऐसे शब्द हैं जो नियमों के खिलाफ हैं। बदलकर फिर कोशिश करें।":e.message==="INVALID"?"कोई जानकारी नियम के मुताबिक नहीं है। जाँचकर फिर कोशिश करें।":e.message==="NET"?"इंटरनेट नहीं है। फिर कोशिश करें।":"सेव नहीं हो पाया। थोड़ी देर बाद फिर कोशिश करें।";
+        if(e.message==="TAKEN")setM(Um,"❌ यह यूज़रनेम ले लिया गया है","bad");
+        if(!["TAKEN","INVALID","NET","BANNED_WORD"].includes(e.message))console.warn("profile save:",e);
+        setM(Sm,m,"bad");if($("pfS"))$("pfS").disabled=false;
+      }
+    };
+  }
+  /* login ke baad profile pehle se cache me aa jaye (pehli baar profile kholne par naam turant dikhe) */
+  window.addEventListener("load",()=>{setTimeout(()=>{if(window.JKAuth&&JKAuth.isLoggedIn())load().catch(()=>{})},1500)});
+})();
+</script>
+<script>
+/* ===== Community code alag file me (community.js) — index.html halka rahe. =====
+   Community kholte hi: `await jkLoadCommunity()` (pehli baar download, phir cache). community.js badalne par JK_COMM_V badlo. */
+const JK_COMM_V = "3";
+window.jkLoadCommunity = function () {
+  if (window.JKCom) return Promise.resolve(window.JKCom);
+  if (window.__jkComm) return window.__jkComm;
+  return window.__jkComm = new Promise((ok, no) => {
+    const sc = document.createElement("script");
+    sc.src = "community.js?v=" + JK_COMM_V;
+    sc.onload = () => window.JKCom ? ok(window.JKCom) : (window.__jkComm = null, no(new Error("LOAD")));
+    sc.onerror = () => { window.__jkComm = null; no(new Error("NET")); };
+    document.head.appendChild(sc);
+  });
+};
+/* See More -> Student Community */
+window.openCommunity = function () {
+  view(hdr(BACK, "", "Student Community") + '<main class="pg"><div class="card" style="text-align:center;color:var(--mute)">लोड हो रही है...</div></main>', "", false, seeMore);
+  jkLoadCommunity().then(c => c.open()).catch(() => {
+    view(hdr(BACK, "", "Student Community") + '<main class="pg"><div class="card" style="text-align:center">Community अभी खुल नहीं पा रही।<br>इंटरनेट जाँचकर फिर कोशिश करें।<br><br><button class="btn" id="cmR" style="width:100%">फिर कोशिश करें</button></div></main>', "", false, seeMore);
+    document.getElementById("cmR").onclick = openCommunity;
+  });
+};
+/* Part 8: Profile -> Donate Us (screen community.js me hai, isliye wahi loader) */
+window.openDonate = function () {
+  view(hdr(BACK, "", "💝 Donate Us") + '<main class="pg"><div class="card" style="text-align:center;color:var(--mute)">लोड हो रही है...</div></main>', "prof", false, profile);
+  jkLoadCommunity().then(c => c.donate()).catch(() => {
+    view(hdr(BACK, "", "💝 Donate Us") + '<main class="pg"><div class="card" style="text-align:center">अभी खुल नहीं पा रहा।<br>इंटरनेट जाँचकर फिर कोशिश करें।<br><br><button class="btn" id="dnR" style="width:100%">फिर कोशिश करें</button></div></main>', "prof", false, profile);
+    document.getElementById("dnR").onclick = openDonate;
+  });
+};
+/* इनवाइट लिंक (?join=<code>): code याद रखो; लॉगिन होते ही ग्रुप की जानकारी दिखाओ */
+(function () {
+  try { const m = /[?&]join=([0-9a-f]{8,40})/i.exec(location.search); if (m) { sessionStorage.setItem("jk_join", m[1]); history.replaceState(null, "", location.pathname + location.hash); } } catch (e) {}
+  let n = 0; const t = setInterval(() => {
+    n++; let code = ""; try { code = sessionStorage.getItem("jk_join") || ""; } catch (e) {}
+    if (!code || n > 600) { clearInterval(t); return; }
+    if (window.JKAuth && JKAuth.isLoggedIn()) { clearInterval(t); jkLoadCommunity().then(c => c.handleJoin(code)).catch(() => {}); }
+  }, 1000);
 })();
 </script>
 <script>
@@ -2361,7 +2811,7 @@ function histOfTest(x){
   return H.map((h,i)=>({h:h,i:i})).filter(o=>o.h&&((o.h.tid&&String(o.h.tid)===id)||(!o.h.tid&&uniq&&o.h.k===x.kind&&o.h.n===x.title)));
 }
 function tstCard(x,c,icon){
-  const id=smE(x.id),A=histOfTest(x),L=A[0],sn=NEWSNAP[x.kind],nw=sn&&sn.ids.has(String(x.id));
+  const id=smE(x.id),A=histOfTest(x),L=A[0],nw=newTest(x);
   const tot=+((x.q_count||0)*(+x.marks_per_q||1)).toFixed(2);
   const ex=x.kind==="mock"?exChips(examsOf(x),x.id):"";
   return `<div class="tc" style="--c:${c}"><button class="row" onclick="tstOpen('${id}')"><span class="ic">${icon}</span><span class="tx"><b>${smE(cleanTitle(x))}</b>${ex}<small>${smE(tmeta(x))}</small></span>${nw?'<span class="nw">NEW</span>':""}<span class="bg${L?" dn":""}">${L?"✔ दिया":"Test"}</span><i>›</i></button>`
@@ -2594,11 +3044,11 @@ function mistOpen(i){
     :srcs.map(s=>`<div>${jvSrcLabel(s)}${s.p!=null?` · आपका उत्तर: <b>${"ABCD"[s.p]}</b> ${s.p===q.answer?"✅":"❌"}`:s.p===null&&s.a&&String(s.a).charAt(0)==="h"?" · छोड़ा":""}</div>`).join("")}</div>`;
   const opts=q.options.map((o,k)=>{const c=k===q.answer?"correct":(k===p?"wrong":"");
     const tg=[];if(k===p)tg.push("आपका उत्तर");if(k===q.answer)tg.push("सही उत्तर");
-    return`<div class="opt ${c}"><span class="l">${"ABCD"[k]}</span><span class="t">${o}</span>${tg.length?`<em class="ot ${k===q.answer?"gd":"bd"}">${tg.join(" · ")}</em>`:""}</div>`}).join("");
+    return`<div class="opt ${c}"><span class="l">${"ABCD"[k]}</span><span class="t">${fmtQ(o,1)}</span>${tg.length?`<em class="ot ${k===q.answer?"gd":"bd"}">${tg.join(" · ")}</em>`:""}</div>`}).join("");
   view(hdr(BACK,`<button class="ib" id="msv" onclick="mistSave()">${BM(sv)}</button>`,"प्रश्न समीक्षा")+`<main class="pg">
   <div class="prog"><span class="mrk">${JVM[kind].ic} ${JVM[kind].hi}</span><div class="bar"><div style="width:${(i+1)/L.length*100}%"></div></div><span><b>${i+1}</b> / ${L.length}</span></div>
-  <div class="card">${ban}${srcBlock}<p class="q" style="margin-top:12px">${q.question}</p>${opts}
-  <div class="exp" style="display:block"><div class="exh"><h4>व्याख्या</h4></div><div class="exr"><b>सही उत्तर: ${"ABCD"[q.answer]}. ${q.options[q.answer]}</b>${VERIFIED_CHAPTERS.indexOf(q.chapter)>=0?VB:""}</div>${q.explanation?`<p>${q.explanation}</p>`:`<p style="color:var(--mute)">इस प्रश्न की व्याख्या उपलब्ध नहीं है।</p>`}</div>
+  <div class="card">${ban}${srcBlock}<p class="q" style="margin-top:12px">${fmtQ(q.question)}</p>${opts}
+  <div class="exp" style="display:block"><div class="exh"><h4>व्याख्या</h4></div><div class="exr"><b>सही उत्तर: ${"ABCD"[q.answer]}. ${q.options[q.answer]}</b>${VERIFIED_CHAPTERS.indexOf(q.chapter)>=0?VB:""}</div>${q.explanation?`<p>${fmtQ(q.explanation,1)}</p>`:`<p style="color:var(--mute)">इस प्रश्न की व्याख्या उपलब्ध नहीं है।</p>`}</div>
   ${kind==="r"?`<button class="btn ghost" style="width:100%;margin-top:12px" onclick="mistUnreview()">🚩 Review सूची से हटाएँ</button>`:""}</div>
   <div class="nav"><button class="btn ghost" onclick="mistOpen(${i-1})" ${i===0?"disabled":""}>← पिछला</button><button class="btn" onclick="mistOpen(${i+1})" ${i===L.length-1?"disabled":""}>अगला →</button></div></main>`,"",false,()=>mistList(kind,jvS.vw,jvS.f));
 }
@@ -2751,10 +3201,10 @@ function jvRevCard(o){
   const stc=p===null?"mu":ok?"ok":"bad",stt=p===null?"⚪ छोड़ा गया":ok?"✅ सही":"❌ गलत";
   const meta=(m.sub||m.ch)?`<div class="rqm">${m.sub?`<span>📚 ${smE(m.sub)}</span>`:""}${m.ch?`<span>📖 ${smE(m.ch)}</span>`:""}</div>`:"";
   const opts=q.options.map((x,k)=>{const c=k===q.answer?"correct":k===p?"wrong":"";const tg=[];if(k===p)tg.push("आपका उत्तर");if(k===q.answer)tg.push("सही उत्तर");
-    return`<div class="opt ${c}"><span class="l">${"ABCD"[k]}</span><span class="t">${x}</span>${tg.length?`<em class="ot ${k===q.answer?"gd":"bd"}">${tg.join(" · ")}</em>`:""}</div>`}).join("");
-  return`<div class="rq"><div class="rqh"><b>प्रश्न ${o.i+1}</b><span class="rqs ${stc}">${stt}</span></div>${meta}<p class="q">${q.question}</p>${opts}
+    return`<div class="opt ${c}"><span class="l">${"ABCD"[k]}</span><span class="t">${fmtQ(x,1)}</span>${tg.length?`<em class="ot ${k===q.answer?"gd":"bd"}">${tg.join(" · ")}</em>`:""}</div>`}).join("");
+  return`<div class="rq"><div class="rqh"><b>प्रश्न ${o.i+1}</b><span class="rqs ${stc}">${stt}</span></div>${meta}<p class="q">${fmtQ(q.question)}</p>${opts}
   ${p===null?`<div class="mst mu" style="margin:8px 0 0">आपने इस प्रश्न का उत्तर नहीं दिया। सही उत्तर: <b>${"ABCD"[q.answer]}</b></div>`:""}
-  ${q.explanation?`<div class="exp" style="display:block"><div class="exh"><h4>व्याख्या</h4></div><p>${q.explanation}</p></div>`:""}</div>`;
+  ${q.explanation?`<div class="exp" style="display:block"><div class="exh"><h4>व्याख्या</h4></div><p>${fmtQ(q.explanation,1)}</p></div>`:""}</div>`;
 }
 function jvQAHtml(){
   const L=rsFiltered(),cnt=t=>t==="all"?Q.length:Q.filter((q,i)=>{const p=state[i].picked;return t==="correct"?p!==null&&p===q.answer:t==="wrong"?p!==null&&p!==q.answer:p===null}).length;
@@ -2843,39 +3293,54 @@ function retestResult(){
   startFresh(Q.slice(),label,mode,cfg);
 }
 
-/* ---------- NEW indicator (Home / Tests) ---------- */
-let NEWSNAP={};
-const jvSeen=()=>jvGet("jkx_seen_v1");
+/* ---------- NEW indicator (Home / Tests) — TIME-BASED (sabhi users ko same) ----------
+   Rule (owner): naya square card (home tile / subject card) = 10 din, naya chapter = 2 din, naya Full Subject/Mock test = 10 din.
+   Seen-based (jkx_seen_v1) logic hata diya; ab sirf created_at / addedOn dekhta hai. Din badalne ho to NB_D me badlo. */
+const NB_D={card:10,chap:2,test:10};
+/* Static cards ki date (YYYY-MM-DD). Naya static card jodo to yahan uski date likho */
+const NB_ADDED={rank:"2026-10-24"};
+const nbIs=(ts,d)=>{const t=typeof ts==="number"?ts:Date.parse(ts||"");return !isNaN(t)&&Date.now()-t<=d*864e5};
+/* DB questions se: subject card kab bana (sabse purana question) aur chapter kab bana */
+let NMV=0,_nm=null,_nmK="";
+function nmBump(){NMV++}
+function nmeta(){
+  const k=QS.length+"|"+NMV;if(_nm&&_nmK===k)return _nm;
+  const sub={},ch={};
+  QS.forEach(q=>{const t=Date.parse(q.created_at||"");if(isNaN(t))return;
+    if(!(q.subject in sub)||t<sub[q.subject])sub[q.subject]=t;
+    const key=q.subject+"||"+q.chapter;if(!(key in ch)||t<ch[key])ch[key]=t});
+  _nm={sub:sub,ch:ch};_nmK=k;return _nm;
+}
+const newSub=name=>{const t=nmeta().sub[name];return t!=null&&nbIs(t,NB_D.card)};
+const newChap=(sn,c)=>{const t=nmeta().ch[sn+"||"+c];return t!=null&&nbIs(t,NB_D.chap)};
+const newTest=x=>!!x&&nbIs(x.created_at,NB_D.test);
 const jvCat=c=>TL.filter(x=>x.kind===c);
-function newBaseline(){
-  const S=jvSeen();let d=0;
-  if(!S.pyq&&QS.some(q=>q.id)){S.pyq=QS.filter(q=>q.id).map(q=>q.id);d=1}
-  if(TLOK)["mock","subject"].forEach(c=>{if(!S[c]){S[c]=jvCat(c).map(x=>String(x.id));d=1}});
-  if(d)jvSet("jkx_seen_v1",S);
+const newCount=cat=>cat==="pyq"?(SUBJECTS.some(S=>newSub(S.name)||S.chapters.some(c=>newChap(S.name,c)))?1:0):jvCat(cat).filter(newTest).length;
+/* Badge ka rang card ke rang se kabhi match na kare: card ke saare hex rangon se RGB doori nikalo,
+   pehla candidate jo sabse door ho (min doori >= 120) wo lo. */
+const NB_CAND=[["#ef4444","#fff"],["#facc15","#111827"],["#ffffff","#b91c1c"],["#111827","#fff"],["#0ea5e9","#fff"]];
+function nbRgb(h){h=h.replace("#","");if(h.length===3)h=h.split("").map(c=>c+c).join("");const n=parseInt(h,16);return[(n>>16)&255,(n>>8)&255,n&255]}
+function nbColorFor(card){
+  const cs=(String(card||"").match(/#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b/g)||[]).map(nbRgb);
+  if(!cs.length)return NB_CAND[0];
+  const dist=(a,b)=>Math.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2);
+  let best=NB_CAND[0],bd=-1;
+  for(const c of NB_CAND){const r=nbRgb(c[0]),d=Math.min(...cs.map(x=>dist(r,x)));if(d>=120)return c;if(d>bd){bd=d;best=c}}
+  return best;
 }
-function newIds(cat){
-  const S=jvSeen();if(!S[cat])return[];const s=new Set(S[cat]);
-  return cat==="pyq"?QS.filter(q=>q.id&&!s.has(q.id)).map(q=>q.id):jvCat(cat).filter(x=>!s.has(String(x.id))).map(x=>String(x.id));
-}
-const newCount=cat=>{newBaseline();return newIds(cat).length};
-function newOpen(cat,merge){
-  newBaseline();const ids=newIds(cat);
-  const sn=(merge||!ids.length)&&NEWSNAP[cat]?NEWSNAP[cat]:{ids:new Set(),ch:new Set(),sub:new Set()};
-  ids.forEach(i=>sn.ids.add(i));
-  if(cat==="pyq")QS.forEach(q=>{if(sn.ids.has(q.id)){sn.ch.add(q.subject+"||"+q.chapter);sn.sub.add(q.subject)}});
-  else jvCat(cat).forEach(x=>{if(sn.ids.has(String(x.id)))sn.sub.add(x.subject||"")});
-  NEWSNAP[cat]=sn;
-  if(ids.length){const S=jvSeen();S[cat]=(S[cat]||[]).concat(ids);jvSet("jkx_seen_v1",S)}
-}
-function nb(cat){const n=newCount(cat);return n?`<span class="nbadge" data-nb="1">NEW${cat==="pyq"?" +"+n:n>1?" · "+n:""}</span>`:""}
-const nbTxt=cat=>{const n=newCount(cat);return n?"NEW"+(cat==="pyq"?" +"+n:n>1?" "+n:""):""};
+const nbStyle=card=>{const c=nbColorFor(card);return"background:"+c[0]+";color:"+c[1]};
+/* square card ke liye NEW badge (static addedOn): nbNew("rank", cardColor) */
+const nbNew=(key,card)=>nbIs(NB_ADDED[key],NB_D.card)?`<span class="nbadge wg" data-nb="1" style="${nbStyle(card)}">NEW</span>`:"";
+const NBCOL={pyq:"linear-gradient(135deg,#0b3a8c,#1457d9)",subject:"#16a34a",mock:"#7c3aed"};
+function nb(cat){const n=newCount(cat);return n?`<span class="nbadge wg" data-nb="1" style="${nbStyle(NBCOL[cat])}">NEW${cat!=="pyq"&&n>1?" · "+n:""}</span>`:""}
+const nbTxt=cat=>{const n=newCount(cat);return n?"NEW"+(cat!=="pyq"&&n>1?" "+n:""):""};
 function newRefresh(){
   document.querySelectorAll(".tiles2 button[data-cat]").forEach(b=>{const o=b.querySelector(".nbadge");if(o)o.remove();const h=nb(b.dataset.cat);if(h)b.insertAdjacentHTML("afterbegin",h)});
 }
 function homeExtras(){
-  NEWSNAP={};jvBackfill();newBaseline();newRefresh();
+  jvBackfill();newRefresh();
   if(Date.now()-(window.__tlAt||0)>30000){window.__tlAt=Date.now();
-    tstLoad().then(()=>{if(document.querySelector(".tiles2")){newBaseline();newRefresh()}}).catch(()=>{})}
+    tstLoad().then(()=>{if(document.querySelector(".tiles2")){newRefresh()}}).catch(()=>{})}
   ntCheck();
 }
 
