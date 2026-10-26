@@ -132,7 +132,7 @@
   const BASE = SM_BASE, KEY = SM_KEY, $ = id => document.getElementById(id), esc = smE, UP = window.JKUpload;
   const PAGE = 12, MPAGE = 40;
   const AUTH = "username,display_name,avatar_url,verified";
-  const POST_SEL = "*,author:profiles(" + AUTH + ")", MSG_SEL = "*,author:profiles(" + AUTH + ")";
+  const POST_SEL = "*,author:profiles!author_id(" + AUTH + ")", MSG_SEL = "*,author:profiles!author_id(" + AUTH + ")";
   const err = (c, x) => { const e = new Error(c); e.code = c; if (x) Object.assign(e, x); return e; };
   let ME = null, SUPER = false, HUBTAB = "feed";
   /* Part 8: global ban/mute stithi + roles ki permissions (ek hi jagah: SQL table role_permissions; na mile to PERMS0) */
