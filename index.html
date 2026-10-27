@@ -3497,35 +3497,78 @@ function jvUnpackHist(d,textOf){
     L.push("localStorage: "+ls+" | use ~"+Math.round(used/1024)+" KB");
     L.push("Bade keys: "+big.slice(0,6).map(function(x){return x[0]+"="+Math.round(x[1]/1024)+"KB"}).join(", "));
     L.push("Login: "+(s?("haan "+mask(s.email)+" | token tak "+new Date(s.expires_at*1000).toTimeString().slice(0,8)):"nahi")+" | LS me="+inLS+" | cookie me="+ck);
-    function fin(){L.push("--- Log (purana -> naya) ---");cb(L.concat(buf).join("\n"))}
-    if(navigator.storage&&navigator.storage.estimate){navigator.storage.estimate().then(function(e){L.push("Phone storage: use "+Math.round(e.usage/1048576)+" MB / quota "+Math.round(e.quota/1048576)+" MB");fin()},fin)}else fin();
+    function fin(){L.push("--- Log (purana -> naya) ---");cb(L.concat(buf).join("\n"),{net:navigator.onLine,ls:ls,login:s?mask(s.email):""})}
+    var dev="RAM ~"+(navigator.deviceMemory||"?")+" GB | CPU "+(navigator.hardwareConcurrency||"?")+" | Screen "+screen.width+"x"+screen.height+((navigator.connection&&navigator.connection.effectiveType)?" | Net "+navigator.connection.effectiveType:"");
+    function est(){L.push("Device: "+dev);
+      if(navigator.storage&&navigator.storage.estimate){navigator.storage.estimate().then(function(e){L.push("Is app ka storage: use "+Math.round(e.usage/1048576)+" MB / limit "+Math.round(e.quota/1048576)+" MB");fin()},fin)}else fin()}
+    var ud=navigator.userAgentData;
+    if(ud&&ud.getHighEntropyValues){ud.getHighEntropyValues(["model","platformVersion"]).then(function(v){dev="Model "+(v.model||"?")+" | Android "+(v.platformVersion||"?")+" | "+dev;est()},est)}else est();
   }
-  function fb(t){var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove();alert("कॉपी हो गया")}
+  function fb(t){var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove()}
   var SB="https://gpqrkxyypadgvguomfrr.supabase.co",SK="sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq";
+  function row(ok,label,val){var c=ok===true?"#2e7d32":ok===false?"#c62828":"#94a3b8";return '<div class="dgr"><i style="background:'+c+'"></i><span>'+label+'</span><b>'+val+'</b></div>'}
+  function css(){if(document.getElementById("dgCss"))return;var e=document.createElement("style");e.id="dgCss";e.textContent=`
+#dgBox{position:fixed;inset:0;z-index:99999;background:#eef3fb;color:#14213d;overflow:auto;font-family:inherit;-webkit-text-size-adjust:100%}
+#dgBox *{box-sizing:border-box}
+#dgBox .dgh{position:sticky;top:0;z-index:1;background:linear-gradient(135deg,#0b3a8c,#1457d9);color:#fff;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 14px;display:flex;align-items:center;gap:12px}
+#dgBox .dgh b{font-size:18px;font-weight:700;flex:1}
+#dgBox .dgx{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:10px;min-height:40px;padding:0 14px;font:inherit;font-size:14px}
+#dgBox .dgw{max-width:480px;margin:0 auto;padding:14px 14px calc(28px + env(safe-area-inset-bottom,0px))}
+#dgBox .dgc{background:#fff;border:1px solid #d7e0f0;border-radius:16px;padding:16px;margin-bottom:12px}
+#dgBox h3{margin:0 0 4px;font-size:16px;font-weight:700}
+#dgBox p{margin:0 0 10px;font-size:13px;color:#5b6b85;line-height:1.5}
+#dgBox .dgr{display:flex;align-items:center;gap:10px;padding:11px 0;font-size:14px}
+#dgBox .dgr+.dgr{border-top:1px solid #eef1f8}
+#dgBox .dgr i{width:10px;height:10px;border-radius:50%;flex:none}
+#dgBox .dgr span{flex:1;color:#5b6b85}
+#dgBox .dgr b{font-weight:600;text-align:right;word-break:break-all}
+#dgBox .dgt{margin-top:8px;padding:10px 12px;border-radius:10px;background:#fff6e0;color:#7a4b00;font-size:13px;line-height:1.5}
+#dgBox input,#dgBox textarea{width:100%;border:1px solid #c9d5ea;border-radius:12px;padding:12px;font:inherit;font-size:16px;background:#f8faff;color:#14213d;margin-bottom:10px}
+#dgBox input:focus,#dgBox textarea:focus{outline:2px solid #1457d9;outline-offset:1px;background:#fff}
+#dgBox .dgp{width:100%;min-height:48px;border:0;border-radius:12px;background:linear-gradient(135deg,#1457d9,#0b3a8c);color:#fff;font:inherit;font-size:16px;font-weight:700}
+#dgBox .dgp:disabled{opacity:.65}
+#dgBox .dgm{margin-top:10px;font-size:14px;line-height:1.5;min-height:20px}
+#dgBox details{background:#fff;border:1px solid #d7e0f0;border-radius:16px;padding:0 16px}
+#dgBox summary{padding:14px 0;font-size:14px;font-weight:600;color:#5b6b85}
+#dgBox .dgs{display:flex;gap:8px;margin-bottom:12px}
+#dgBox .dgs button{flex:1;min-height:40px;border:1px solid #c9d5ea;background:#fff;border-radius:10px;font:inherit;font-size:13px;color:#14213d}
+#dgBox pre{white-space:pre-wrap;word-break:break-all;margin:0 0 14px;font:11px/1.5 monospace;color:#334155}`;document.head.appendChild(e)}
   function send(d){
-    var P=d.querySelector("#dgP").textContent,c=d.querySelector("#dgN").value.trim(),n=d.querySelector("#dgM").value.trim(),st=d.querySelector("#dgS");
-    if(!c){st.textContent="पहले अपना नाम/ईमेल लिखें";return}
-    st.textContent="भेज रहे हैं...";
+    var P=d.querySelector("#dgP").textContent,c=d.querySelector("#dgN").value.trim(),n=d.querySelector("#dgM").value.trim(),st=d.querySelector("#dgS"),b=d.querySelector("#dgS1");
+    function msg(t,col){st.textContent=t;st.style.color=col}
+    function again(t){b.disabled=false;b.textContent="रिपोर्ट भेजें";msg(t,"#c62828")}
+    if(!c){msg("पहले अपना नाम, ईमेल या मोबाइल लिखें।","#c62828");d.querySelector("#dgN").focus();return}
+    b.disabled=true;b.textContent="भेज रहे हैं...";msg("","");
     fetch(SB+"/rest/v1/diag_reports",{method:"POST",headers:{apikey:SK,Authorization:"Bearer "+SK,"Content-Type":"application/json",Prefer:"return=minimal"},
       body:JSON.stringify({contact:c.slice(0,120),note:n.slice(0,500),ua:navigator.userAgent.slice(0,300),report:P.slice(0,6000)})})
-     .then(function(r){st.textContent=r.ok?"✅ भेज दिया गया":"भेजने में दिक्कत ("+r.status+")"},function(){st.textContent="नेट नहीं चल रहा, बाद में कोशिश करें"})
+     .then(function(r){if(r.ok){b.textContent="रिपोर्ट भेज दी गई";msg("✔ आपकी रिपोर्ट मिल गई है। धन्यवाद!","#2e7d32")}else again("भेजा नहीं जा सका (कोड "+r.status+")। थोड़ी देर बाद फिर कोशिश करें।")},
+            function(){again("इंटरनेट नहीं चल रहा। नेट चालू करके फिर कोशिश करें।")})
   }
   function show(){
-    var d=document.getElementById("dgBox");if(d)d.remove();
-    d=document.createElement("div");d.id="dgBox";
-    d.style.cssText="position:fixed;inset:0;z-index:99999;background:#fff;color:#111;overflow:auto;padding:14px;font:12px/1.5 monospace";
-    d.innerHTML='<div style="font:700 15px sans-serif;margin-bottom:8px">जाँच रिपोर्ट</div><div style="margin-bottom:8px;font:14px sans-serif"><button id="dgC">कॉपी करें</button> <button id="dgR">लॉग साफ़ करें</button> <button id="dgX">बंद करें</button></div><div style="font:13px sans-serif;margin-bottom:8px"><input id="dgN" placeholder="आपका नाम / ईमेल / मोबाइल" style="width:100%;box-sizing:border-box;padding:8px;margin-bottom:6px"><textarea id="dgM" rows="2" placeholder="क्या दिक्कत आ रही है? (ऐच्छिक)" style="width:100%;box-sizing:border-box;padding:8px"></textarea><button id="dgS1" style="margin-top:6px;padding:8px 14px">Admin को भेजें</button> <span id="dgS"></span></div><pre id="dgP" style="white-space:pre-wrap;word-break:break-all;margin:0">...</pre>';
+    css();var d=document.getElementById("dgBox");if(d)d.remove();
+    d=document.createElement("div");d.id="dgBox";d.setAttribute("role","dialog");
+    d.innerHTML='<div class="dgh"><b>मदद और जाँच</b><button class="dgx" id="dgX">बंद करें</button></div><div class="dgw">'+
+      '<div class="dgc"><h3>आपके फ़ोन की स्थिति</h3><p>ऐप चलने के लिए ज़रूरी चीज़ों की जाँच</p><div id="dgL"></div><div id="dgH"></div></div>'+
+      '<div class="dgc"><h3>समस्या भेजें</h3><p>अपनी जानकारी लिखकर भेजें, हमारी टीम इसे देखेगी।</p>'+
+      '<input id="dgN" autocomplete="off" placeholder="आपका नाम / ईमेल / मोबाइल"><textarea id="dgM" rows="3" placeholder="क्या दिक्कत आ रही है? (ऐच्छिक)"></textarea>'+
+      '<button class="dgp" id="dgS1">रिपोर्ट भेजें</button><div class="dgm" id="dgS" role="status"></div></div>'+
+      '<details><summary>तकनीकी विवरण</summary><div class="dgs"><button id="dgC">कॉपी करें</button><button id="dgR">लॉग साफ़ करें</button></div><pre id="dgP">...</pre></details></div>';
     document.body.appendChild(d);
-    var P=d.querySelector("#dgP");function paint(){info(function(t){P.textContent=t})}paint();
+    var le=document.getElementById("lgE");if(le&&le.value)d.querySelector("#dgN").value=le.value;
+    var P=d.querySelector("#dgP");
+    function paint(){info(function(t,st){P.textContent=t;
+      d.querySelector("#dgL").innerHTML=row(st.net,"इंटरनेट",st.net?"चालू":"बंद")+row(st.ls==="OK","फ़ोन में सेव करने की जगह",st.ls==="OK"?"ठीक है":"दिक्कत")+(st.login?row(true,"लॉगिन",st.login):row(null,"लॉगिन","अभी लॉगिन नहीं"));
+      d.querySelector("#dgH").innerHTML=st.ls==="OK"?"":'<div class="dgt">फ़ोन में ऐप की जगह भरी हुई है। Settings → Apps → JAKHAR → Storage → Clear data करके फिर लॉगिन करें।</div>'})}
+    paint();
     d.querySelector("#dgX").onclick=function(){d.remove()};
     d.querySelector("#dgS1").onclick=function(){send(d)};
     d.querySelector("#dgR").onclick=function(){buf.length=0;wr(buf);paint()};
-    d.querySelector("#dgC").onclick=function(){var t=P.textContent;try{navigator.clipboard.writeText(t).then(function(){alert("कॉपी हो गया")},function(){fb(t)})}catch(e){fb(t)}};
+    d.querySelector("#dgC").onclick=function(){var t=P.textContent,b=this;fb(t);try{navigator.clipboard.writeText(t)}catch(e){}b.textContent="कॉपी हो गया ✔";setTimeout(function(){b.textContent="कॉपी करें"},1500)};
   }
   window.jkDiag=show;
   function addLink(){var c=document.querySelector(".lgc");if(!c||document.getElementById("dgLink"))return;
     var a=document.createElement("div");a.id="dgLink";a.style.cssText="text-align:center;margin-top:10px;font-size:12px";
-    a.innerHTML='<a href="#" style="color:#64748b">समस्या आ रही है? जाँच करें</a>';a.firstChild.onclick=function(e){e.preventDefault();show()};c.appendChild(a)}
+    a.innerHTML='<a href="#" style="color:#1457d9;text-decoration:underline">लॉगिन में दिक्कत? मदद और जाँच</a>';a.firstChild.onclick=function(e){e.preventDefault();show()};c.appendChild(a)}
   if(window.JKAuth&&!JKAuth.__d){JKAuth.__d=1;
     ["signIn","signOut"].forEach(function(n){var f=JKAuth[n];if(!f)return;
       JKAuth[n]=function(){log("auth",n+" call");var r;try{r=f.apply(this,arguments)}catch(e){log("auth",n+" error: "+e.message);throw e}
