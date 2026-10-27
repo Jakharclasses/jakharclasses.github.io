@@ -2056,15 +2056,21 @@ splash();
 (function(){
   const BASE="https://gpqrkxyypadgvguomfrr.supabase.co", KEY="sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq";
   const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  /* FIX: localStorage bhar jaye to save() chup-chaap fail hota tha -> login ke baad bhi session nahi bachta tha aur login screen wapas aa jati thi.
-     Ab: (1) fail hone par regenerable cache hata kar dobara try, (2) phir bhi fail ho to is session ke liye memory me rakhte hain. */
+  /* FIX: localStorage bhar jaye (ya block ho) to save() chup-chaap fail hota tha -> login ke baad session nahi bachta tha aur login screen wapas aa jati thi.
+     Ab: (1) fail par regenerable cache hata kar dobara try, (2) phir bhi fail ho to cookie me rakhte hain (page reload / app dobara kholne par bhi bachega), (3) memory me bhi. */
   let MEM=null;
-  function load(){try{const v=JSON.parse(localStorage.getItem("jkx_auth")||"null");if(v)return v}catch(e){}return MEM}
+  function dl(a,b){try{window.__jkdlog&&window.__jkdlog(a,b)}catch(e){}}
+  function ckGet(){try{const m=document.cookie.match(/(?:^|;\s*)jkx_auth_c=([^;]*)/);return m?JSON.parse(decodeURIComponent(m[1])):null}catch(e){return null}}
+  function ckSet(s){try{
+    if(!s){document.cookie="jkx_auth_c=; Max-Age=0; Path=/; SameSite=Lax";return}
+    const v=encodeURIComponent(JSON.stringify(s));if(v.length>3500)return;
+    document.cookie="jkx_auth_c="+v+"; Max-Age=31536000; Path=/; SameSite=Lax"+(location.protocol==="https:"?"; Secure":"")}catch(e){}}
+  function load(){try{const v=JSON.parse(localStorage.getItem("jkx_auth")||"null");if(v)return v}catch(e){}return MEM||ckGet()}
   function freeSpace(){try{const ks=[];for(let i=0;i<localStorage.length;i++)ks.push(localStorage.key(i));ks.forEach(k=>{if(k==="jkx_qcache_v1"||k==="jkx_tests_v1"){try{localStorage.removeItem(k)}catch(e){}}})}catch(e){}}
   function save(s){
-    if(!s){MEM=null;try{localStorage.removeItem("jkx_auth")}catch(e){}return}
+    if(!s){dl("auth","session hata diya (logout ya refresh fail)");MEM=null;ckSet(null);try{localStorage.removeItem("jkx_auth")}catch(e){}return}
     MEM=s;const w=()=>localStorage.setItem("jkx_auth",JSON.stringify(s));
-    try{w()}catch(e){freeSpace();try{w()}catch(e2){}}
+    try{w();ckSet(null);dl("auth","saved: localStorage OK")}catch(e){freeSpace();try{w();ckSet(null);dl("auth","saved: localStorage OK (cache hatane ke baad)")}catch(e2){ckSet(s);dl("auth","localStorage FAIL "+(e2&&e2.name)+" -> cookie "+(ckGet()?"OK":"bhi FAIL"))}}
   }
   async function call(path,body){
     /* Fix: 12 sec me jawab na aaye to rok do aur ek baar naye connection se dobara try karo (adhoora purana connection 45 sec latka deta tha) */
@@ -2085,7 +2091,7 @@ splash();
     const s=load();if(!s||!s.refresh_token)return;
     if(s.expires_at-60>Date.now()/1000)return;
     try{save(pack(await call("/auth/v1/token?grant_type=refresh_token",{refresh_token:s.refresh_token})))}
-    catch(e){if(/invalid|expired|not found|revoked/i.test(e.message))save(null)}
+    catch(e){dl("auth","refresh fail: "+e.message);if(/invalid|expired|not found|revoked/i.test(e.message))save(null)}
   }
   async function qmap(){
     const idOf={},textOf={};
@@ -3460,6 +3466,75 @@ function jvUnpackHist(d,textOf){
   return e;
 }
 
+</script>
+<script>
+/* JAKHAR diagnostics: login screen par "samasya aa rahi hai? jaanch karein" link, ya index.html#diag */
+(function(){
+  var KEY="jkx_dlog",buf=[];
+  function rd(){var r=null;try{r=sessionStorage.getItem(KEY)}catch(e){}if(!r)try{r=localStorage.getItem(KEY)}catch(e){}try{return r?JSON.parse(r):[]}catch(e){return[]}}
+  function wr(a){var s=JSON.stringify(a);try{sessionStorage.setItem(KEY,s);return}catch(e){}try{localStorage.setItem(KEY,s)}catch(e){}}
+  buf=rd();
+  function log(k,m){buf.push(new Date().toTimeString().slice(0,8)+" ["+k+"] "+String(m).slice(0,160));if(buf.length>40)buf.shift();wr(buf)}
+  window.__jkdlog=log;
+  var nv=(performance.getEntriesByType&&performance.getEntriesByType("navigation")[0])||{};
+  log("page","load type="+(nv.type||"?")+" installed="+((matchMedia("(display-mode: standalone)").matches||navigator.standalone)?"haan":"nahi")+" online="+navigator.onLine);
+  addEventListener("pagehide",function(){log("page","pagehide")});
+  addEventListener("error",function(e){log("error",e.message)});
+  addEventListener("unhandledrejection",function(e){log("promise",(e.reason&&e.reason.message)||e.reason)});
+  document.addEventListener("visibilitychange",function(){log("page",document.visibilityState)});
+  function mask(e){e=e||"";var i=e.indexOf("@");return i>2?e.slice(0,2)+"***"+e.slice(i):e}
+  function info(cb){
+    var L=[],ls="OK",used=0,big=[],s=null,inLS=false;
+    try{localStorage.setItem("jkx_probe","x");localStorage.removeItem("jkx_probe")}catch(e){ls="FAIL ("+(e&&e.name)+")"}
+    try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i),n=k.length+(localStorage.getItem(k)||"").length;used+=n;big.push([k,n])}}catch(e){}
+    big.sort(function(a,b){return b[1]-a[1]});
+    try{s=JKAuth.getSession()}catch(e){}
+    try{inLS=!!localStorage.getItem("jkx_auth")}catch(e){}
+    var ck=/(?:^|;\s*)jkx_auth_c=/.test(document.cookie||"");
+    L.push("Time: "+new Date().toString().slice(0,33));
+    L.push("Browser: "+navigator.userAgent);
+    L.push("Online: "+navigator.onLine+" | Cookies: "+navigator.cookieEnabled);
+    L.push("localStorage: "+ls+" | use ~"+Math.round(used/1024)+" KB");
+    L.push("Bade keys: "+big.slice(0,6).map(function(x){return x[0]+"="+Math.round(x[1]/1024)+"KB"}).join(", "));
+    L.push("Login: "+(s?("haan "+mask(s.email)+" | token tak "+new Date(s.expires_at*1000).toTimeString().slice(0,8)):"nahi")+" | LS me="+inLS+" | cookie me="+ck);
+    function fin(){L.push("--- Log (purana -> naya) ---");cb(L.concat(buf).join("\n"))}
+    if(navigator.storage&&navigator.storage.estimate){navigator.storage.estimate().then(function(e){L.push("Phone storage: use "+Math.round(e.usage/1048576)+" MB / quota "+Math.round(e.quota/1048576)+" MB");fin()},fin)}else fin();
+  }
+  function fb(t){var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove();alert("कॉपी हो गया")}
+  var SB="https://gpqrkxyypadgvguomfrr.supabase.co",SK="sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq";
+  function send(d){
+    var P=d.querySelector("#dgP").textContent,c=d.querySelector("#dgN").value.trim(),n=d.querySelector("#dgM").value.trim(),st=d.querySelector("#dgS");
+    if(!c){st.textContent="पहले अपना नाम/ईमेल लिखें";return}
+    st.textContent="भेज रहे हैं...";
+    fetch(SB+"/rest/v1/diag_reports",{method:"POST",headers:{apikey:SK,Authorization:"Bearer "+SK,"Content-Type":"application/json",Prefer:"return=minimal"},
+      body:JSON.stringify({contact:c.slice(0,120),note:n.slice(0,500),ua:navigator.userAgent.slice(0,300),report:P.slice(0,6000)})})
+     .then(function(r){st.textContent=r.ok?"✅ भेज दिया गया":"भेजने में दिक्कत ("+r.status+")"},function(){st.textContent="नेट नहीं चल रहा, बाद में कोशिश करें"})
+  }
+  function show(){
+    var d=document.getElementById("dgBox");if(d)d.remove();
+    d=document.createElement("div");d.id="dgBox";
+    d.style.cssText="position:fixed;inset:0;z-index:99999;background:#fff;color:#111;overflow:auto;padding:14px;font:12px/1.5 monospace";
+    d.innerHTML='<div style="font:700 15px sans-serif;margin-bottom:8px">जाँच रिपोर्ट</div><div style="margin-bottom:8px;font:14px sans-serif"><button id="dgC">कॉपी करें</button> <button id="dgR">लॉग साफ़ करें</button> <button id="dgX">बंद करें</button></div><div style="font:13px sans-serif;margin-bottom:8px"><input id="dgN" placeholder="आपका नाम / ईमेल / मोबाइल" style="width:100%;box-sizing:border-box;padding:8px;margin-bottom:6px"><textarea id="dgM" rows="2" placeholder="क्या दिक्कत आ रही है? (ऐच्छिक)" style="width:100%;box-sizing:border-box;padding:8px"></textarea><button id="dgS1" style="margin-top:6px;padding:8px 14px">Admin को भेजें</button> <span id="dgS"></span></div><pre id="dgP" style="white-space:pre-wrap;word-break:break-all;margin:0">...</pre>';
+    document.body.appendChild(d);
+    var P=d.querySelector("#dgP");function paint(){info(function(t){P.textContent=t})}paint();
+    d.querySelector("#dgX").onclick=function(){d.remove()};
+    d.querySelector("#dgS1").onclick=function(){send(d)};
+    d.querySelector("#dgR").onclick=function(){buf.length=0;wr(buf);paint()};
+    d.querySelector("#dgC").onclick=function(){var t=P.textContent;try{navigator.clipboard.writeText(t).then(function(){alert("कॉपी हो गया")},function(){fb(t)})}catch(e){fb(t)}};
+  }
+  window.jkDiag=show;
+  function addLink(){var c=document.querySelector(".lgc");if(!c||document.getElementById("dgLink"))return;
+    var a=document.createElement("div");a.id="dgLink";a.style.cssText="text-align:center;margin-top:10px;font-size:12px";
+    a.innerHTML='<a href="#" style="color:#64748b">समस्या आ रही है? जाँच करें</a>';a.firstChild.onclick=function(e){e.preventDefault();show()};c.appendChild(a)}
+  if(window.JKAuth&&!JKAuth.__d){JKAuth.__d=1;
+    ["signIn","signOut"].forEach(function(n){var f=JKAuth[n];if(!f)return;
+      JKAuth[n]=function(){log("auth",n+" call");var r;try{r=f.apply(this,arguments)}catch(e){log("auth",n+" error: "+e.message);throw e}
+        if(r&&r.then)r.then(function(){log("auth",n+" ok; loggedIn="+JKAuth.isLoggedIn())},function(e){log("auth",n+" fail: "+(e&&e.message))});return r}})}
+  if(window.loginScreen&&!loginScreen.__d){var o=loginScreen;
+    window.loginScreen=function(){log("ui","loginScreen dikhi; loggedIn="+(window.JKAuth&&JKAuth.isLoggedIn()));var r=o.apply(this,arguments);addLink();return r};window.loginScreen.__d=1}
+  addLink();
+  if(location.hash==="#diag")show();
+})();
 </script>
 </body>
 </html>

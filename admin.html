@@ -104,6 +104,7 @@
         <button data-go="dv" style="background:linear-gradient(135deg,#0f766e,#14b8a6)"><span>📑</span><b>Lab Assistant Geography</b><small id="cD"></small></button>
         <button data-go="ntf" style="background:#0ea5e9"><span>🔔</span><b>Notifications</b><small>App ki bell me dikhao</small></button>
         <button data-go="rem" style="background:#db2777"><span>💬</span><b>Admin Remarks</b><small>Mistake Analysis me</small></button>
+        <button data-go="dgn" style="background:#0f766e"><span>🩺</span><b>Student Reports</b><small>Login / app problem ki jaanch</small></button>
         <button data-go="com" style="background:linear-gradient(135deg,#7c3aed,#db2777)"><span>🛡️</span><b>Community Moderation</b><small id="cCom">Reports · Users · Blue Tick</small></button>
         <button data-go="usr" style="background:#475569"><span>👥</span><b>Login Data</b><small>Users · Performance</small></button>
         <button data-go="d" style="background:#f59e0b"><span>💾</span><b>Backup / Export</b><small>JSON · CSV</small></button>
@@ -240,6 +241,14 @@
         <div id="ntMsg" class="msg"></div>
       </div>
       <div id="ntList"></div>
+    </div>
+
+    <div class="pane hide" data-pane="dgn">
+      <button class="sec bk" data-go="dash">← Dashboard</button>
+      <div class="card"><div class="q">🩺 Student Reports</div>
+        <div class="meta" style="margin:4px 0 10px">Student app ke login screen par "समस्या आ रही है? जाँच करें" se report bhejta hai. Nayi sabse upar.</div>
+        <button class="sec" id="dgRef">↻ Refresh</button></div>
+      <div id="dgList"></div>
     </div>
 
     <div class="pane hide" data-pane="rem">
@@ -1980,6 +1989,37 @@ async function comClick(e) {
   } catch (er) { alert("Fail: " + er.message); }
 }
 
+</script>
+<script>
+/* Student Reports (Supabase table: diag_reports ; SQL: diag_setup.sql) */
+(function(){
+  var DG=[];
+  function shortUA(u){u=u||"";var m=u.match(/\(([^)]*)\)/),c=u.match(/(Chrome|Firefox|SamsungBrowser)\/[\d.]+/);return (m?m[1]:"")+(c?" | "+c[0]:"")}
+  async function dgLoad(){
+    var b=$("dgList");b.innerHTML='<div class="meta">Load ho raha hai...</div>';
+    try{DG=await api("/rest/v1/diag_reports?select=*&order=created_at.desc&limit=200");dgRender()}
+    catch(e){b.innerHTML='<div class="msg">Load error: '+esc(e.message)+' — diag_setup.sql Supabase SQL Editor me ek baar chalao.</div>'}
+  }
+  function dgRender(){
+    $("dgList").innerHTML=DG.map(function(r){
+      return '<div class="card" style="margin-bottom:8px"><div class="q">'+esc(r.contact||"(naam/email nahi diya)")+'</div>'+
+      '<div class="meta">'+esc(fmtD(r.created_at))+' · '+esc(shortUA(r.ua))+'</div>'+
+      (r.note?'<div class="meta" style="margin-top:4px;white-space:pre-wrap">'+esc(r.note)+'</div>':'')+
+      '<details style="margin-top:6px"><summary class="meta">Poori report</summary><pre style="white-space:pre-wrap;word-break:break-all;font-size:11px">'+esc(r.report)+'</pre></details>'+
+      '<div class="row" style="margin-top:6px"><button class="sec" data-dg="del" data-id="'+r.id+'" style="color:var(--bad)">Delete</button></div></div>';
+    }).join("")||'<div class="card meta">Abhi koi report nahi aayi.</div>';
+  }
+  document.addEventListener("click",async function(e){
+    if(e.target.id==="dgRef"){dgLoad();return}
+    var b=e.target.closest("[data-dg]");if(!b||b.dataset.dg!=="del")return;
+    if(!confirm("Ye report delete karein?"))return;
+    try{var d=await api("/rest/v1/diag_reports?id=eq."+encodeURIComponent(b.dataset.id),{method:"DELETE",headers:{Prefer:"return=representation"}});
+      if(!d||!d.length)throw new Error("delete nahi hua (admin policy?)");
+      DG=DG.filter(function(x){return String(x.id)!==b.dataset.id});dgRender()}
+    catch(err){alert("Delete error: "+err.message)}
+  });
+  var _st=showTab;showTab=function(n){var r=_st.apply(this,arguments);if(n==="dgn")dgLoad();return r};
+})();
 </script>
 </body>
 </html>
