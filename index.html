@@ -3549,7 +3549,7 @@ function jvUnpackHist(d,textOf){
     d=document.createElement("div");d.id="dgBox";d.setAttribute("role","dialog");
     d.innerHTML='<div class="dgh"><b>मदद और जाँच</b><button class="dgx" id="dgX">बंद करें</button></div><div class="dgw">'+
       '<div class="dgc"><h3>आपके फ़ोन की स्थिति</h3><p>ऐप चलने के लिए ज़रूरी चीज़ों की जाँच</p><div id="dgL"></div><div id="dgH"></div></div>'+
-      '<div class="dgc"><h3>समस्या भेजें</h3><p>अपनी जानकारी लिखकर भेजें, हमारी टीम इसे देखेगी।</p>'+
+      '<div class="dgc"><h3>समस्या भेजें</h3><p>अपनी जानकारी लिखकर भेजें, हमारी टीम इसे देखेगी। पासवर्ड यहाँ कभी न लिखें।</p>'+
       '<input id="dgN" autocomplete="off" placeholder="आपका नाम / ईमेल / मोबाइल"><textarea id="dgM" rows="3" placeholder="क्या दिक्कत आ रही है? (ऐच्छिक)"></textarea>'+
       '<button class="dgp" id="dgS1">रिपोर्ट भेजें</button><div class="dgm" id="dgS" role="status"></div></div>'+
       '<details><summary>तकनीकी विवरण</summary><div class="dgs"><button id="dgC">कॉपी करें</button><button id="dgR">लॉग साफ़ करें</button></div><pre id="dgP">...</pre></details></div>';
@@ -3557,8 +3557,8 @@ function jvUnpackHist(d,textOf){
     var le=document.getElementById("lgE");if(le&&le.value)d.querySelector("#dgN").value=le.value;
     var P=d.querySelector("#dgP");
     function paint(){info(function(t,st){P.textContent=t;
-      d.querySelector("#dgL").innerHTML=row(st.net,"इंटरनेट",st.net?"चालू":"बंद")+row(st.ls==="OK","फ़ोन में सेव करने की जगह",st.ls==="OK"?"ठीक है":"दिक्कत")+(st.login?row(true,"लॉगिन",st.login):row(null,"लॉगिन","अभी लॉगिन नहीं"));
-      d.querySelector("#dgH").innerHTML=st.ls==="OK"?"":'<div class="dgt">फ़ोन में ऐप की जगह भरी हुई है। Settings → Apps → JAKHAR → Storage → Clear data करके फिर लॉगिन करें।</div>'})}
+      d.querySelector("#dgL").innerHTML=row(st.net,"इंटरनेट",st.net?"चालू":"बंद")+row(st.ls==="OK","फ़ोन में सेव करने की जगह",st.ls==="OK"?"ठीक है":(/Security/.test(st.ls)?"ब्लॉक है":"भरी है"))+(st.login?row(true,"लॉगिन",st.login):row(null,"लॉगिन","अभी लॉगिन नहीं"));
+      d.querySelector("#dgH").innerHTML=st.ls==="OK"?"":'<div class="dgt">'+(/Security/.test(st.ls)?'आपके ब्राउज़र ने इस ऐप को डेटा सेव करने से रोक रखा है। Chrome → ⋮ → Settings → Site settings → Cookies में "Allow cookies" चुनें, फिर ऐप दोबारा खोलकर लॉगिन करें।':'फ़ोन में ऐप की जगह भरी हुई है। Settings → Apps → JAKHAR → Storage → Clear data करके फिर लॉगिन करें।')+'</div>'})}
     paint();
     d.querySelector("#dgX").onclick=function(){d.remove()};
     d.querySelector("#dgS1").onclick=function(){send(d)};
@@ -3568,7 +3568,9 @@ function jvUnpackHist(d,textOf){
   window.jkDiag=show;
   function addLink(){var c=document.querySelector(".lgc");if(!c||document.getElementById("dgLink"))return;
     var a=document.createElement("div");a.id="dgLink";a.style.cssText="text-align:center;margin-top:10px;font-size:12px";
-    a.innerHTML='<a href="#" style="color:#1457d9;text-decoration:underline">लॉगिन में दिक्कत? मदद और जाँच</a>';a.firstChild.onclick=function(e){e.preventDefault();show()};c.appendChild(a)}
+    a.innerHTML='<a href="#" style="color:#1457d9;text-decoration:underline">लॉगिन में दिक्कत? मदद और जाँच</a>';a.firstChild.onclick=function(e){e.preventDefault();show()};c.appendChild(a);
+    var bad=false;try{localStorage.setItem("jkx_probe","1");localStorage.removeItem("jkx_probe")}catch(e){bad=/Security/.test((e&&e.name)||"")}
+    if(bad){var w=document.createElement("div");w.style.cssText="margin-top:10px;padding:10px 12px;border-radius:10px;background:#fff6e0;color:#7a4b00;font-size:13px;line-height:1.5";w.textContent="आपके ब्राउज़र ने ऐप को डेटा सेव करने से रोक रखा है, इसलिए लॉगिन टिक नहीं पाएगा। Chrome → ⋮ → Settings → Site settings → Cookies में Allow चुनें।";c.appendChild(w)}}
   if(window.JKAuth&&!JKAuth.__d){JKAuth.__d=1;
     ["signIn","signOut"].forEach(function(n){var f=JKAuth[n];if(!f)return;
       JKAuth[n]=function(){log("auth",n+" call");var r;try{r=f.apply(this,arguments)}catch(e){log("auth",n+" error: "+e.message);throw e}
