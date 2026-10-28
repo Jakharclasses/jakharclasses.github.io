@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b3a8c">
+<link rel="preconnect" href="https://gpqrkxyypadgvguomfrr.supabase.co" crossorigin>
+<meta name="theme-color" content="#F1F5F9">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&family=Poppins:wght@500;600;700&display=swap">
+<script>
+/* Theme: Light / Dark / Auto (phone ki setting). Key jk_theme. Paint se pehle lagta hai. */
+(function(){var K="jk_theme",mq=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)");
+function mode(){var m="auto";try{m=localStorage.getItem(K)||"auto"}catch(e){}return m==="light"||m==="dark"?m:"auto"}
+function apply(){var m=mode(),d=m==="dark"||(m==="auto"&&!!mq&&mq.matches);document.documentElement.classList.toggle("dark",d);var c=document.querySelector("meta[name=theme-color]");if(c)c.content=d?"#0F172A":"#F1F5F9"}
+function set(m){try{localStorage.setItem(K,m)}catch(e){}apply()}
+window.JKLang={get:function(){var l=null;try{l=localStorage.getItem("jk_lang")}catch(e){}return l==="en"||l==="hi"?l:null},has:function(){return !!this.get()},set:function(l){try{localStorage.setItem("jk_lang",l)}catch(e){}}};
+window.JKTheme={mode:mode,set:set,cycle:function(){var n={auto:"light",light:"dark",dark:"auto"}[mode()];set(n);return n}};
+if(mq&&mq.addEventListener)mq.addEventListener("change",apply);apply();})();
+</script>
+<title>JAKHAR Community</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<script>
+/* DEV MODE: true = login gate band (sirf chat/preview me dekhne ke liye). FINAL RELEASE se pehle false karna zaroori hai. */
+window.JK_DEV=true;
+/* MOCK MODE: true = nakli data (community-mock.js), Supabase ki zaroorat nahi. FINAL se pehle false karna zaroori hai. */
+window.JK_MOCK=true;
+/* LOGIN GATE (rank-analyzer.html jaisa): jkx_auth ke bina Community nahi khulegi. Link/invite yaad rakh kar Study App ke login par bhejo. */
+(function(){var ok=false;try{var s=JSON.parse(localStorage.getItem("jkx_auth")||"null");ok=!!(s&&(s.access_token||s.refresh_token))}catch(e){}
+try{var m=/[?&]join=([0-9a-f]{8,40})/i.exec(location.search);if(m)sessionStorage.setItem("jk_join",m[1])}catch(e){}
+if(ok||window.JK_DEV)return;
+try{localStorage.setItem("jk_after_login",JSON.stringify({u:"community.html"+(location.hash||""),t:Date.now()}))}catch(e){}
+document.documentElement.style.display="none";
+location.replace("index.html#login");})();
+</script>
+<style>
+:root{--navy:#1E40AF;--main:#2563EB;--bg:#F1F5F9;--surface:#FFFFFF;--field:#F8FAFC;--soft:#E0EAFF;--softink:#1E40AF;--ink:#0F172A;--mute:#64748B;--line:#E2E8F0;--ok:#059669;--okbg:#D1FAE5;--bad:#DC2626;--badbg:#FEE2E2;--warn:#F59E0B;--sh:0 1px 3px rgba(15,23,42,.08),0 6px 18px rgba(15,23,42,.06)}
+.dark{--main:#3B82F6;--bg:#0F172A;--surface:#1E293B;--field:#0F172A;--soft:rgba(59,130,246,.18);--softink:#93C5FD;--ink:#F8FAFC;--mute:#94A3B8;--line:#334155;--ok:#10B981;--okbg:rgba(16,185,129,.16);--bad:#EF4444;--badbg:rgba(239,68,68,.16);--sh:0 1px 3px rgba(0,0,0,.35)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"Noto Sans Devanagari","Segoe UI",system-ui,Arial,sans-serif;line-height:1.5}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:520px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative}
+.hd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 12px 20px;background:linear-gradient(135deg,var(--navy),var(--main));color:#fff;border-radius:0 0 24px 24px}
+.hd h1{margin:0;font-size:19px;flex:1;text-align:center}.brand{font-size:26px!important;letter-spacing:3px}
+.ib{width:38px;height:38px;border:0;background:rgba(255,255,255,.16);color:#fff;border-radius:50%;font-size:17px;display:grid;place-items:center}.ib.dim{opacity:.5}
+.pg{padding:14px}
+h3{margin:16px 2px 8px;font-size:16px}
+.card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 10px rgba(20,40,80,.08);margin-bottom:12px}
+.btn{flex:1;border:0;border-radius:12px;padding:12px 14px;font-weight:700;background:var(--main);color:#fff}
+.btn.ghost{background:#fff;color:var(--main);border:2px solid var(--main)}.btn:disabled{opacity:.4}
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:#16202e;color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;z-index:9}
+.mdl{position:fixed;inset:0;background:rgba(0,0,0,.55);display:grid;place-items:center;z-index:20;padding:20px}
+.mdl .card{max-width:420px;margin:0}.mdl h2{margin:0 0 8px;font-size:20px}.mdl p{margin:0 0 14px;font-size:15px}
+.pfc{cursor:pointer;position:relative;padding-right:38px}.pfc .pfx{min-width:0}.pfc .pfx b{font-size:17px;overflow-wrap:anywhere}.pfc .pfx small{display:block}
+.pfc .pfun{color:var(--main);font-weight:700}.pfc .go{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:24px;color:var(--mute)}
+.pfa{flex:none;width:56px;height:56px;border-radius:50%;object-fit:cover;display:grid;place-items:center;color:#fff;font-weight:800;font-size:24px;background:var(--main)}
+.pfa.big{width:96px;height:96px;font-size:40px}
+.pfchip{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:10px;background:#eaf1ff;color:var(--navy);margin-top:5px}
+.pfbio{font-size:13px;margin-top:5px;white-space:pre-line;overflow-wrap:anywhere}
+.pfp{text-align:center}.pfp .pfa{margin:0 auto 10px}.pfb2{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.pfb2 .btn{flex:none;padding:9px 14px;font-size:14px}
+.pfl{display:block;font-weight:700;font-size:14px;margin:14px 0 6px}
+.pfi,.pfe select,.pfe textarea{display:block;width:100%;box-sizing:border-box;padding:11px 12px;border-radius:10px;border:1.5px solid var(--line);background:#fff;color:var(--ink);font:inherit}
+.pfe textarea{resize:none}.pfi:focus,.pfe select:focus,.pfe textarea:focus,.pfu:focus-within{outline:0;border-color:var(--main)}
+.pfu{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;background:#fff;padding-left:12px}.pfu span{color:var(--mute);font-weight:700}
+.pfu input{border:0;outline:0;flex:1;padding:11px 8px;background:transparent;color:var(--ink);font:inherit;min-width:0}
+.pfm{font-size:12.5px;color:var(--mute);margin-top:5px;min-height:16px;overflow-wrap:anywhere}.pfm.ok{color:var(--ok)}.pfm.bad{color:var(--bad)}
+/* ===== Part 2: tokens (light/dark) + reference-image look. community.js ki CSS ke upar (#app / .mdl se jeet) ===== */
+h1,h2,h3,.hd,.bt{font-family:Poppins,Inter,"Noto Sans Devanagari",system-ui,sans-serif}
+.hd{background:var(--bg);color:var(--ink);border-radius:0;padding:12px 14px;position:sticky;top:0;z-index:7;gap:10px}
+.hd h1{text-align:left;font-size:17px;font-weight:600;letter-spacing:-.2px}.hd .hr{gap:4px}.hd .hr .ib{width:36px;height:36px}.hd .hr .ib .ic{width:18px;height:18px}.hd .bt small{display:block;color:var(--mute);font-size:12px;font-weight:400}
+.hd .bt{flex:1;min-width:0}.hd .bt h1{line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd .hr{display:flex;gap:6px}.hd span.ib{background:none;border:0}
+.ib{width:40px;height:40px;background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.ib .ic{width:20px;height:20px;stroke-width:2}
+.logo{flex:none;width:40px;height:40px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--navy),var(--main));color:#fff;font:700 20px Poppins,sans-serif}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh)}
+.btn.ghost{background:transparent;color:var(--main);border-color:var(--main)}
+.toast{background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:var(--sh)}
+:is(#app,.mdl) :is(.pfi,.pfe select,.pfe textarea,.pfu,.cmc,.cmtype button,.dnamt button,.cmlink,.dnupi){background:var(--field);color:var(--ink);border-color:var(--line)}
+:is(#app,.mdl) .pfu input{color:var(--ink)}
+:is(#app,.mdl) :is(.pfchip,.cmgb.o,.cmchip,.cmrole,.dnst,.cmtype button.on,.dnamt button.on){background:var(--soft);color:var(--softink)}
+:is(#app,.mdl) :is(.cmg,.cmbub,.cm .cmtabs){background:var(--surface)}
+#app .cmbub.me{background:var(--main);color:#fff}
+#app .cmg,#app .cmbub{border:1px solid var(--line);box-shadow:none}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(59,130,246,.4)}
+.ic{width:22px;height:22px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#app .cm.cmhub{padding-bottom:96px}
+#app .cmtabs.cmnav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:520px;margin:0;border-radius:0;border:0;border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:none;z-index:8;gap:0}
+#app .cmnav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;font-size:11px;font-weight:500;background:transparent;color:var(--mute);padding:4px 0}
+#app .cmnav button.on{background:transparent;color:var(--main);font-weight:600}
+#app .cmtabs:not(.cmnav) button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px}
+#app .cmtabs:not(.cmnav) button .ic{width:18px;height:18px}
+.cm .cmpost .cmact{display:flex;gap:2px;border-top:1px solid var(--line);margin-top:10px;padding-top:4px}
+.cm .cmmini{display:inline-flex;align-items:center;gap:6px;min-height:44px;min-width:44px;padding:0 12px;justify-content:center}
+.cm .cmmini.on .ic{fill:currentColor}.cm .cmact .sv{margin-left:auto}
+.cm .cmmenu{display:flex;gap:4px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:4px}.cm .cmmenu[hidden]{display:none}
+.cmpills{display:flex;gap:8px;margin-bottom:12px}.cmpills button{flex:1;border:0;border-radius:20px;padding:9px 4px;font-weight:600;font-size:14px;background:var(--surface);color:var(--mute);border:1px solid var(--line)}
+.cmpills button.on{background:var(--main);color:#fff;border-color:var(--main)}
+.cmfake{flex:1;text-align:left;border:1px solid var(--line);background:var(--field);color:var(--mute);border-radius:22px;padding:12px 16px;font:inherit;min-height:44px}
+.cmqa{display:flex;gap:2px;margin-top:8px;border-top:1px solid var(--line);padding-top:6px}.cmqa .cmmini{flex:1;padding:0 4px;font-size:13px}
+.cmsheet{position:fixed;inset:0;z-index:15;background:var(--bg);color:var(--ink);overflow:auto;max-width:520px;margin:0 auto;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.cmsh{display:flex;align-items:center;gap:10px;padding:12px 14px}.cmsh h2{flex:1;margin:0;font-size:18px;font-weight:600}.cmsh .btn{flex:none;padding:9px 22px}
+.cmcpb{padding:0 14px 14px;flex:1;overflow:auto}.cmcpb .cmc{border:0;background:transparent;font-size:17px;min-height:140px;resize:none;margin-top:10px}
+.cmpub{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--mute);border:1px solid var(--line);border-radius:12px;padding:2px 8px;margin-top:2px}.cmpub .ic{width:13px;height:13px}
+.cmthumb{position:relative;margin:8px 0}.cmthumb img{width:100%;max-height:260px;object-fit:cover;border-radius:14px}.cmthumb .ib{position:absolute;top:8px;right:8px;width:32px;height:32px}
+.cmadd{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:12px;background:var(--surface)}.cmadd small{color:var(--mute)}.cmadd .cmqa{border:0;margin:0;padding:0}
+.cmcbar{padding:8px 14px calc(8px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--bg)}
+.cmpoll{margin-top:8px;display:grid;gap:8px}.cmpo{position:relative;overflow:hidden;display:flex;justify-content:space-between;gap:8px;text-align:left;border:1.5px solid var(--line);background:var(--field);color:var(--ink);border-radius:12px;padding:11px 12px;min-height:44px}
+.cmpo i{position:absolute;left:0;top:0;bottom:0;background:var(--soft);z-index:0}.cmpo span,.cmpo b{position:relative;z-index:1}.cmpo.on{border-color:var(--main)}.cmpoll small{color:var(--mute)}
+.cmpollc{position:relative;display:grid;gap:8px;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:8px}.cmpollc .ib{position:absolute;top:6px;right:6px;width:32px;height:32px}.cmpollc .cmc{min-height:0!important;border:1.5px solid var(--line)!important;background:var(--field)!important;font-size:15px!important;margin:0!important}
+.cmrp{border:0;background:none;color:var(--main);font-weight:600;font-size:13px;padding:6px 0}.cmrep{margin-left:6px;border-left:2px solid var(--line);padding-left:8px}.cmrep .cmcm:last-child{border-bottom:0}
+.cmfp{display:flex;align-items:center;gap:12px}.cmfpi{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:rgba(239,68,68,.15);color:#EF4444}.cmfp small{display:block;color:var(--mute)}
+.cmfs{position:fixed;inset:0;z-index:30;background:#000;display:grid;place-items:center}.cmfs img{max-width:100%;max-height:100%;object-fit:contain}
+.cmsheet.cmbot{background:rgba(0,0,0,.5);justify-content:flex-end}.cmbk{flex:1}.cmbsh{background:var(--surface);border-radius:20px 20px 0 0;padding:16px 14px calc(18px + env(safe-area-inset-bottom,0px))}
+.cmab{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.cmab button{border:0;background:none;color:var(--ink);display:grid;justify-items:center;gap:6px;font-size:12px}.cmab span{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--softink)}
+.cmcm{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.cmcm .pfa{width:36px;height:36px;font-size:15px}.cmcb{min-width:0;flex:1}.cmcb small{color:var(--mute)}
+
+.cmsearch{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0 12px;margin-bottom:10px}.cmsearch input{flex:1;border:0;outline:0;background:transparent;color:var(--ink);font:inherit;min-height:44px;min-width:0}
+.cmsearch:focus-within{border-color:var(--main)}.cmsearch input:focus-visible{box-shadow:none}
+.cmpills.sm button{padding:7px 4px;font-size:13px}.cmpills.sm button{display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}.cmpills .cmbadge{min-width:18px;height:18px;font-size:11px}.cmpills button.on .cmbadge{background:#fff;color:var(--main)}
+.cmcr{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;color:var(--ink);text-align:left;padding:10px 4px;border-bottom:1px solid var(--line)}
+.cmcrav{position:relative;flex:none}.cmcrav .pfa{width:48px;height:48px;font-size:20px}.cmon{position:absolute;right:0;bottom:0;width:12px;height:12px;border-radius:50%;background:var(--ok);border:2px solid var(--bg)}
+.cmcrm{flex:1;min-width:0;display:grid}.cmcrm b{font-size:15px}.cmcrm small{color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmcrt{display:grid;justify-items:end;gap:4px;flex:none}.cmcrt small{color:var(--mute);font-size:12px}.cmbadge{min-width:20px;height:20px;border-radius:10px;background:var(--main);color:#fff;font-size:12px;font-weight:600;display:grid;place-items:center;padding:0 6px}
+.cmdml{display:flex;flex-direction:column;gap:6px}.cmdate{align-self:center;font-size:12px;color:var(--mute);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px 12px;margin:8px 0}
+.cmtk{margin-left:4px;font-size:11px}.cmtk.rd{color:#93C5FD}
+.cmdmbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;gap:8px;align-items:center;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line);z-index:6}
+.cmdmbar .cmc{flex:1;border-radius:22px}.cmdmbar .ib{flex:none}.cmdm{padding-bottom:84px}
+.cmemo{display:flex;gap:6px;flex-wrap:wrap;padding:8px 14px;background:var(--surface);border-top:1px solid var(--line);position:fixed;bottom:62px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;z-index:6}.cmemo button{border:0;background:none;font-size:24px;padding:4px}
+.cmset{display:grid;gap:8px;margin:10px 0}.cmset .cmpills{margin:0}.cmsys{align-self:center;font-size:12px;color:var(--mute);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 14px}
+#app .cmbar{align-items:center;gap:6px}#app .cmbar .cmc{flex:1;border-radius:22px;min-height:44px}#app .cmbar .ib{flex:none}.ib.cmplus{background:var(--main);color:#fff;border:0}
+#app .cmchat .cmbub .cmt{display:flex;justify-content:flex-end;align-items:center}#app .cmbub.me .cmtk{color:#BFDBFE}
+#app .cmpdf{background:var(--field);border:1px solid var(--line);color:var(--ink);padding:10px 12px;border-radius:14px}#app .cmbub.me .cmpdf{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff}
+#app .cmpdf .ic{width:38px;height:38px;padding:8px;border-radius:10px;background:rgba(239,68,68,.15);color:#EF4444}
+.cmhero{position:relative;margin-bottom:34px}.cmban{height:110px;border-radius:16px;background:linear-gradient(135deg,var(--navy),var(--main))}
+.cmhav{position:absolute;left:14px;bottom:-30px;border:4px solid var(--bg);border-radius:50%;background:var(--bg)}
+.cmhi{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}.cmhi small{color:var(--mute)}.cmdesc{color:var(--mute);margin:6px 0 12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.cmacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:6px;margin:6px 0 14px}.cmacts button{border:0;background:none;color:var(--ink);display:grid;justify-items:center;gap:6px;font-size:12px;padding:4px}
+.cmacts span{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--softink)}
+.cmsub{display:flex;border-bottom:1px solid var(--line);margin-bottom:10px}.cmsub button{flex:1;border:0;background:none;color:var(--mute);padding:11px 4px;font-weight:600;border-bottom:3px solid transparent;margin-bottom:-1px}.cmsub button.on{color:var(--main);border-color:var(--main)}
+.gp[hidden]{display:none}.cmgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.cmgrid .cmimg{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px}
+#app .cmrole.r-admin{background:rgba(59,130,246,.2);color:#60A5FA}#app .cmrole.r-moderator{background:rgba(139,92,246,.2);color:#A78BFA}#app .cmrole.r-member{background:rgba(148,163,184,.2);color:var(--mute)}#app .cmrole.r-owner{background:rgba(245,158,11,.2);color:#F59E0B}
+.cmprof{text-align:center;display:grid;justify-items:center;gap:6px;margin-bottom:14px}.cmprof .pfa.big{width:96px;height:96px;font-size:40px}.cmprof h2{margin:6px 0 0}.cmpun{color:var(--main);font-weight:600}.cmpbio{margin:0;color:var(--mute)}
+.cmstats{display:grid;grid-template-columns:repeat(3,1fr);width:100%;margin:8px 0}.cmstats b{display:block;font-size:20px;font-family:Poppins,sans-serif}.cmstats small{color:var(--mute)}
+.cmprof .cmrow{width:100%}.cmprof .cmrow .btn{flex:1}.cmchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.cmnt0{display:flex;align-items:center;gap:6px;margin-bottom:6px}.cmnt0 .cmpills{flex:1;margin:0}.cmnt0 .cmmini{flex:none;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--mute);min-width:44px}
+.cmnti{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;flex:none}.cmnti .ic{width:22px;height:22px}
+.n-like{background:rgba(239,68,68,.16);color:#EF4444}.n-cm{background:rgba(59,130,246,.18);color:#3B82F6}.n-mn{background:rgba(139,92,246,.18);color:#8B5CF6}.n-fo{background:rgba(16,185,129,.18);color:#10B981}.n-gr{background:rgba(14,165,233,.18);color:#0EA5E9}.n-an{background:rgba(245,158,11,.18);color:#F59E0B}
+.cmnt .cmcrm small{white-space:normal}.cmud{width:10px;height:10px;border-radius:50%;background:transparent;flex:none}.cmnt.un{background:var(--soft)}.cmnt.un .cmud{background:var(--main)}
+.cmnav button,#cmBl{position:relative}.cmdot{position:absolute;top:2px;left:calc(50% + 6px);min-width:16px;height:16px;border-radius:8px;background:var(--bad);color:#fff;font:700 10px/16px Inter,sans-serif;text-align:center;padding:0 4px;font-style:normal}#cmBl .cmdot{top:-2px;left:auto;right:-2px}
+.cmsg{padding:6px 4px;align-items:center}.cmsg .cmcr{padding:0}
+.cmsoon{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;color:var(--mute);padding:36px 16px}
+.cmsoon .ic{width:40px;height:40px;color:var(--main)}.cmsoon b{color:var(--ink);font-size:17px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app" class="wrap"></div>
+<script>
+/* ===== JAKHAR Community (standalone) — Part 1 shell =====
+   Study App (index.html) se kuch badla nahi gaya. Yahan host ke wahi globals ki chhoti copy hai jo community.js maangta hai:
+   SM_BASE, SM_KEY, smE, toast, hdr, BACK, view, seeMore, profile, CONTACT, DONATE, JKAuth, JKProfile.
+   Session wahi `jkx_auth` (localStorage) hai, isliye login Study App se hi hota hai. */
+const SM_BASE="https://gpqrkxyypadgvguomfrr.supabase.co",SM_KEY="sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq";
+const CONTACT={yt:"https://youtube.com/@vinodkumarnath007",tg:"https://t.me/vinodkumarnath007",mail:"nvinu2259@gmail.com"};
+const DONATE={upi:"vinodnath@ptyes",name:"",qr:""};
+const COMM_V="8";   /* community.js ka version — index.html ke JK_COMM_V jaisa; community.js badle to dono badlo */
+const smE=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
+try{const th=JSON.parse(localStorage.getItem("jk_theme")||"[]");document.documentElement.classList.toggle("dark",th[0]==="dark")}catch(e){}
+
+/* ---- JKAuth (sirf wahi jo Community ko chahiye; code index.html se) ---- */
+window.JKAuth=(function(){
+  function load(){try{return JSON.parse(localStorage.getItem("jkx_auth")||"null")}catch(e){return null}}
+  function save(s){try{if(s)localStorage.setItem("jkx_auth",JSON.stringify(s));else localStorage.removeItem("jkx_auth")}catch(e){}}
+  async function call(path,body){
+    let r;
+    for(let t=0;t<2;t++){
+      const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),12000);
+      try{r=await fetch(SM_BASE+path,{method:"POST",headers:{apikey:SM_KEY,"Content-Type":"application/json"},body:JSON.stringify(body),signal:ac.signal});break}
+      catch(e){if(t===1)throw new Error("Failed to fetch")}
+      finally{clearTimeout(tm)}
+    }
+    const j=await r.json().catch(()=>null);
+    if(!r.ok)throw new Error((j&&(j.msg||j.message||j.error_description||j.error))||("HTTP "+r.status));
+    return j;
+  }
+  const pack=j=>({access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Math.floor(Date.now()/1000)+(j.expires_in||3600),email:(j.user&&j.user.email)||"",uid:(j.user&&j.user.id)||""});
+  let RP=null;function refresh(){return RP||(RP=refreshOnce().finally(()=>{RP=null}))}
+  async function refreshOnce(){
+    const s=load();if(!s||!s.refresh_token)return;
+    if(s.expires_at-60>Date.now()/1000)return;
+    try{save(pack(await call("/auth/v1/token?grant_type=refresh_token",{refresh_token:s.refresh_token})))}
+    catch(e){if(/invalid|expired|not found|revoked/i.test(e.message))save(null)}
+  }
+  async function ensureUid(){
+    try{
+      await refresh();const s=load();if(!s)return "";
+      if(s.uid)return s.uid;
+      const r=await fetch(SM_BASE+"/auth/v1/user",{headers:{apikey:SM_KEY,Authorization:"Bearer "+s.access_token}});
+      const u=await r.json().catch(()=>null);if(!r.ok||!u)throw new Error("HTTP "+r.status);
+      s.uid=u.id||"";if(u.email)s.email=u.email;save(s);return s.uid;
+    }catch(e){return ""}
+  }
+  return {getSession:load,isLoggedIn:()=>!!load(),uid:()=>(load()||{}).uid||"",ensureUid,refresh};
+})();
+
+/* ---- JKProfile (sirf get/load/avatar; `profiles` table, cache key jk_profile — index.html ke saath same) ---- */
+window.JKProfile=(function(){
+  const CK="jk_profile",DEF_NAME="JAKHAR विद्यार्थी";
+  const cache=()=>{try{return JSON.parse(localStorage.getItem(CK)||"null")}catch(e){return null}};
+  const setCache=p=>{try{if(p)localStorage.setItem(CK,JSON.stringify(p));else localStorage.removeItem(CK)}catch(e){}};
+  function get(){const p=cache(),u=JKAuth.uid();return p&&u&&p.id===u?p:null}
+  async function tok(){
+    try{await JKAuth.refresh()}catch(e){}
+    let s=JKAuth.getSession();if(!s)return null;
+    if(!s.uid){await JKAuth.ensureUid();s=JKAuth.getSession()}
+    return s&&s.uid?s:null;
+  }
+  async function rest(method,path,s,body,extra){
+    const h={apikey:SM_KEY,Authorization:"Bearer "+s.access_token,"Content-Type":"application/json"};if(extra)Object.assign(h,extra);
+    const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),12000);let r;
+    try{r=await fetch(SM_BASE+path,{method,headers:h,body:body==null?undefined:JSON.stringify(body),signal:ac.signal})}
+    catch(e){throw new Error("NET")}finally{clearTimeout(tm)}
+    const j=await r.json().catch(()=>null);
+    if(!r.ok){const e=new Error((j&&(j.message||j.msg||j.error))||("HTTP "+r.status));e.code=j&&j.code;e.status=r.status;throw e}
+    return j;
+  }
+  let LP=null;
+  function load(){return LP||(LP=loadOnce().finally(()=>{LP=null}))}
+  async function loadOnce(){
+    const s=await tok();if(!s)return null;
+    const a=await rest("GET","/rest/v1/profiles?id=eq."+s.uid+"&select=*",s);
+    if(a&&a[0]){setCache(a[0]);return a[0]}
+    return create(s);
+  }
+  async function create(s){
+    for(let t=0;t<6;t++){
+      const un="jakhar"+String(Math.floor(Math.random()*1e6)).padStart(6,"0");
+      try{const r=await rest("POST","/rest/v1/profiles",s,{id:s.uid,username:un,display_name:DEF_NAME},{Prefer:"return=representation"});if(r&&r[0]){setCache(r[0]);return r[0]}}
+      catch(e){
+        if(e.code==="23505"||e.status===409){const a=await rest("GET","/rest/v1/profiles?id=eq."+s.uid+"&select=*",s).catch(()=>null);if(a&&a[0]){setCache(a[0]);return a[0]}continue}
+        throw e}
+    }
+    return null;
+  }
+  const COL=["#1457d9","#c2410c","#0f766e","#7e22ce","#be185d","#4d7c0f","#b45309","#0369a1"];
+  function colorOf(u){let h=0;String(u||"").split("").forEach(c=>{h=(h*31+c.charCodeAt(0))>>>0});return COL[h%COL.length]}
+  function avatar(p,big){
+    const cls="pfa"+(big?" big":"");
+    if(p&&p.avatar_url)return'<img class="'+cls+'" src="'+smE(p.avatar_url)+'" alt="">';
+    const n=Array.from(String((p&&p.display_name)||"J").trim())[0]||"J";
+    return'<span class="'+cls+'" style="background:'+colorOf(p&&p.username)+'">'+smE(n.toUpperCase())+'</span>';
+  }
+  return {get,load,avatar};
+})();
+
+/* ---- Screen shell: view/hdr/BACK + hash navigation (#feed, #groups, #g/<id>/<tab>) ---- */
+const app=document.getElementById("app");
+const BACK='<button class="ib" id="bk" aria-label="वापस"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M20 12H5M11.5 5.5L5 12l6.5 6.5"/></svg></button>';
+function hdr(l,r,t){const f=t.replace(/<[^>]*>/g,"").length>30?' style="font-size:15px"':"";return `<header class="hd">${l||'<span class="ib"></span>'}<h1${f}>${t}</h1>${r||'<span class="ib"></span>'}</header>`}
+function seeMore(){location.href="index.html#home"}   /* community.js ka "bahar jao" back */
+function profile(){location.href="index.html#home"}   /* Donate screen ka back (Study App me hi use hota hai) */
+function toLogin(){
+  if(window.JK_DEV)return;
+  try{localStorage.setItem("jk_after_login",JSON.stringify({u:"community.html"+(location.hash||""),t:Date.now()}))}catch(e){}
+  document.documentElement.style.display="none";location.replace("index.html#login");
+}
+let curBack=null,prevTitle=null,navBack=false,depth=0,lastGid="";
+/* community.js group kholte hi `groups?id=eq.<id>&select=*` GET karta hai; usse group id pakad kar URL hash me rakhte hain
+   (community.js ko chhue bina). Part 4 me ise sahi router se badalna hai. */
+const _fetch=window.fetch.bind(window);
+window.fetch=function(u,o){try{const m=/\/rest\/v1\/groups\?id=eq\.([\w-]+)&select=\*/.exec(String(u));if(m)lastGid=m[1]}catch(e){}return _fetch(u,o)};
+function hashOf(){
+  const on=app.querySelector(".cmtabs button.on");if(!on)return "";
+  const k=on.dataset.t;
+  if(app.querySelector(".cmnav"))return "#"+k;                                    /* hub: feed|chats|groups|notif|profile */
+  if(lastGid&&(k==="chat"||k==="posts"||k==="info"))return "#g/"+lastGid+"/"+k;  /* group */
+  return "";
+}
+function goBack(){
+  if(depth>0)history.back();
+  else if(typeof curBack==="function"){navBack=true;curBack()}
+}
+function view(html,tab,keep,bf){
+  if(!JKAuth.isLoggedIn()&&!window.JK_DEV){toLogin();return}
+  app.className="wrap";app.innerHTML=html;
+  if(!keep)window.scrollTo(0,0);
+  const h1=app.querySelector(".hd h1"),title=h1?h1.textContent:"";
+  const url=location.pathname+location.search+(hashOf()||location.hash);
+  try{
+    if(prevTitle===null||navBack||title===prevTitle)history.replaceState({d:depth},"",url);
+    else{depth++;history.pushState({d:depth},"",url)}
+  }catch(e){}
+  prevTitle=title;navBack=false;curBack=bf||null;
+  const b=document.getElementById("bk");if(b)b.onclick=goBack;
+}
+window.addEventListener("popstate",e=>{
+  const nd=(e.state&&e.state.d)||0,fwd=nd>depth;depth=nd;
+  if(!e.state||fwd){restore();return}           /* hash haath se badla / Forward: hash se screen banao */
+  if(typeof curBack==="function"){navBack=true;curBack()}
+});
+window.addEventListener("storage",e=>{if(e.key==="jkx_auth"&&!e.newValue)toLogin()});   /* Study App me logout hua */
+
+/* ---- Load community.js, phir hash se screen restore ---- */
+function loadComm(){
+  if(window.JKCom)return Promise.resolve(window.JKCom);
+  return new Promise((ok,no)=>{
+    const sc=document.createElement("script");sc.src="community.js?v="+COMM_V;
+    sc.onload=()=>window.JKCom?ok(window.JKCom):no(new Error("LOAD"));
+    sc.onerror=()=>no(new Error("NET"));
+    document.head.appendChild(sc);
+  });
+}
+async function restore(){
+  navBack=true;
+  const h=location.hash,g=/^#g\/([\w-]+)(?:\/(chat|posts|info))?$/.exec(h);
+  await JKCom.open();
+  if(!JKAuth.isLoggedIn()&&!window.JK_DEV){toLogin();return}
+  if(g)JKCom.openGroup(g[1],g[2]||"chat");
+  else{const m=/^#(chats|groups|notif|profile)$/.exec(h);if(m){const b=app.querySelector('.cmnav button[data-t="'+m[1]+'"]');if(b)b.click()}}
+}
+function askLang(){
+  if(JKLang.has())return Promise.resolve();
+  return new Promise(ok=>{const d=document.createElement("div");d.className="mdl";
+    d.innerHTML='<div class="card" style="text-align:center"><h2>Choose your language<br>अपनी भाषा चुनें</h2><p>You can change it later in Settings.<br>बाद में Settings में बदल सकते हैं।</p><div style="display:flex;gap:10px"><button class="btn" data-l="hi">हिन्दी</button><button class="btn ghost" data-l="en">English</button></div></div>';
+    d.onclick=e=>{const b=e.target.closest("[data-l]");if(!b)return;JKLang.set(b.dataset.l);d.remove();ok()};document.body.appendChild(d)});
+}
+function loadJs(src){return new Promise((ok,no)=>{const m=document.createElement("script");m.src=src;m.onload=ok;m.onerror=no;document.head.appendChild(m)})}
+async function boot(){
+  if(!JKAuth.isLoggedIn()&&!window.JK_DEV){toLogin();return}
+  await askLang();
+  JKAuth.ensureUid();
+  app.className="wrap";
+  app.innerHTML=hdr("","","Student Community")+'<main class="pg"><div class="card" style="text-align:center;color:var(--mute)">लोड हो रही है...</div></main>';
+  try{history.replaceState(null,"",location.pathname+location.hash)}catch(e){}   /* ?join=... URL se hatao (code sessionStorage me hai) */
+  if(!window.JKI18N){try{await loadJs("community-i18n.js")}catch(e){}}
+  if(window.JKI18N)JKI18N.start();
+  if(window.JK_MOCK&&!window.JK_MOCKED){try{await loadJs("community-mock.js")}catch(e){}}
+  try{await loadComm()}
+  catch(e){
+    app.innerHTML=hdr(BACK,"","Student Community")+'<main class="pg"><div class="card" style="text-align:center">Community अभी खुल नहीं पा रही।<br>इंटरनेट जाँचकर फिर कोशिश करें।<br><br><button class="btn" id="cmR" style="width:100%">फिर कोशिश करें</button></div></main>';
+    document.getElementById("bk").onclick=seeMore;document.getElementById("cmR").onclick=()=>location.reload();return;
+  }
+  await restore();
+  let code="";try{code=sessionStorage.getItem("jk_join")||""}catch(e){}
+  if(code&&JKAuth.isLoggedIn())JKCom.handleJoin(code);
+}
+boot();
+</script>
+</body>
+</html>
