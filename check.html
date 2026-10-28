@@ -1,0 +1,27 @@
+<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Community check</title>
+<style>body{font:15px/1.5 system-ui,sans-serif;margin:16px;background:#0f172a;color:#f8fafc}pre{white-space:pre-wrap;background:#1e293b;padding:12px;border-radius:10px}b.ok{color:#10b981}b.bad{color:#f87171}</style></head><body>
+<h3>Community file check</h3><p>इसे community.html वाले ही folder में रखकर खोलें (जैसे .../check.html)। नतीजे का screenshot भेजें।</p><pre id="o">जाँच चल रही है…</pre>
+<script>
+(async function(){
+ const o=document.getElementById("o");let out="";
+ const P=(l,ok,x)=>{out+=(ok?"✅ ":"❌ ")+l+(x?"  → "+x:"")+"\n"};
+ async function get(f){try{const r=await fetch(f+"?t="+Date.now(),{cache:"no-store"});const t=await r.text();return{ok:r.ok,t,len:new TextEncoder().encode(t).length,st:r.status}}catch(e){return{ok:false,t:"",len:0,st:String(e)}}}
+ const h=await get("community.html"),j=await get("community.js"),m=await get("community-mock.js");
+ P("community.html मिली",h.ok,h.len+" bytes (सही ≈ 33046)");
+ const st=(h.t.match(/<style>([\s\S]*?)<\/style>/)||[])[1]||"";
+ P("CSS बंद है (</style>)",!!st,"{ "+(st.split("{").length-1)+" / } "+(st.split("}").length-1)+" (बराबर होने चाहिए, सही 226/226)");
+ P("'Part 2: tokens' CSS मौजूद",h.t.includes("Part 2: tokens"));
+ P("COMM_V",/COMM_V="8"/.test(h.t),(h.t.match(/COMM_V="(\d+)"/)||[])[0]||"नहीं मिला");
+ P("JK_MOCK",/JK_MOCK=false/.test(h.t),(h.t.match(/JK_MOCK=(\w+)/)||[])[0]||"?");
+ P("community.js मिली",j.ok,j.len+" bytes (सही ≈ 127,500)");
+ P("community.js नई (group_mark_read)",j.t.includes("group_mark_read"));
+ P("community.html का अंत सही",/<\/html>\s*$/.test(h.t),JSON.stringify(h.t.slice(-30)));
+ try{const f=document.createElement("iframe");f.style.cssText="position:absolute;left:-9999px;width:390px;height:700px";f.src="community.html?chk="+Date.now();document.body.appendChild(f);
+  await new Promise(r=>{f.onload=r;setTimeout(r,6000)});await new Promise(r=>setTimeout(r,2500));
+  const d=f.contentDocument,lg=d.querySelector(".logo"),ic=d.querySelector(".ic");
+  if(lg){const c=f.contentWindow.getComputedStyle(lg);P("Header .logo style लगा",c.borderTopWidth==="0px",'border='+c.borderTopWidth+', radius='+c.borderRadius)}else P("Header (.logo) दिखा",false,"पेज login/error पर होगा")
+  if(ic){const c=f.contentWindow.getComputedStyle(ic);P("Icon style लगा",c.fill==="none",'fill='+c.fill+', width='+c.width)}
+ }catch(e){P("iframe जाँच",false,String(e))}
+ out+="\nUA: "+navigator.userAgent;o.textContent=out;
+})();
+</script></body></html>
