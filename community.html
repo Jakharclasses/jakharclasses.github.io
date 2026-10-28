@@ -26,7 +26,7 @@ if(mq&&mq.addEventListener)mq.addEventListener("change",apply);apply();})();
 /* DEV MODE: true = login gate band (sirf chat/preview me dekhne ke liye). FINAL RELEASE se pehle false karna zaroori hai. */
 window.JK_DEV=true;
 /* MOCK MODE: true = nakli data (community-mock.js), Supabase ki zaroorat nahi. FINAL se pehle false karna zaroori hai. */
-window.JK_MOCK=true;
+window.JK_MOCK=false;
 /* LOGIN GATE (rank-analyzer.html jaisa): jkx_auth ke bina Community nahi khulegi. Link/invite yaad rakh kar Study App ke login par bhejo. */
 (function(){var ok=false;try{var s=JSON.parse(localStorage.getItem("jkx_auth")||"null");ok=!!(s&&(s.access_token||s.refresh_token))}catch(e){}
 try{var m=/[?&]join=([0-9a-f]{8,40})/i.exec(location.search);if(m)sessionStorage.setItem("jk_join",m[1])}catch(e){}
@@ -317,6 +317,7 @@ function loadComm(){
 async function restore(){
   navBack=true;
   const h=location.hash,g=/^#g\/([\w-]+)(?:\/(chat|posts|info))?$/.exec(h);
+  if(h==="#donate"){JKCom.donate();return}   /* Study App > Profile > Donate Us */
   await JKCom.open();
   if(!JKAuth.isLoggedIn()&&!window.JK_DEV){toLogin();return}
   if(g)JKCom.openGroup(g[1],g[2]||"chat");

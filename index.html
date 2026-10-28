@@ -2485,44 +2485,13 @@ splash();
 })();
 </script>
 <script>
-/* ===== Community code alag file me (community.js) — index.html halka rahe. =====
-   Community kholte hi: `await jkLoadCommunity()` (pehli baar download, phir cache). community.js badalne par JK_COMM_V badlo. */
-const JK_COMM_V = "4";
-window.jkLoadCommunity = function () {
-  if (window.JKCom) return Promise.resolve(window.JKCom);
-  if (window.__jkComm) return window.__jkComm;
-  return window.__jkComm = new Promise((ok, no) => {
-    const sc = document.createElement("script");
-    sc.src = "community.js?v=" + JK_COMM_V;
-    sc.onload = () => window.JKCom ? ok(window.JKCom) : (window.__jkComm = null, no(new Error("LOAD")));
-    sc.onerror = () => { window.__jkComm = null; no(new Error("NET")); };
-    document.head.appendChild(sc);
-  });
-};
-/* See More -> Student Community */
-window.openCommunity = function () {
-  view(hdr(BACK, "", "Student Community") + '<main class="pg"><div class="card" style="text-align:center;color:var(--mute)">लोड हो रही है...</div></main>', "", false, seeMore);
-  jkLoadCommunity().then(c => c.open()).catch(() => {
-    view(hdr(BACK, "", "Student Community") + '<main class="pg"><div class="card" style="text-align:center">Community अभी खुल नहीं पा रही।<br>इंटरनेट जाँचकर फिर कोशिश करें।<br><br><button class="btn" id="cmR" style="width:100%">फिर कोशिश करें</button></div></main>', "", false, seeMore);
-    document.getElementById("cmR").onclick = openCommunity;
-  });
-};
-/* Part 8: Profile -> Donate Us (screen community.js me hai, isliye wahi loader) */
-window.openDonate = function () {
-  view(hdr(BACK, "", "💝 Donate Us") + '<main class="pg"><div class="card" style="text-align:center;color:var(--mute)">लोड हो रही है...</div></main>', "prof", false, profile);
-  jkLoadCommunity().then(c => c.donate()).catch(() => {
-    view(hdr(BACK, "", "💝 Donate Us") + '<main class="pg"><div class="card" style="text-align:center">अभी खुल नहीं पा रहा।<br>इंटरनेट जाँचकर फिर कोशिश करें।<br><br><button class="btn" id="dnR" style="width:100%">फिर कोशिश करें</button></div></main>', "prof", false, profile);
-    document.getElementById("dnR").onclick = openDonate;
-  });
-};
-/* इनवाइट लिंक (?join=<code>): code याद रखो; लॉगिन होते ही ग्रुप की जानकारी दिखाओ */
+/* ===== Community ab alag page hai: community.html (apna CSS/JS/login gate). index.html me ab koi Community code nahi. =====
+   Student Community card -> community.html ;  Profile -> Donate Us -> community.html#donate */
+window.openCommunity = function () { location.href = "community.html"; };
+window.openDonate = function () { location.href = "community.html#donate"; };
+/* purane invite links (?join=<code>) jo index.html par aate the: seedha community.html par bhej do */
 (function () {
-  try { const m = /[?&]join=([0-9a-f]{8,40})/i.exec(location.search); if (m) { sessionStorage.setItem("jk_join", m[1]); history.replaceState(null, "", location.pathname + location.hash); } } catch (e) {}
-  let n = 0; const t = setInterval(() => {
-    n++; let code = ""; try { code = sessionStorage.getItem("jk_join") || ""; } catch (e) {}
-    if (!code || n > 600) { clearInterval(t); return; }
-    if (window.JKAuth && JKAuth.isLoggedIn()) { clearInterval(t); jkLoadCommunity().then(c => c.handleJoin(code)).catch(() => {}); }
-  }, 1000);
+  try { const m = /[?&]join=([0-9a-f]{8,40})/i.exec(location.search); if (m) location.replace("community.html?join=" + m[1]); } catch (e) {}
 })();
 </script>
 <script>
