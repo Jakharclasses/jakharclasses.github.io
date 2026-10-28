@@ -949,11 +949,47 @@ if(QS.length!==QUESTIONS.length)console.warn((QUESTIONS.length-QS.length)+" प�
    2) Asli newline (\n) ko <br> banata hai — sirf jab text me pehle se <br> na ho.
    3) lite=false (sirf question): agar <br>/block tag/newline kuch nahi hai aur statements ek hi line me chipke hain
       ("1. .. 2. .." / "A. .. B. .." / "(क) .. (ख) .." / "कारण (R)"), to unhe alag lines me todta hai. */
+function pipeToTable(q) {
+  if (!q || /<table/i.test(q) || q.indexOf("|") < 0) return q;
+  const lines = String(q).replace(/\r\n?/g, "\n").split(/<br\s*\/?>|\n/i);
+  const cells = l => { const c = l.split("|").map(x => x.trim()); if (c[0] === "") c.shift(); if (c.length && c[c.length - 1] === "") c.pop(); return c; };
+  const isRow = l => l.indexOf("|") >= 0 && cells(l).length >= 2;
+  const isSep = l => /^[\s|:\-]+$/.test(l) && l.indexOf("-") >= 0;
+  const out = []; let i = 0, done = false;
+  while (i < lines.length) {
+    if (isRow(lines[i]) || isSep(lines[i])) {
+      let j = i; while (j < lines.length && (isRow(lines[j]) || isSep(lines[j]))) j++;
+      const run = lines.slice(i, j).filter(l => !isSep(l));
+      if (run.length >= 3) {
+        const w = Math.max(...run.map(l => cells(l).length));
+        const hd = /(सूची|सूचि|List|Column|कॉलम|स्तंभ|स्तम्भ)/i.test(run[0]);
+        const rows = run.map((l, k) => { const c = cells(l); while (c.length < w) c.push("");
+          const tg = hd && k === 0 ? "th" : "td"; return "<tr>" + c.map(x => "<" + tg + ">" + x + "</" + tg + ">").join("") + "</tr>"; });
+        out.push({ t: '<table class="qt">' + rows.join("") + "</table>" }); i = j; done = true; continue;
+      }
+    }
+    out.push({ s: lines[i] }); i++;
+  }
+  if (!done) return q;
+  let r = "", prevT = false;
+  out.forEach((o, k) => { if (o.t) r += (r ? "<br><br>" : "") + o.t, prevT = true; else { r += (k > 0 && !prevT ? "<br>" : (k > 0 ? "<br><br>" : "")) + o.s; prevT = false; } });
+  return r;
+}
+function arIntroNormal(q) {
+  if (!q || /font-weight\s*:\s*(400|normal)/i.test(q)) return q;
+  const m = q.match(/(<b>\s*)?(अभिकथन|Assertion)\s*\(A\)/i);
+  if (!m || !(/(कारण|Reason)\s*\(R\)/i.test(q))) return q;
+  const pre = q.slice(0, m.index), plain = pre.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+  if (plain.length < 4) return q;
+  const trail = (pre.match(/((<br\s*\/?>|\s)+)$/i) || [""])[0], body = pre.slice(0, pre.length - trail.length);
+  return '<span style="font-weight:400">' + body + "</span>" + (trail.trim() ? trail : "<br><br>") + q.slice(m.index);
+}
 const FMQ_C=new Map();
 function fmtQ(h,lite){
   let s=h==null?"":String(h);if(!s)return s;
   const key=(lite?"1":"0")+s,hit=FMQ_C.get(key);if(hit!==undefined)return hit;
   s=s.replace(/\r\n?/g,"\n");
+  if(!lite){s=pipeToTable(s);s=arIntroNormal(s);}   /* pipe(|) text -> table; A-R ki upar wali intro normal weight */
   const parts=s.split(/(<table[\s\S]*?<\/table>)/i),n=parts.length;
   const out=parts.map((p,i)=>{
     if(i%2)return'<div class="tw">'+p.replace(/\n+/g,"")+'</div>';

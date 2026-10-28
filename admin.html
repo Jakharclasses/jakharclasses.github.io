@@ -555,14 +555,14 @@ function bulkCheck() {
   const miss = need.filter(n => !hdr.includes(n));
   if (miss.length) { msg.textContent = "Header me ye column nahi mile: " + miss.join(", ") + "\n(Template se naam copy karo)"; return; }
   const ix = n => hdr.indexOf(n);
-  const seen = new Set(ALL.map(q => q.question)), errs = [];
+  const seen = new Set(ALL.map(q => q.question)), errs = []; let fixc = 0;
   const amap = { A:0, B:1, C:2, D:3, "1":0, "2":1, "3":2, "4":3 };
   rows.slice(1).forEach((r, k) => {
     const g = n => ix(n) >= 0 ? (r[ix(n)] || "").trim() : "";
-    const e = [], subject = g("subject"), chapter = g("chapter"), question = g("question");
+    const e = [], subject = g("subject"), chapter = g("chapter"), q0 = g("question"), fx = fixQ(q0), question = fx.q;
     const options = [1,2,3,4].map(i => g("option" + i));
     const a = amap[g("answer").toUpperCase()];
-    if (EX_Q().has(question)) e.push("ye template ka EXAMPLE sawal hai — hata do, upload nahi hoga");
+    if (EX_Q().has(q0)) e.push("ye template ka EXAMPLE sawal hai — hata do, upload nahi hoga");
     if (!question) e.push("sawal khaali");
     if (options.some(o => !o)) e.push("option khaali");
     else if (new Set(options).size < 4) e.push("options alag-alag nahi");
@@ -570,12 +570,12 @@ function bulkCheck() {
     if (!(window.SC && window.SC[subject] && window.SC[subject].has(chapter))) e.push("subject/chapter DB me nahi mila (spelling check karo)");
     if (question && seen.has(question)) e.push("ye sawal pehle se hai / file me dobara");
     if (e.length) { errs.push("Line " + (k + 2) + ": " + e.join(", ")); return; }
-    seen.add(question);
+    seen.add(question); if (fx.n.length) fixc++;
     BULK.push({ subject, chapter, question, options, answer: a, explanation: g("explanation"),
       exams: g("exams").split(/[,;|]/).map(s => s.trim()).filter(Boolean) });
   });
   msg.style.color = errs.length ? "var(--bad)" : "var(--ok)";
-  msg.textContent = "Sahi: " + BULK.length + "   Galat: " + errs.length + (errs.length ? "\n\n" + errs.slice(0, 15).join("\n") + (errs.length > 15 ? "\n...aur " + (errs.length - 15) + " line" : "") : "");
+  msg.textContent = "Sahi: " + BULK.length + "   Galat: " + errs.length + (fixc ? "\n🛠 Auto-fix: " + fixc + " sawal me table / assertion formatting sudhaari gayi (neeche preview dekho)" : "") + (errs.length ? "\n\n" + errs.slice(0, 15).join("\n") + (errs.length > 15 ? "\n...aur " + (errs.length - 15) + " line" : "") : "");
   $("bkGo").disabled = BULK.length === 0;
   qPreview("bkPrev", BULK);
 }
@@ -606,6 +606,7 @@ function fmtQ(h,lite){
   let s=h==null?"":String(h);if(!s)return s;
   const key=(lite?"1":"0")+s,hit=FMQ_C.get(key);if(hit!==undefined)return hit;
   s=s.replace(/\r\n?/g,"\n");
+  if(!lite){s=pipeToTable(s);s=arIntroNormal(s);}   /* pipe(|) text -> table; A-R ki upar wali intro normal weight */
   const parts=s.split(/(<table[\s\S]*?<\/table>)/i),n=parts.length;
   const out=parts.map((p,i)=>{
     if(i%2)return'<div class="tw">'+p.replace(/\n+/g,"")+'</div>';
@@ -654,6 +655,58 @@ function fmtAuto(t){
   return t;
 }
 
+
+/* ---- Auto-fix: pipe(|) wali text-table -> HTML table, aur Assertion-Reason ka upar wala intro bold se hataya ---- */
+function pipeToTable(q) {
+  if (!q || /<table/i.test(q) || q.indexOf("|") < 0) return q;
+  const lines = String(q).replace(/\r\n?/g, "\n").split(/<br\s*\/?>|\n/i);
+  const cells = l => { const c = l.split("|").map(x => x.trim()); if (c[0] === "") c.shift(); if (c.length && c[c.length - 1] === "") c.pop(); return c; };
+  const isRow = l => l.indexOf("|") >= 0 && cells(l).length >= 2;
+  const isSep = l => /^[\s|:\-]+$/.test(l) && l.indexOf("-") >= 0;
+  const out = []; let i = 0, done = false;
+  while (i < lines.length) {
+    if (isRow(lines[i]) || isSep(lines[i])) {
+      let j = i; while (j < lines.length && (isRow(lines[j]) || isSep(lines[j]))) j++;
+      const run = lines.slice(i, j).filter(l => !isSep(l));
+      if (run.length >= 3) {
+        const w = Math.max(...run.map(l => cells(l).length));
+        const hd = /(सूची|सूचि|List|Column|कॉलम|स्तंभ|स्तम्भ)/i.test(run[0]);
+        const rows = run.map((l, k) => { const c = cells(l); while (c.length < w) c.push("");
+          const tg = hd && k === 0 ? "th" : "td"; return "<tr>" + c.map(x => "<" + tg + ">" + x + "</" + tg + ">").join("") + "</tr>"; });
+        out.push({ t: '<table class="qt">' + rows.join("") + "</table>" }); i = j; done = true; continue;
+      }
+    }
+    out.push({ s: lines[i] }); i++;
+  }
+  if (!done) return q;
+  let r = "", prevT = false;
+  out.forEach((o, k) => { if (o.t) r += (r ? "<br><br>" : "") + o.t, prevT = true; else { r += (k > 0 && !prevT ? "<br>" : (k > 0 ? "<br><br>" : "")) + o.s; prevT = false; } });
+  return r;
+}
+function arIntroNormal(q) {
+  if (!q || /font-weight\s*:\s*(400|normal)/i.test(q)) return q;
+  const m = q.match(/(<b>\s*)?(अभिकथन|Assertion)\s*\(A\)/i);
+  if (!m || !(/(कारण|Reason)\s*\(R\)/i.test(q))) return q;
+  const pre = q.slice(0, m.index), plain = pre.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+  if (plain.length < 4) return q;
+  const trail = (pre.match(/((<br\s*\/?>|\s)+)$/i) || [""])[0], body = pre.slice(0, pre.length - trail.length);
+  return '<span style="font-weight:400">' + body + "</span>" + (trail.trim() ? trail : "<br><br>") + q.slice(m.index);
+}
+function fixQ(q) {
+  const n = []; let r = q;
+  const t = pipeToTable(r); if (t !== r) { n.push("table"); r = t; }
+  const a = arIntroNormal(r); if (a !== r) { n.push("assertion"); r = a; }
+  return { q: r, n };
+}
+/* DB me jo subject/chapter hain unki list — template aur AI prompt me jaati hai taaki chapter ka naam mismatch na ho */
+function chapListLines(kind) {
+  const SC = window.SC || {}; let subs = Object.keys(SC);
+  if (kind === "fst") { const el = document.getElementById("fstSel"); if (el && el.value && SC[el.value]) subs = [el.value]; }
+  const out = [];
+  subs.forEach(sb => { out.push("SUBJECT: " + sb); [...SC[sb]].forEach(c => out.push("   - " + c)); });
+  return out;
+}
+
 function csvCell(s) { return '"' + String(s == null ? "" : s).replace(/"/g, '""') + '"'; }
 function dlFile(name, text, mime) {
   const a = document.createElement("a");
@@ -677,7 +730,7 @@ const TPL_EX = [
     q: "निम्नलिखित कथनों पर विचार कीजिए:<br><br>1. अरावली विश्व की प्राचीनतम वलित पर्वतमालाओं में से एक है।<br>2. गुरुशिखर अरावली की सबसे ऊँची चोटी है।<br>3. अरावली राजस्थान को दो बराबर भागों में बाँटती है।<br><br>उपर्युक्त कथनों में से कौन-सा/से सही है/हैं?",
     o: ["केवल 1 और 2", "केवल 2 और 3", "केवल 1 और 3", "1, 2 और 3"], a: 1, e: "कथन 3 गलत है; अरावली राज्य को लगभग 60:40 के अनुपात में बाँटती है।", x: "" },
   { t: "अभिकथन-कारण (Assertion-Reason)",
-    q: "<b>अभिकथन (A):</b> राजस्थान के पश्चिमी भाग में वर्षा कम होती है।<br><br><b>कारण (R):</b> अरब सागर की मानसूनी शाखा अरावली के समानांतर चलती है।<br><br>सही उत्तर चुनिए:",
+    q: "<span style=\"font-weight:400\">नीचे दो कथन दिए गए हैं — एक अभिकथन (A) और दूसरा कारण (R):</span><br><br><b>अभिकथन (A):</b> राजस्थान के पश्चिमी भाग में वर्षा कम होती है।<br><br><b>कारण (R):</b> अरब सागर की मानसूनी शाखा अरावली के समानांतर चलती है।<br><br><span style=\"font-weight:400\">सही उत्तर चुनिए:</span>",
     o: ["A और R दोनों सही हैं और R, A की सही व्याख्या है", "A और R दोनों सही हैं, परंतु R, A की सही व्याख्या नहीं है", "A सही है, परंतु R गलत है", "A गलत है, परंतु R सही है"], a: 1, e: "", x: "" },
   { t: "सुमेलन (Match the following) — HTML table",
     q: "सूची-I (नदी) को सूची-II (उद्गम स्थल) से सुमेलित कीजिए:<br><br><table class=\"qt\"><tr><th>सूची-I (नदी)</th><th>सूची-II (उद्गम)</th></tr><tr><td>A. चंबल</td><td>1. नाग पहाड़ (अजमेर)</td></tr><tr><td>B. बनास</td><td>2. जानापाव पहाड़ी</td></tr><tr><td>C. माही</td><td>3. खमनोर की पहाड़ियाँ</td></tr><tr><td>D. लूनी</td><td>4. विंध्याचल की पहाड़ियाँ</td></tr></table><br>सही कूट चुनिए:",
@@ -707,9 +760,9 @@ function tplDownload(kind) { dlFile(TPL_FILE[kind], tplCsv(kind), "text/csv"); }
 function aiPrompt(kind, inFile) {
   const cols = TPL_COLS[kind].join(",");
   const kindNote = {
-    bulk: "subject aur chapter: main jo naam bataunga wahi EXACT likho (spelling/matra mat badlo). Har row me wahi subject aur chapter.",
-    fst: "chapter column optional hai (pata ho to likho, warna khaali chhodo). 'subject' column mat banao — subject admin panel me alag se chuna jata hai.",
-    fmk: "subject aur chapter columns optional hain (pata ho to likho, warna khaali chhodo)."
+    bulk: "subject aur chapter: main jo naam bataunga use neeche di gayi CHAPTER LIST me se dhoondho aur list wala EXACT naam likho (spelling/matra mat badlo). Agar mere bataye naam me thodi galti/alag spelling ho to topic dekhkar list ka sabse sahi chapter khud chuno. Har row me subject aur chapter list se hi aane chahiye.",
+    fst: "chapter column optional hai: sawal ka topic dekhkar neeche di CHAPTER LIST me se sabse sahi chapter ka EXACT naam likho; kisi chapter se match na ho to khaali chhodo. 'subject' column mat banao — subject admin panel me alag se chuna jata hai.",
+    fmk: "subject aur chapter columns optional hain: sawal ka topic dekhkar neeche di CHAPTER LIST me se subject aur chapter ka EXACT naam likho; match na ho to khaali chhodo."
   }[kind];
   return [
     "Tum ek exam-question formatter ho. Main tumhe (PDF / photo / text) me sawal dunga. Tumhe unhe Jakhar Study App ke CSV format me badalna hai (" + TPL_TITLE[kind] + ").",
@@ -722,17 +775,19 @@ function aiPrompt(kind, inFile) {
     "2. Cell ke andar asli Enter/new line KABHI mat dalo. Line todni ho to sirf <br> likho. Ek blank line ke liye <br><br>.",
     "3. Sawal ka text PDF jaisa hi rakho (Hindi/English jo bhi ho). Apni taraf se kuch jodo ya hatao mat. Spelling sudharo mat.",
     "4. KATHAN-BASED sawal: pehle sawal ki line, phir <br><br>, phir HAR KATHAN APNI NAYI LINE par (1. ... <br>2. ... <br>3. ...), phir <br><br> aur last line (jaise 'उपर्युक्त कथनों में से कौन-सा/से सही है/हैं?'). Kabhi bhi 1. aur 2. (ya A. aur B.) ek hi line me mat chhodo.",
-    "5. ASSERTION-REASON: <b>अभिकथन (A):</b> ...<br><br><b>कारण (R):</b> ...<br><br>सही उत्तर चुनिए:  — aur 4 options PDF jaise standard A/R wale.",
-    "6. TABLE / SUMELAN (match the following) / data table: compact HTML table likho: <table class=\"qt\"><tr><th>..</th><th>..</th></tr><tr><td>..</td><td>..</td></tr></table>. Table me inline style, width, border, <p>, <div> kuch mat lagao. Table ke pehle aur baad <br><br> rakho. Table ki har row ek hi line me (cell ke andar new line nahi).",
+    "5. ASSERTION-REASON: app me poora sawal by-default bold dikhta hai, isliye upar ki intro/instruction wali line (jaise 'नीचे दो कथन दिए गए हैं — एक अभिकथन (A) aur ek कारण (R)...') ko BOLD NAHI rakhna: use <span style=\"font-weight:400\">...</span> me likho. Sirf asli statements bold/alag dikhne chahiye: <span style=\"font-weight:400\">intro line</span><br><br><b>अभिकथन (A):</b> ...<br><br><b>कारण (R):</b> ...<br><br><span style=\"font-weight:400\">सही उत्तर चुनिए:</span>. Agar PDF me upar koi intro line nahi hai to bas <b>अभिकथन (A):</b> ...<br><br><b>कारण (R):</b> ... likho. 4 options PDF jaise standard A/R wale.",
+    "6. TABLE / SUMELAN (match the following, सूची-I / सूची-II) / data table: HAMESHA HTML table banao. Pipe ( | ) se bani text-lines, '(a) X | (i) Y' jaisi lines, tab/space se alag ki hui lines ya Markdown table KABHI mat likho — app unhe table nahi banata, seedha text dikhta hai. Compact HTML table likho: <table class=\"qt\"><tr><th>..</th><th>..</th></tr><tr><td>..</td><td>..</td></tr></table>. Table me inline style, width, border, <p>, <div> kuch mat lagao. Table ke pehle aur baad <br><br> rakho. Table ki har row ek hi line me (cell ke andar new line nahi).",
     "7. OPTIONS: option1..option4 me sirf option ka text. Shuru ka '(A)', 'A.', '1)' jaisa label HATA do. Hamesha 4 alag-alag options. Option lamba ya multi-line ho to <br> use karo.",
     "8. answer: sahi option ka number 1-4 (option1=1, option2=2, option3=3, option4=4). Agar PDF me answer key hai to wahi lo. Agar nahi hai aur tum 100% sure nahi ho to answer khaali chhod do (main khud check kar loonga). Andaza mat lagao.",
     "9. explanation: optional. Chhota (1-3 line) rakho, line todne ke liye <br>. Pata na ho to khaali \"\".",
     "10. exams: jis exam ka sawal hai (jaise RPSC RAS 2021). Ek se zyada ho to semicolon (;) se alag karo. Pata na ho to khaali \"\".",
-    "11. Sirf ye HTML tags allowed hain: <br>, <b>, <i>, <u>, <sup>, <sub>, <table class=\"qt\"> (with tr/th/td). Markdown (**bold**, | --- | tables, # headings) bilkul mat use karo. Math/formula ho to plain text (x², H₂O) ya <sup>/<sub> use karo.",
+    "11. Sirf ye HTML tags allowed hain: <br>, <b>, <i>, <u>, <sup>, <sub>, <table class=\"qt\"> (with tr/th/td), aur assertion-reason ki intro line ke liye <span style=\"font-weight:400\">. Markdown (**bold**, | --- | tables, # headings) bilkul mat use karo. Math/formula ho to plain text (x², H₂O) ya <sup>/<sub> use karo.",
     "12. Ek sawal = CSV ki ek row. Koi sawal dobara mat likho. Jo sawal adhura/kata hua ya padhne me na aaye use skip karke last me alag se bata do (CSV ke bahar).",
     "13. " + kindNote,
     ""
-  ].concat(inFile ? [
+  ].concat(chapListLines(kind).length ? [
+    "CHAPTER LIST (subject/chapter ke naam sirf isi list se, bilkul isi spelling me use karo — naam mismatch hone par upload reject ho jaata hai):"
+  ].concat(chapListLines(kind), [""]) : []).concat(inFile ? [
     "⚠ EXAMPLE: is file me '#' wali lines ke theek neeche header aur 6 example rows diye hain. Ye 6 rows SIRF FORMAT SAMJHANE ke liye hain — inhe apne output/CSV me SHAMIL MAT KARO aur inhe app me upload bhi mat karo. Bas inhi jaisa format apne sawalon par lagao. Apne output me '#' wali lines bhi mat likho.",
     "Ab main tumhe sawal dunga (PDF / photo / text) — unhe isi format me CSV banao."
   ] : [
@@ -780,6 +835,8 @@ function pvWarn(q) {
   if (plain && /(^|\s)1[.)]\s[\s\S]*\s2[.)]\s/.test(q.question)) w.push("Kathan (1. 2. 3.) ek hi line me hain — CSV me har kathan ke beech <br> lagao (app apne-aap todega, par <br> behtar).");
   if (plain && /(^|\s)\(?A[.)]\s[\s\S]*\sB[.)]\s/.test(q.question)) w.push("A. aur B. ek hi line me hain — <br> se alag karo.");
   if (/\*\*|\|\s*-{3,}/.test(q.question + q.options.join(" "))) w.push("Markdown (** ya |---|) mila — iski jagah HTML (<b>, <table class=\"qt\">) use karo.");
+  if (!/<table/i.test(q.question) && /\|/.test(q.question)) w.push("Sawal me | (pipe) mila par HTML table nahi hai — app me ye seedha text dikhega. <table class=\"qt\"> use karo.");
+  if (/(अभिकथन|Assertion)\s*\(A\)/i.test(q.question) && !/font-weight\s*:\s*(400|normal)/i.test(q.question) && (q.question.split(/(अभिकथन|Assertion)\s*\(A\)/i)[0].replace(/<[^>]*>/g, "").trim().length > 3)) w.push("Assertion-Reason ki upar wali intro line bold na rahe — usse <span style=\"font-weight:400\"> me daalo.");
   if (/<table/i.test(q.question) && /<table[^>]*style=/i.test(q.question)) w.push("Table me inline style hai — hata do, class=\"qt\" kaafi hai.");
   return w;
 }
@@ -1463,24 +1520,28 @@ function testCheck(kind) {
   const need = ["question", "option1", "option2", "option3", "option4", "answer"];
   const miss = need.filter(n => !hdr.includes(n));
   if (miss.length) { msg.textContent = "Header me ye column nahi mile: " + miss.join(", ") + "\n(Template se naam copy karo)"; return; }
-  const ix = n => hdr.indexOf(n), seen = new Set(), errs = [], out = [];
+  const ix = n => hdr.indexOf(n), seen = new Set(), errs = [], out = [], warns = []; let fixc = 0;
   const amap = { A: 0, B: 1, C: 2, D: 3, "1": 0, "2": 1, "3": 2, "4": 3 };
   rows.slice(1).forEach((r, k) => {
     const g = n => ix(n) >= 0 ? (r[ix(n)] || "").trim() : "";
-    const e = [], question = g("question"), options = [1, 2, 3, 4].map(i => g("option" + i)), a = amap[g("answer").toUpperCase()];
-    if (EX_Q().has(question)) e.push("ye template ka EXAMPLE sawal hai — hata do, upload nahi hoga");
+    const e = [], q0 = g("question"), fx = fixQ(q0), question = fx.q, options = [1, 2, 3, 4].map(i => g("option" + i)), a = amap[g("answer").toUpperCase()];
+    if (EX_Q().has(q0)) e.push("ye template ka EXAMPLE sawal hai — hata do, upload nahi hoga");
     if (!question) e.push("sawal khaali");
     if (options.some(o => !o)) e.push("option khaali"); else if (new Set(options).size < 4) e.push("options alag-alag nahi");
     if (a === undefined) e.push("answer 1-4 ya A-D hona chahiye");
     if (question && seen.has(question)) e.push("ye sawal file me dobara hai");
     if (e.length) { errs.push("Line " + (k + 2) + ": " + e.join(", ")); return; }
-    seen.add(question);
+    seen.add(question); if (fx.n.length) fixc++;
+    { const ch = g("chapter"), sb = isSub ? sel : g("subject"), SCm = window.SC || {};
+      if (ch && Object.keys(SCm).length && !(sb && SCm[sb] ? SCm[sb].has(ch) : Object.values(SCm).some(x => x.has(ch)))) warns.push("Line " + (k + 2) + ": chapter \"" + ch + "\" DB list me nahi mila"); }
     out.push({ subject: isSub ? sel : (g("subject") || ""), chapter: g("chapter"), question, options, answer: a, explanation: g("explanation"),
       exams: g("exams").split(/[,;|]/).map(s => s.trim()).filter(Boolean) });
   });
   S.rows = out;
   msg.style.color = errs.length ? "var(--bad)" : "var(--ok)";
   msg.textContent = (isSub ? "Subject: " + sel : "Exams (" + exams.length + "): " + exams.map(exShortA).join(", ")) + "\nSahi: " + out.length + "   Galat: " + errs.length + "   Total marks: " + +(out.length * mk).toFixed(2) +
+    (fixc ? "\n🛠 Auto-fix: " + fixc + " sawal me table / assertion formatting sudhaari gayi" : "") +
+    (warns.length ? "\n⚠ Chapter naam mismatch (upload ho jayega, par check karo): " + warns.length + "\n" + warns.slice(0, 5).join("\n") : "") +
     (errs.length ? "\n\n" + errs.slice(0, 15).join("\n") + (errs.length > 15 ? "\n...aur " + (errs.length - 15) + " line" : "") + "\n\nGalat lines sahi karke dobara Jaanch karo (galat lines upload nahi hongi)." : "");
   $(kind + "Go").disabled = out.length === 0;
   qPreview(kind + "Prev", out);
