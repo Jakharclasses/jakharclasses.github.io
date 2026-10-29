@@ -76,6 +76,8 @@
 .ctabs button.act{background:var(--pri);color:#fff;border-color:var(--pri)}
 .cbody{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0}.cimg{display:block;max-width:100%;max-height:260px;border-radius:10px;margin:6px 0}
 #comStats span{background:var(--bg);border:1px solid var(--bd);border-radius:99px;padding:2px 10px}
+  .selrow{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted,#666);margin-bottom:6px}
+  .selrow input{width:auto;margin:0}
 </style>
 </head>
 <body>
@@ -131,6 +133,9 @@
         </select>
         <div id="stats" class="stats"></div>
       </div>
+      <div class="row" style="margin:8px 0"><button class="sec" id="dupFind">🔍 Is chapter me milte-julte sawal dhoondo</button></div>
+      <div id="dupBox"></div>
+      <div id="selBar" class="card hide" style="position:sticky;top:0;z-index:20"></div>
       <div id="list"></div>
       <div id="more" style="text-align:center;padding:8px"></div>
     </div>
@@ -166,8 +171,14 @@
         <label style="display:block;margin-bottom:10px;font-size:14px"><input id="bkAct" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Import ke baad turant active karo (live app me dikhe)</label>
         <div class="row"><button id="bkCheck" class="sec">1. Jaanch karo</button><button id="bkGo" disabled>2. Import karo</button></div>
         <div id="bkMsg" class="msg" style="white-space:pre-wrap"></div>
+        <div id="bkSim"></div>
         <div id="bkPrev"></div>
       </div>
+    </div>
+    <div class="card">
+      <div class="q">🕘 Recent uploads (batch)</div>
+      <div class="meta" style="margin-bottom:8px">Galti se upload ho gaya? Poora batch ek saath Hide ya Delete kar sakte ho. Delete se pehle us batch ki JSON backup apne-aap download hoti hai.</div>
+      <div id="batchList" class="meta">—</div>
     </div>
       
     </div>
@@ -319,7 +330,9 @@
 <script>
 const SB_URL = "https://gpqrkxyypadgvguomfrr.supabase.co";
 const SB_KEY = "sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq"; // publishable key (public hai)
+let BULKMERGE = {};
 let TOKEN = null, ALL = [], USER = null, SHOWN = 50;
+const SEL = new Set();   /* multi-select ke chune hue sawal ids */
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -382,11 +395,25 @@ async function openPanel() {
   try { loadDv(); } catch (e) { console.error(e); }
 }
 
+let HAS_QB = true;   /* qbank_setup.sql chali hai ya nahi (difficulty/q_type/import_batch columns) */
+async function fetchAllQ() {
+  const base = "/rest/v1/questions?select=id,subject,chapter,question,options,answer,explanation,exams,is_active,created_at";
+  const run = async cols => {
+    let out = [], off = 0;
+    for (;;) {
+      const part = await api(base + cols + "&order=created_at.desc,id.asc&limit=1000&offset=" + off) || [];
+      out = out.concat(part); if (part.length < 1000) break; off += 1000;
+    }
+    return out;
+  };
+  try { const r = await run(",difficulty,q_type,import_batch"); HAS_QB = true; return r; }
+  catch (e) { HAS_QB = false; return await run(""); }
+}
 async function loadQuestions() {
   $("list").innerHTML = '<div class="meta">Load ho raha hai...</div>';
   try {
-    ALL = await api("/rest/v1/questions?select=id,subject,chapter,question,options,answer,explanation,exams,is_active,created_at&order=created_at.desc&limit=1000");
-    render(); fillSubjects();
+    ALL = await fetchAllQ();
+    SEL.clear(); render(); fillSubjects(); renderBatches();
   } catch (e) {
     $("list").innerHTML = '<div class="msg">Load error: ' + esc(e.message) + '</div>';
   }
@@ -409,8 +436,9 @@ function render() {
   $("stats").innerHTML = '<span>Total: <b>' + all.length + '</b></span><span>Active: <b>' + act +
     '</b></span><span>Hidden: <b>' + (all.length - act) + '</b></span><span>Dikh rahe: <b>' + rows.length + '</b></span>';
   const SHOW = SHOWN;
+  updSelBar();
   $("list").innerHTML = rows.slice(0, SHOW).map(q =>
-    '<div class="card"><div class="q">' + esc(q.question) + '</div>' +
+    '<div class="card"><label class="selrow"><input type="checkbox" class="qsel" data-id="' + q.id + '"' + (SEL.has(q.id) ? ' checked' : '') + '> chuno</label><div class="q">' + esc(q.question) + '</div>' +
     '<div class="meta">' + esc(q.subject) + ' › ' + esc(q.chapter) + '</div>' +
     ((q.exams || []).length ? '<div class="meta">📝 ' + esc((q.exams || []).join(", ")) + '</div>' : '') +
     '<div style="margin-top:6px"><span class="tag ' + (q.is_active ? "on" : "hid") + '">' + (q.is_active ? "active" : "hidden") + '</span>' +
@@ -516,7 +544,8 @@ $("list").addEventListener("click", async e => {
 async function backupAll() {
   const b = $("backupBtn"); b.disabled = true;
   try {
-    const rows = await api("/rest/v1/questions?select=*&order=created_at.asc&limit=5000");
+    let rows = [], off = 0;
+    for (;;) { const part = await api("/rest/v1/questions?select=*&order=created_at.asc,id.asc&limit=1000&offset=" + off) || []; rows = rows.concat(part); if (part.length < 1000) break; off += 1000; }
     const d = new Date().toISOString().slice(0, 10);
     const blob = new Blob([JSON.stringify(rows, null, 1)], { type: "application/json" });
     const a = document.createElement("a");
@@ -555,7 +584,9 @@ function bulkCheck() {
   const miss = need.filter(n => !hdr.includes(n));
   if (miss.length) { msg.textContent = "Header me ye column nahi mile: " + miss.join(", ") + "\n(Template se naam copy karo)"; return; }
   const ix = n => hdr.indexOf(n);
-  const seen = new Set(ALL.map(q => q.question)), errs = []; let fixc = 0;
+  BULKMERGE = {}; SIM = []; renderSim();
+  const fpMap = new Map(); ALL.forEach(q => { const f = qFingerprint(q.question, q.options, q.q_type); if (!fpMap.has(f)) fpMap.set(f, q); });
+  const seen = new Set(), errs = [], w2 = []; let fixc = 0, dupc = 0, unl = 0;
   const amap = { A:0, B:1, C:2, D:3, "1":0, "2":1, "3":2, "4":3 };
   rows.slice(1).forEach((r, k) => {
     const g = n => ix(n) >= 0 ? (r[ix(n)] || "").trim() : "";
@@ -568,29 +599,55 @@ function bulkCheck() {
     else if (new Set(options).size < 4) e.push("options alag-alag nahi");
     if (a === undefined) e.push("answer 1-4 ya A-D hona chahiye");
     if (!(window.SC && window.SC[subject] && window.SC[subject].has(chapter))) e.push("subject/chapter DB me nahi mila (spelling check karo)");
-    if (question && seen.has(question)) e.push("ye sawal pehle se hai / file me dobara");
+    const dfi = normDiff(g("difficulty")), tyi = normType(g("q_type")), exl = g("exams").split(/[,;|]/).map(s => s.trim()).filter(Boolean);
+    if (dfi === "?") w2.push("Line " + (k + 2) + ": difficulty samajh nahi aayi (easy/moderate/hard chahiye)");
+    if (tyi === "?") w2.push("Line " + (k + 2) + ": q_type samajh nahi aaya");
+    const type = (tyi && tyi !== "?") ? tyi : detectType(question, options), diff = (dfi && dfi !== "?") ? dfi : "";
+    let fp = ""; if (!e.length && question) fp = qFingerprint(question, options, type);
+    if (fp && seen.has(fp)) e.push("ye sawal file me dobara hai (same sawal)");
     if (e.length) { errs.push("Line " + (k + 2) + ": " + e.join(", ")); return; }
-    seen.add(question); if (fx.n.length) fixc++;
-    BULK.push({ subject, chapter, question, options, answer: a, explanation: g("explanation"),
-      exams: g("exams").split(/[,;|]/).map(s => s.trim()).filter(Boolean) });
+    seen.add(fp);
+    const old = fpMap.get(fp);
+    if (old) {   /* D5: duplicate -> naya row nahi, purane ke exams me jod do */
+      dupc++; const add = exl.filter(x => !(old.exams || []).includes(x));
+      if (add.length) BULKMERGE[old.id] = [...new Set([...(BULKMERGE[old.id] || old.exams || []), ...add])];
+      return;
+    }
+    if (fx.n.length) fixc++; if (!diff) unl++;
+    const row = { subject, chapter, question, options, answer: a, explanation: g("explanation"), exams: exl, difficulty: diff || null, q_type: type };
+    const sm = bestSim(row, ALL.concat(BULK)); if (sm) SIM.push({ row, old: sm.old, score: sm.score, choice: "both" });
+    BULK.push(row);
   });
   msg.style.color = errs.length ? "var(--bad)" : "var(--ok)";
-  msg.textContent = "Sahi: " + BULK.length + "   Galat: " + errs.length + (fixc ? "\n🛠 Auto-fix: " + fixc + " sawal me table / assertion formatting sudhaari gayi (neeche preview dekho)" : "") + (errs.length ? "\n\n" + errs.slice(0, 15).join("\n") + (errs.length > 15 ? "\n...aur " + (errs.length - 15) + " line" : "") : "");
-  $("bkGo").disabled = BULK.length === 0;
+  msg.textContent = "Sahi (nayi): " + BULK.length + "   Galat: " + errs.length + (SIM.length ? "\n🔍 Milte-julte: " + SIM.length + " (neeche dekh kar chuno)" : "") + (dupc ? "\n♻ Duplicate: " + dupc + " (pehle se bank me — naya row nahi banega, exams merge honge: " + Object.keys(BULKMERGE).length + " sawal)" : "") + (unl ? "\n🏷 Bina difficulty: " + unl + " (upload ho jayenge, baad me label kar sakte ho)" : "") + (w2.length ? "\n⚠ " + w2.slice(0, 5).join("\n⚠ ") : "") + (fixc ? "\n🛠 Auto-fix: " + fixc + " sawal me table / assertion formatting sudhaari gayi (neeche preview dekho)" : "") + (errs.length ? "\n\n" + errs.slice(0, 15).join("\n") + (errs.length > 15 ? "\n...aur " + (errs.length - 15) + " line" : "") : "");
+  renderSim();
+  $("bkGo").disabled = BULK.length === 0 && !Object.keys(BULKMERGE).length;
   qPreview("bkPrev", BULK);
 }
 async function bulkGo() {
-  if (!BULK.length) return;
-  if (!confirm(BULK.length + " sawal import karein?")) return;
+  const skip = new Set(), repl = [];
+  SIM.forEach(x => {
+    if (x.choice === "skip") { skip.add(x.row); if (x.old.id) { const add = (x.row.exams || []).filter(e => !(x.old.exams || []).includes(e)); if (add.length) BULKMERGE[x.old.id] = [...new Set([...(BULKMERGE[x.old.id] || x.old.exams || []), ...add])]; } }
+    else if (x.choice === "replace" && x.old.id) { repl.push(x.old); x.row.exams = [...new Set([...(x.old.exams || []), ...(x.row.exams || [])])]; }
+  });
+  const LIST = BULK.filter(q => !skip.has(q)), nm = Object.keys(BULKMERGE).length;
+  if (!LIST.length && !nm) return;
+  if (!confirm(LIST.length + " naye sawal import karein?" + (nm ? "\n" + nm + " purane sawalon me exams jode jayenge." : "") + (repl.length ? "\n" + repl.length + " purane sawal hataye jayenge (pehle backup download hogi)." : ""))) return;
   const msg = $("bkMsg"); $("bkGo").disabled = true; $("bkCheck").disabled = true;
   const active = $("bkAct").checked; let done = 0;
+  const _d = new Date(), _p = n => String(n).padStart(2, "0");
+  const batchId = "b" + _d.getFullYear() + _p(_d.getMonth() + 1) + _p(_d.getDate()) + _p(_d.getHours()) + _p(_d.getMinutes()) + "_" + Math.random().toString(36).slice(2, 5);
   try {
-    for (let i = 0; i < BULK.length; i += 50) {
-      const chunk = BULK.slice(i, i + 50).map(q => ({ ...q, is_active: active }));
+    if (repl.length) dlJson("replaced_questions_" + Date.now() + ".json", repl);
+    for (let i = 0; i < LIST.length; i += 50) {
+      const chunk = LIST.slice(i, i + 50).map(q => { const r = { ...q, is_active: active }; if (HAS_QB) r.import_batch = batchId; else { delete r.difficulty; delete r.q_type; } return r; });
       await api("/rest/v1/questions", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify(chunk) });
-      done += chunk.length; msg.style.color = ""; msg.textContent = "Import ho raha hai... " + done + "/" + BULK.length;
+      done += chunk.length; msg.style.color = ""; msg.textContent = "Import ho raha hai... " + done + "/" + LIST.length;
     }
-    msg.style.color = "var(--ok)"; msg.textContent = "Import ho gaya: " + done + " sawal. Ab ek Backup le lo.";
+    if (repl.length) await bulkDeleteIds(repl.map(x => x.id));
+    for (const id of Object.keys(BULKMERGE)) await api("/rest/v1/questions?id=eq." + id, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ exams: BULKMERGE[id], updated_at: new Date().toISOString() }) });
+    msg.style.color = "var(--ok)"; msg.textContent = "Import ho gaya: " + done + " sawal" + (nm ? " + " + nm + " purane sawalon me exams jude" : "") + ". Ab ek Backup le lo.";
+    BULKMERGE = {}; SIM = []; renderSim();
     BULK = []; $("bkText").value = ""; $("bkFile").value = ""; qPreview("bkPrev", []);
     await loadQuestions();
   } catch (e) {
@@ -715,9 +772,9 @@ function dlFile(name, text, mime) {
 }
 /* kind: "bulk" (chapter-wise) | "fst" (full subject test) | "fmk" (full mock) */
 const TPL_COLS = {
-  bulk: ["subject", "chapter", "question", "option1", "option2", "option3", "option4", "answer", "explanation", "exams"],
-  fst:  ["question", "option1", "option2", "option3", "option4", "answer", "explanation", "chapter", "exams"],
-  fmk:  ["question", "option1", "option2", "option3", "option4", "answer", "explanation", "subject", "chapter", "exams"]
+  bulk: ["subject", "chapter", "question", "option1", "option2", "option3", "option4", "answer", "explanation", "exams", "difficulty", "q_type"],
+  fst:  ["question", "option1", "option2", "option3", "option4", "answer", "explanation", "chapter", "exams", "difficulty", "q_type"],
+  fmk:  ["question", "option1", "option2", "option3", "option4", "answer", "explanation", "subject", "chapter", "exams", "difficulty", "q_type"]
 };
 const TPL_FILE = { bulk: "jakhar_questions_template.csv", fst: "jakhar_full_subject_test_template.csv", fmk: "jakhar_full_mock_test_template.csv" };
 const TPL_TITLE = { bulk: "Chapter-wise questions", fst: "Full Subject Test", fmk: "Full Mock Test" };
@@ -742,12 +799,84 @@ const TPL_EX = [
     q: "निम्नलिखित में से सही युग्म चुनिए:",
     o: ["चंबल – कोटा<br>बनास – टोंक", "चंबल – टोंक<br>बनास – कोटा", "लूनी – जोधपुर<br>माही – जयपुर", "बनास – कोटा<br>लूनी – टोंक"], a: 1, e: "चंबल कोटा से और बनास टोंक से होकर बहती है।", x: "" }
 ];
+/* Part 2: example labels + explanation v2 namuna (Revision + Trick) */
+[["easy","simple"],["moderate","statement"],["hard","assertion_reason"],["moderate","match"],["moderate","table"],["moderate","simple"]].forEach((l, i) => { TPL_EX[i].d = l[0]; TPL_EX[i].t = l[1]; });
+TPL_EX[0].e = "<b>सही उत्तर: जैसलमेर</b> — लगभग 38,401 वर्ग किमी क्षेत्रफल के साथ यह राज्य का सबसे बड़ा जिला है।<br><br>📌 <b>Revision:</b><br>• क्षेत्रफल में दूसरा बीकानेर और तीसरा जोधपुर है।<br>• सबसे छोटा जिला धौलपुर है।<br><br>💡 <b>Trick:</b> जै-बी-जो (जैसलमेर, बीकानेर, जोधपुर) — क्षेत्रफल घटते क्रम में।";
+TPL_EX[1].e = "<b>सही उत्तर: केवल 1 और 2</b> — कथन 3 गलत है; अरावली राज्य को लगभग 60:40 के अनुपात में बाँटती है।<br><br>📌 <b>Revision:</b><br>• गुरुशिखर (1722 मी) अरावली की सबसे ऊँची चोटी है, माउंट आबू में।<br>• अरावली विश्व की प्राचीनतम वलित पर्वतमालाओं में गिनी जाती है।";
+const DIFF_RUBRIC = "easy = seedha ek fact yaad karna, 4 me ek clear sahi. moderate = 2-3 facts / elimination / simple 2-3 kathan. hard = lamba multi-kathan, sumelan ya kram, paas-paas ke options, 'सही नहीं है' jaisa negative, kam-jaana tathya ya 4+ kathan.";
+const Q_TYPES = ["simple", "statement", "assertion_reason", "match", "table", "lengthy"];
+function normDiff(v) {
+  v = String(v || "").trim().toLowerCase(); if (!v) return "";
+  if (/^(easy|आसान|सरल|ईज़ी|ईजी)$/.test(v)) return "easy";
+  if (/^(moderate|medium|mid|मध्यम|मीडियम)$/.test(v)) return "moderate";
+  if (/^(hard|difficult|कठिन|हार्ड)$/.test(v)) return "hard";
+  return "?";
+}
+function normType(v) {
+  v = String(v || "").trim().toLowerCase().replace(/[\s-]+/g, "_"); if (!v) return "";
+  if (Q_TYPES.includes(v)) return v;
+  if (/assert|अभिकथन|reason/.test(v)) return "assertion_reason";
+  if (/match|सुमेलन/.test(v)) return "match";
+  if (/statement|कथन/.test(v)) return "statement";
+  if (/table|तालिका/.test(v)) return "table";
+  if (/long|lengthy|लंबा/.test(v)) return "lengthy";
+  return "?";
+}
+/* wording par nirbhar nahi: pehle option ke 'सही व्याख्या' signal, phir lenient regex */
+function detectType(q, opts) {
+  q = String(q || ""); const o = (opts || []).join(" | "), plain = q.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+  const A = /(अभिकथन|कथन|Assertion|Statement)\s*[\(\-–:]?\s*(A|I|१)\b/i.test(plain), R = /(कारण|तर्क|Reason)\s*[\(\-–:]?\s*(R|II|२)\b/i.test(plain);
+  if (/सही\s*व्याख्या|correct\s*explanation/i.test(o) || (A && R)) return "assertion_reason";
+  if (/<table/i.test(q)) return (/सूची|List\s*-?\s*I/i.test(q) || /[A-D]\s*[-–]\s*\d/.test(o)) ? "match" : "table";
+  if (/[A-D]\s*[-–]\s*\d/.test(o) && /सूची|List|सुमेलित|match/i.test(plain)) return "match";
+  const nums = (q.split(/<br\s*\/?>|\n/).filter(l => /^\s*(\(?\d[.)]|\(?[क-घ][.)]|\(?[A-D][.)])\s*\S/.test(l.replace(/<[^>]*>/g, "")))).length;
+  if (nums >= 2 || /(केवल|only)\s*\d/i.test(o) || /\d\s*(,|और|and)\s*\d/.test(o) && /कथन|statement/i.test(plain)) return "statement";
+  if (plain.length > 300) return "lengthy";
+  return "simple";
+}
+/* order-independent fingerprint: statement reshuffle / option reshuffle ke baad bhi wahi sawal pakde */
+function qFingerprint(q, opts, type) {
+  const norm = t => String(t || "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").toLowerCase().replace(/^\s*\(?([0-9a-dक-घ]{1,2})[.)]\s*/i, "").replace(/[\s\u200b.,;:!?'"“”‘’()\[\]{}\-–—|/\\]+/g, "");
+  const lines = String(q || "").split(/<br\s*\/?>|\n/).map(norm).filter(Boolean);
+  type = type || detectType(q, opts);
+  if (type === "statement") return "S:" + lines.sort().join("¦");
+  return "Q:" + lines.join("¦") + "¦O:" + (opts || []).map(norm).sort().join("¦");
+}
+/* ===== Part 2b: milte-julte (similar) sawal ===== */
+const SIM_PROF = new WeakMap();
+function simProfile(q, opts) {
+  const tok = t => String(t || "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").toLowerCase().replace(/[.,;:!?'"“”‘’()\[\]{}\-–—|/\\]+/g, " ").split(/\s+/).filter(Boolean);
+  const w = tok(q), g = new Set();
+  for (let i = 0; i < w.length - 1; i++) g.add(w[i] + " " + w[i + 1]);
+  if (w.length < 2) w.forEach(x => g.add(x));
+  return { g, o: new Set((opts || []).map(o => tok(o).join(" ")).filter(Boolean)) };
+}
+const jac = (a, b) => { if (!a.size && !b.size) return 1; let n = 0; for (const x of a) if (b.has(x)) n++; return n / (a.size + b.size - n || 1); };
+function simScore(p1, p2) { return 0.7 * jac(p1.g, p2.g) + 0.3 * jac(p1.o, p2.o); }
+function profOf(row) { let p = SIM_PROF.get(row); if (!p) { p = simProfile(row.question, row.options); SIM_PROF.set(row, p); } return p; }
+const plainTxt = (h, n) => { const t = String(h || "").replace(/<br\s*\/?>/gi, " / ").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(); return t.length > (n || 200) ? t.slice(0, n || 200) + "…" : t; };
+function bestSim(row, pool) {
+  const p = profOf(row); let best = null, sc = 0;
+  for (const o of pool) { if (o === row || o.subject !== row.subject) continue; const x = simScore(p, profOf(o)); if (x > sc) { sc = x; best = o; } }
+  return sc >= 0.6 ? { old: best, score: sc } : null;
+}
+let SIM = [];
+function renderSim() {
+  const el = $("bkSim"); if (!el) return;
+  if (!SIM.length) { el.innerHTML = ""; return; }
+  el.innerHTML = '<div class="card" style="margin-top:12px"><div class="q">🔍 Milte-julte sawal (' + SIM.length + ')</div><div class="meta" style="margin-bottom:8px">Ye naye sawal bank ke kisi sawal se milte hain. Har jode par chuno (default: dono rakho).</div>' +
+    SIM.map((x, i) => '<div class="card" style="margin:8px 0"><div class="meta"><b>' + Math.round(x.score * 100) + '% match</b> · ' + (x.old.id ? "bank me" : "isi file me") + (x.old.chapter ? " · " + esc(x.old.chapter) : "") + '</div>' +
+      '<div class="meta" style="margin-top:6px"><b>नया:</b> ' + esc(plainTxt(x.row.question)) + '<br>✓ ' + esc(plainTxt(x.row.options[x.row.answer], 80)) + '</div>' +
+      '<div class="meta" style="margin-top:6px"><b>पुराना:</b> ' + esc(plainTxt(x.old.question)) + '<br>✓ ' + esc(plainTxt(x.old.options[x.old.answer], 80)) + '</div>' +
+      '<select class="simsel" data-i="' + i + '" style="margin-top:8px"><option value="both"' + (x.choice === "both" ? " selected" : "") + '>Dono rakho</option><option value="skip"' + (x.choice === "skip" ? " selected" : "") + '>Purana rakho (naya mat jodo' + (x.old.id ? ', exams merge' : '') + ')</option>' + (x.old.id ? '<option value="replace"' + (x.choice === "replace" ? " selected" : "") + '>Naya rakho, purana hatao</option>' : '') + '</select></div>').join("") + '</div>';
+}
+document.addEventListener("change", e => { const c = e.target.closest && e.target.closest("select.simsel"); if (c) SIM[+c.dataset.i].choice = c.value; });
 const EX_Q = () => new Set(TPL_EX.map(x => x.q));
 function tplRow(kind, ex) {
   const v = {
     subject: kind === "bulk" ? (document.getElementById("aSub") && document.getElementById("aSub").value) || "विषय" : "",
     chapter: kind === "bulk" ? (document.getElementById("aChap") && document.getElementById("aChap").value) || "चैप्टर" : "",
-    question: ex.q, option1: ex.o[0], option2: ex.o[1], option3: ex.o[2], option4: ex.o[3], answer: ex.a, explanation: ex.e, exams: ex.x
+    question: ex.q, option1: ex.o[0], option2: ex.o[1], option3: ex.o[2], option4: ex.o[3], answer: ex.a, explanation: ex.e, exams: ex.x, difficulty: ex.d || "", q_type: ex.t || ""
   };
   return TPL_COLS[kind].map(c => c === "answer" ? String(v[c]) : csvCell(v[c])).join(",");
 }
@@ -773,17 +902,24 @@ function aiPrompt(kind, inFile) {
     "FORMAT RULES:",
     "1. Har cell double-quote (\") me likho. Cell ke andar agar quote aaye to use double karo (\"\"). Answer column me sirf number (bina quote ke bhi chalega).",
     "2. Cell ke andar asli Enter/new line KABHI mat dalo. Line todni ho to sirf <br> likho. Ek blank line ke liye <br><br>.",
-    "3. Sawal ka text PDF jaisa hi rakho (Hindi/English jo bhi ho). Apni taraf se kuch jodo ya hatao mat. Spelling sudharo mat.",
+    "3. Sawal ka stem/sentence PDF jaisa hi rakho (Hindi/English jo bhi ho): wording mat badlo, spelling mat sudharo, kuch jodo ya hatao mat. Sirf rule 13, 14 me likhe reshuffle allowed hain.",
     "4. KATHAN-BASED sawal: pehle sawal ki line, phir <br><br>, phir HAR KATHAN APNI NAYI LINE par (1. ... <br>2. ... <br>3. ...), phir <br><br> aur last line (jaise 'उपर्युक्त कथनों में से कौन-सा/से सही है/हैं?'). Kabhi bhi 1. aur 2. (ya A. aur B.) ek hi line me mat chhodo.",
     "5. ASSERTION-REASON: app me poora sawal by-default bold dikhta hai, isliye upar ki intro/instruction wali line (jaise 'नीचे दो कथन दिए गए हैं — एक अभिकथन (A) aur ek कारण (R)...') ko BOLD NAHI rakhna: use <span style=\"font-weight:400\">...</span> me likho. Sirf asli statements bold/alag dikhne chahiye: <span style=\"font-weight:400\">intro line</span><br><br><b>अभिकथन (A):</b> ...<br><br><b>कारण (R):</b> ...<br><br><span style=\"font-weight:400\">सही उत्तर चुनिए:</span>. Agar PDF me upar koi intro line nahi hai to bas <b>अभिकथन (A):</b> ...<br><br><b>कारण (R):</b> ... likho. 4 options PDF jaise standard A/R wale.",
     "6. TABLE / SUMELAN (match the following, सूची-I / सूची-II) / data table: HAMESHA HTML table banao. Pipe ( | ) se bani text-lines, '(a) X | (i) Y' jaisi lines, tab/space se alag ki hui lines ya Markdown table KABHI mat likho — app unhe table nahi banata, seedha text dikhta hai. Compact HTML table likho: <table class=\"qt\"><tr><th>..</th><th>..</th></tr><tr><td>..</td><td>..</td></tr></table>. Table me inline style, width, border, <p>, <div> kuch mat lagao. Table ke pehle aur baad <br><br> rakho. Table ki har row ek hi line me (cell ke andar new line nahi).",
     "7. OPTIONS: option1..option4 me sirf option ka text. Shuru ka '(A)', 'A.', '1)' jaisa label HATA do. Hamesha 4 alag-alag options. Option lamba ya multi-line ho to <br> use karo.",
     "8. answer: sahi option ka number 1-4 (option1=1, option2=2, option3=3, option4=4). Agar PDF me answer key hai to wahi lo. Agar nahi hai aur tum 100% sure nahi ho to answer khaali chhod do (main khud check kar loonga). Andaza mat lagao.",
-    "9. explanation: optional. Chhota (1-3 line) rakho, line todne ke liye <br>. Pata na ho to khaali \"\".",
+    "9. explanation (rule 15 dekho): PDF/book ki explanation copy mat karo — apne shabdon me modify karke likho, par tathya (facts) wahi rakho.",
     "10. exams: jis exam ka sawal hai (jaise RPSC RAS 2021). Ek se zyada ho to semicolon (;) se alag karo. Pata na ho to khaali \"\".",
     "11. Sirf ye HTML tags allowed hain: <br>, <b>, <i>, <u>, <sup>, <sub>, <table class=\"qt\"> (with tr/th/td), aur assertion-reason ki intro line ke liye <span style=\"font-weight:400\">. Markdown (**bold**, | --- | tables, # headings) bilkul mat use karo. Math/formula ho to plain text (x², H₂O) ya <sup>/<sub> use karo.",
-    "12. Ek sawal = CSV ki ek row. Koi sawal dobara mat likho. Jo sawal adhura/kata hua ya padhne me na aaye use skip karke last me alag se bata do (CSV ke bahar).",
-    "13. " + kindNote,
+    "12. Ek sawal = CSV ki ek row. Jo sawal adhura/kata hua ya padhne me na aaye use skip karke last me alag se bata do (CSV ke bahar).",
+    "13. KATHAN reshuffle (sirf jab bilkul safe ho): kathan ka text mat badlo, sirf unka SEQUENCE badlo (PDF ka kathan 3 ab kathan 1 ban sakta hai). Phir options me 'केवल 1 और 2' / '1, 3 और 4' jaise combination naye numbers ke hisab se dobara likho, sahi answer position se copy mat karo — kathan ki sachchai dekhkar dobara nikalo, explanation me bhi naye numbers. Zara bhi risk lage (arth bigad sakta hai, options complex hain) to kathan jaise the waise hi rehne do — ye bilkul theek hai.",
+    "14. OPTIONS reshuffle: 4 options ka order badlo aur answer = sahi option ka naya number. Reshuffle MAT karo jab: option me 'उपरोक्त सभी' / 'इनमें से कोई नहीं' / 'A और B दोनों' / 'All/None of the above' ho; options sankhya ya saal ascending-descending order me hon; assertion-reason (4 standard options fixed); sawal 'सही क्रम / arrange / ascending / पहले-बाद' ka ho (kram hi sawal hai); kathan ek-dusre ko refer karte hon; sumelan me List-I jaisi hai waisi rakho (sirf options reshuffle, codes sahi rakhna). Kathan wale sawal me jab kathan reshuffle na karo tab bhi options badal sakte ho.",
+    "15. EXPLANATION v2: <b>सही उत्तर क्यों</b> (1-2 line) → baaki options/kathan kyun galat (chhota) → 📌 <b>Revision:</b> us topic ke 3-6 zaroori points taaki student padh kar poora topic revise kar sake → 💡 <b>Trick:</b> SIRF tab jab sach me logical yaad rakhne ki trick bane (acronym / kram / tulna jiska asli aadhar ho). Zabardasti trick mat banao; zyadatar sawalon me trick nahi hogi. Poori explanation 4-10 line, <br> aur <b> se. Naya/galat tathya mat jodo; kisi tathya par pakka yakeen na ho to likho hi mat.",
+    "16. difficulty: easy | moderate | hard. " + DIFF_RUBRIC,
+    "17. q_type: simple | statement | assertion_reason | match | table | lengthy. Assertion-reason tab bhi likho jab PDF me 'अभिकथन A / कथन-I / Assertion' kuch bhi likha ho (ek kathan assertion jaisa, ek karan/reason jaisa, options me 'सही व्याख्या').",
+    "18. Ek hi PDF me same sawal do baar ho to ek hi row rakho; exams column me dono exam/saal ';' se likho.",
+    "19. Har row likhne se pehle shuffle ke baad answer aur explanation ka self-check karo. Jis sawal me shuffle se arth bigadne ka darr ho use bina shuffle ke do aur CSV ke bahar list me batao.",
+    "20. " + kindNote,
     ""
   ].concat(chapListLines(kind).length ? [
     "CHAPTER LIST (subject/chapter ke naam sirf isi list se, bilkul isi spelling me use karo — naam mismatch hone par upload reject ho jaata hai):"
@@ -851,7 +987,7 @@ function qPreview(id, rows) {
   el.innerHTML = '<div class="meta" style="margin-top:12px;font-weight:600">👁 Preview — app me aise dikhega (pehle ' + pick.length + ' sawal):</div>' +
     pick.map(q => {
       const n = rows.indexOf(q) + 1, w = pvWarn(q);
-      return '<div class="qpv"><div class="meta">Sawal #' + n + '</div><p class="q">' + fmtQ(pvSafe(q.question)) + '</p>' +
+      return '<div class="qpv"><div class="meta">Sawal #' + n + (q.q_type ? ' · <span class="tag on">' + esc(q.q_type) + '</span>' : '') + (q.difficulty ? ' <span class="tag on">' + esc(q.difficulty) + '</span>' : ' <span class="tag hid">no difficulty</span>') + '</div><p class="q">' + fmtQ(pvSafe(q.question)) + '</p>' +
         q.options.map((o, i) => '<div class="po' + (i === q.answer ? " ok" : "") + '"><span class="pl">' + L[i] + '</span><div class="pt">' + fmtQ(pvSafe(o), 1) + '</div>' + (i === q.answer ? '<span class="pk">✓</span>' : "") + '</div>').join("") +
         (q.explanation ? '<div class="pe"><b>व्याख्या:</b> ' + fmtQ(pvSafe(q.explanation), 1) + '</div>' : "") +
         w.map(x => '<div class="pw">⚠ ' + esc(x) + '</div>').join("") + '</div>';
@@ -1520,7 +1656,7 @@ function testCheck(kind) {
   const need = ["question", "option1", "option2", "option3", "option4", "answer"];
   const miss = need.filter(n => !hdr.includes(n));
   if (miss.length) { msg.textContent = "Header me ye column nahi mile: " + miss.join(", ") + "\n(Template se naam copy karo)"; return; }
-  const ix = n => hdr.indexOf(n), seen = new Set(), errs = [], out = [], warns = []; let fixc = 0;
+  const ix = n => hdr.indexOf(n), seen = new Set(), errs = [], out = [], warns = []; let fixc = 0, unl2 = 0;
   const amap = { A: 0, B: 1, C: 2, D: 3, "1": 0, "2": 1, "3": 2, "4": 3 };
   rows.slice(1).forEach((r, k) => {
     const g = n => ix(n) >= 0 ? (r[ix(n)] || "").trim() : "";
@@ -1529,18 +1665,20 @@ function testCheck(kind) {
     if (!question) e.push("sawal khaali");
     if (options.some(o => !o)) e.push("option khaali"); else if (new Set(options).size < 4) e.push("options alag-alag nahi");
     if (a === undefined) e.push("answer 1-4 ya A-D hona chahiye");
-    if (question && seen.has(question)) e.push("ye sawal file me dobara hai");
+    const dfi = normDiff(g("difficulty")), tyi = normType(g("q_type")), type = (tyi && tyi !== "?") ? tyi : detectType(question, options), diff = (dfi && dfi !== "?") ? dfi : "";
+    const fpT = question ? qFingerprint(question, options, type) : "";
+    if (fpT && seen.has(fpT)) e.push("ye sawal file me dobara hai");
     if (e.length) { errs.push("Line " + (k + 2) + ": " + e.join(", ")); return; }
-    seen.add(question); if (fx.n.length) fixc++;
+    seen.add(fpT); if (fx.n.length) fixc++; if (!diff) unl2++;
     { const ch = g("chapter"), sb = isSub ? sel : g("subject"), SCm = window.SC || {};
       if (ch && Object.keys(SCm).length && !(sb && SCm[sb] ? SCm[sb].has(ch) : Object.values(SCm).some(x => x.has(ch)))) warns.push("Line " + (k + 2) + ": chapter \"" + ch + "\" DB list me nahi mila"); }
     out.push({ subject: isSub ? sel : (g("subject") || ""), chapter: g("chapter"), question, options, answer: a, explanation: g("explanation"),
-      exams: g("exams").split(/[,;|]/).map(s => s.trim()).filter(Boolean) });
+      exams: g("exams").split(/[,;|]/).map(s => s.trim()).filter(Boolean), difficulty: diff || null, q_type: type });
   });
   S.rows = out;
   msg.style.color = errs.length ? "var(--bad)" : "var(--ok)";
   msg.textContent = (isSub ? "Subject: " + sel : "Exams (" + exams.length + "): " + exams.map(exShortA).join(", ")) + "\nSahi: " + out.length + "   Galat: " + errs.length + "   Total marks: " + +(out.length * mk).toFixed(2) +
-    (fixc ? "\n🛠 Auto-fix: " + fixc + " sawal me table / assertion formatting sudhaari gayi" : "") +
+    (fixc ? "\n🛠 Auto-fix: " + fixc + " sawal me table / assertion formatting sudhaari gayi" : "") + (unl2 ? "\n🏷 Bina difficulty: " + unl2 : "") +
     (warns.length ? "\n⚠ Chapter naam mismatch (upload ho jayega, par check karo): " + warns.length + "\n" + warns.slice(0, 5).join("\n") : "") +
     (errs.length ? "\n\n" + errs.slice(0, 15).join("\n") + (errs.length > 15 ? "\n...aur " + (errs.length - 15) + " line" : "") + "\n\nGalat lines sahi karke dobara Jaanch karo (galat lines upload nahi hongi)." : "");
   $(kind + "Go").disabled = out.length === 0;
@@ -1676,6 +1814,120 @@ function exportCSV(rows, label) {
 }
 $("expAll").onclick = () => exportCSV(ALL, "all");
 $("expFiltered").onclick = () => exportCSV(filteredRows(), "filtered");
+
+/* ===== Part 2b: chapter ke andar Duplicate finder ===== */
+function findDups() {
+  const box = $("dupBox"); if (!CUR) { box.innerHTML = ""; return; }
+  const rows = ALL.filter(q => q.subject === CUR.s && q.chapter === CUR.c);
+  if (rows.length > 1500) { box.innerHTML = '<div class="card meta">Is chapter me 1500 se zyada sawal hain — pehle filter lagao.</div>'; return; }
+  const pairs = [];
+  for (let i = 0; i < rows.length; i++) for (let j = i + 1; j < rows.length; j++) { const sc = simScore(profOf(rows[i]), profOf(rows[j])); if (sc >= 0.6) pairs.push([rows[i], rows[j], sc]); }
+  pairs.sort((a, b) => b[2] - a[2]);
+  if (!pairs.length) { box.innerHTML = '<div class="card meta">✅ Is chapter me koi milte-julte sawal nahi mile.</div>'; return; }
+  box.innerHTML = '<div class="card"><div class="q">🔍 ' + pairs.length + ' milte-julte jode' + (pairs.length > 40 ? " (pehle 40)" : "") + '</div>' + pairs.slice(0, 40).map(([a, b, sc]) =>
+    '<div class="card" style="margin:8px 0"><div class="meta"><b>' + Math.round(sc * 100) + '% match</b></div>' +
+    '<div class="meta" style="margin-top:6px"><b>A:</b> ' + esc(plainTxt(a.question)) + '<br>✓ ' + esc(plainTxt(a.options[a.answer], 80)) + '</div>' +
+    '<div class="meta" style="margin-top:6px"><b>B:</b> ' + esc(plainTxt(b.question)) + '<br>✓ ' + esc(plainTxt(b.options[b.answer], 80)) + '</div>' +
+    '<div class="row" style="margin-top:8px"><button class="sec" data-dp="mergeB" data-a="' + a.id + '" data-b="' + b.id + '">B hatao (exams A me jodo)</button><button class="sec" data-dp="mergeA" data-a="' + a.id + '" data-b="' + b.id + '">A hatao (exams B me jodo)</button></div></div>').join("") +
+    '<button class="sec" onclick="document.getElementById(\'dupBox\').innerHTML=\'\'">Band karo</button></div>';
+}
+$("dupFind").onclick = findDups;
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-dp]"); if (!b) return;
+  const keep = ALL.find(q => q.id === (b.dataset.dp === "mergeB" ? b.dataset.a : b.dataset.b)), drop = ALL.find(q => q.id === (b.dataset.dp === "mergeB" ? b.dataset.b : b.dataset.a));
+  if (!keep || !drop) return;
+  if (!confirm("Ek sawal hamesha ke liye hatega (backup download hogi) aur uske exams dusre me jud jayenge. Pakka?")) return;
+  try {
+    dlJson("merged_dup_" + Date.now() + ".json", [drop]);
+    const ex = [...new Set([...(keep.exams || []), ...(drop.exams || [])])];
+    if (ex.length !== (keep.exams || []).length) await patchQ(keep.id, { exams: ex, updated_at: new Date().toISOString() });
+    await bulkDeleteIds([drop.id]); await loadQuestions(); findDups();
+  } catch (er) { alert("Fail: " + er.message); }
+});
+
+/* ===== Part 1: multi-select delete + batch delete ===== */
+function updSelBar() {
+  const b = $("selBar"); if (!b) return;
+  if (!SEL.size) { b.classList.add("hide"); b.innerHTML = ""; return; }
+  b.classList.remove("hide");
+  b.innerHTML = '<div class="q" style="margin:0 0 8px">' + SEL.size + ' sawal chune</div><div class="row">' +
+    '<button class="sec" data-sel="all">Sab chuno (jo dikh rahe)</button><button class="sec" data-sel="none">Chuno hatao</button>' +
+    '<button class="sec" data-sel="hide">Hide</button><button class="sec" data-sel="show">Show</button>' +
+    '<button class="danger" data-sel="del">🗑 Delete</button></div>';
+}
+function dlJson(name, data) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: "application/json" }));
+  a.download = name; document.body.appendChild(a); a.click(); a.remove();
+}
+const inList = ids => "id=in.(" + ids.join(",") + ")";
+async function bulkDeleteIds(ids) {
+  let n = 0;
+  for (let i = 0; i < ids.length; i += 100) {
+    const r = await api("/rest/v1/questions?" + inList(ids.slice(i, i + 100)), { method: "DELETE", headers: { Prefer: "return=representation" } });
+    n += (r || []).length;
+  }
+  return n;
+}
+document.addEventListener("change", e => {
+  const c = e.target.closest && e.target.closest("input.qsel"); if (!c) return;
+  c.checked ? SEL.add(c.dataset.id) : SEL.delete(c.dataset.id); updSelBar();
+});
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-sel]"); if (!b) return;
+  const a = b.dataset.sel, ids = [...SEL];
+  if (a === "none") { SEL.clear(); render(); return; }
+  if (a === "all") { chapRows().slice(0, SHOWN).forEach(q => SEL.add(q.id)); render(); return; }
+  if (!ids.length) return;
+  try {
+    if (a === "hide" || a === "show") {
+      if (!confirm(ids.length + " sawal " + (a === "hide" ? "Hide" : "Show") + " karein?")) return;
+      for (let i = 0; i < ids.length; i += 100) await api("/rest/v1/questions?" + inList(ids.slice(i, i + 100)), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ is_active: a === "show", updated_at: new Date().toISOString() }) });
+    } else if (a === "del") {
+      if (!confirm(ids.length + " sawal hamesha ke liye DELETE karein?\n\nDhyan: students ka in sawalon ka progress bhi bekaar ho jayega. Agar sirf chhupana hai to Hide use karo.\n\nDelete se pehle in sawalon ki JSON backup download hogi.")) return;
+      dlJson("deleted_questions_" + Date.now() + ".json", ALL.filter(q => SEL.has(q.id)));
+      const n = await bulkDeleteIds(ids);
+      if (n !== ids.length) alert("Dhyan: " + ids.length + " me se " + n + " hi delete hue (admin permission check karo).");
+    }
+    await loadQuestions();
+  } catch (er) { alert("Fail: " + er.message); }
+});
+function batchGroups() {
+  const m = new Map();
+  ALL.forEach(q => { if (!q.import_batch) return; (m.get(q.import_batch) || m.set(q.import_batch, []).get(q.import_batch)).push(q); });
+  return [...m.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1));
+}
+function renderBatches() {
+  const box = $("batchList"); if (!box) return;
+  if (!HAS_QB) { box.innerHTML = '<span style="color:var(--bad)">Pehle qbank_setup.sql Supabase SQL Editor me ek baar chalao, phir yahan batch dikhenge.</span>'; return; }
+  const g = batchGroups();
+  if (!g.length) { box.textContent = "Abhi koi batch nahi (ab se jo CSV import karoge wo yahan dikhega)."; return; }
+  box.innerHTML = g.slice(0, 15).map(([id, qs]) => {
+    const places = [...new Set(qs.map(q => q.subject + " › " + q.chapter))];
+    const t = id.slice(1, 13), when = t.slice(6, 8) + "-" + t.slice(4, 6) + "-" + t.slice(0, 4) + " " + t.slice(8, 10) + ":" + t.slice(10, 12);
+    const hid = qs.filter(q => !q.is_active).length;
+    return '<div class="card" style="margin:8px 0"><div class="q" style="margin:0">' + when + ' · ' + qs.length + ' sawal' + (hid ? ' (' + hid + ' hidden)' : '') + '</div>' +
+      '<div class="meta">' + esc(places.slice(0, 3).join(" | ")) + (places.length > 3 ? " ...+" + (places.length - 3) : "") + '</div>' +
+      '<div class="row" style="margin-top:8px"><button class="sec" data-bt="hide" data-id="' + id + '">Hide batch</button><button class="sec" data-bt="show" data-id="' + id + '">Show batch</button><button class="danger" data-bt="del" data-id="' + id + '">🗑 Delete batch</button></div></div>';
+  }).join("");
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-bt]"); if (!b) return;
+  const id = b.dataset.id, qs = ALL.filter(q => q.import_batch === id), act = b.dataset.bt;
+  if (!qs.length) return;
+  try {
+    if (act === "del") {
+      if (!confirm("Is batch ke " + qs.length + " sawal hamesha ke liye DELETE karein?\n\nPehle in sawalon ki JSON backup download hogi.")) return;
+      dlJson("deleted_batch_" + id + ".json", qs);
+      const r = await api("/rest/v1/questions?import_batch=eq." + encodeURIComponent(id), { method: "DELETE", headers: { Prefer: "return=representation" } });
+      if (!r || r.length !== qs.length) alert("Dhyan: " + qs.length + " me se " + (r ? r.length : 0) + " hi delete hue.");
+    } else {
+      if (!confirm(qs.length + " sawal " + (act === "hide" ? "Hide" : "Show") + " karein?")) return;
+      await api("/rest/v1/questions?import_batch=eq." + encodeURIComponent(id), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ is_active: act === "show", updated_at: new Date().toISOString() }) });
+    }
+    await loadQuestions();
+  } catch (er) { alert("Fail: " + er.message); }
+});
 
 async function deleteQ(id, btn) {
   const q = ALL.find(x => x.id === id); if (!q) return;
