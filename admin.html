@@ -952,7 +952,17 @@ function aiPrompt(kind, inFile) {
     "19. Har row likhne se pehle shuffle ke baad answer aur explanation ka self-check karo. Jis sawal me shuffle se arth bigadne ka darr ho use bina shuffle ke do aur CSV ke bahar list me batao.",
     "20. " + kindNote,
     ""
-  ].concat(chapListLines(kind).length ? [
+  ].concat(kind === "bulk" ? [
+    "21. QUESTION SEQUENCE: PDF me sawalon ka jo kram (order) hai use bhi badal do — CSV me sawal PDF wale order me mat rakho, ek part ke andar sabhi sawal shuffle karke likho (rule 13, 14 ke safe-shuffle wale niyam yahan bhi lagu). Kisi sawal ka dusre sawal se sambandh ho (jaise 'upar diye passage ke aadhar par') to use apne passage ke saath hi rakho.",
+    "",
+    "HANDOFF + LIMIT (bahut zaroori — sabse pehle yahi karo):",
+    "22. Sawal bahut honge, isliye main unhe PART me dunga: ek PDF me lagbhag 30 se 50 sawal. Har PDF ka CSV isi template ke hisab se banana hai. Claude ki limit lag sakti hai, tab main dusre account/chat me jaakar aage ke sawal (30-50 ke baad ke) ki nayi PDF dalunga — wo sab usi ek CSV me continue hona chahiye, koi gadbad (repeat, chhoote hue sawal, alag header, alag format) nahi honi chahiye.",
+    "23. PEHLA KAAM — kuch bhi convert karne se PEHLE ek HANDOFF banao (ek hi code block me, copy karne layak, chhota aur saaf) aur mujhe do. Isme ye sab likho: (a) topic/chapter ka EXACT naam (rule 24 dekho); (b) ye ki kaam 'Jakhar Study App ke CSV template ke hisab se sawal convert karna' hai, aur naye chat me main ye template file dobara upload karunga; (c) ab tak kitne PDF part / kitne sawal ho chuke hain aur last sawal kaunsa tha (shuru me 0 likho); (d) agla part kahan se shuru hoga; (e) niyam: usi CSV me continue karna, header sirf ek baar, same column order, same format-rules, koi sawal repeat nahi; (f) koi bhi alag niyam jo mujhe is chat me bataya gaya ho.",
+    "24. TOPIC KA NAAM: app me jo topic/chapter ka naam hai uska SCREENSHOT main sirf EK BAAR bhejunga. Us screenshot se naam padhkar CHAPTER LIST se EXACT match karo aur handoff me likh do (rule 23-a), taaki baad ke chat me screenshot na dena pade aur main CSV app me upload karun to koi dikkat na ho (naam mismatch na ho). Agar screenshot ka naam list se thoda alag ho to list wala sahi naam handoff me likho, aur handoff me bata do ki screenshot me kya likha tha.",
+    "25. HANDOFF UPDATE: har PDF part ka CSV dene ke baad handoff ko khud update karke (naye count/last sawal ke saath) wapas do; ya jab main bolun 'handoff update karo' tab do. Taaki limit lagne par main updated handoff + template dusre account me daal kar bina rukawat aage badh sakun.",
+    "26. CSV CONTINUE: agar main pichli CSV file bhi upload karun to usi ke end me naye rows jodkar poori CSV wapas do. Agar file nahi di to sirf naye rows do (bina header, bina '#' lines) — main unhe usi CSV me jod lunga. Har part ke baad bata do ki ab tak total kitne sawal ho gaye.",
+    ""
+  ] : []).concat(chapListLines(kind).length ? [
     "CHAPTER LIST (subject/chapter ke naam sirf isi list se, bilkul isi spelling me use karo — naam mismatch hone par upload reject ho jaata hai):"
   ].concat(chapListLines(kind), [""]) : []).concat(inFile ? [
     "⚠ EXAMPLE: is file me '#' wali lines ke theek neeche header aur 6 example rows diye hain. Ye 6 rows SIRF FORMAT SAMJHANE ke liye hain — inhe apne output/CSV me SHAMIL MAT KARO aur inhe app me upload bhi mat karo. Bas inhi jaisa format apne sawalon par lagao. Apne output me '#' wali lines bhi mat likho.",
