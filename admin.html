@@ -59,7 +59,9 @@
 .exopt{display:flex;align-items:center;gap:8px;font-size:14px;padding:5px 0;cursor:pointer}.exopt input{width:auto;margin:0}.exopt small{color:#64748b}
 /* Part 4: question preview (index.html jaisa) */
 .qpv{border:1px solid var(--bd);border-radius:12px;padding:12px;margin-top:8px;background:var(--card)}
-.qpv p.q{font-size:16px;font-weight:700;line-height:1.7;overflow-wrap:anywhere;margin:6px 0 12px}
+.qpv p.q{font-size:16px;font-weight:700;line-height:1.45;overflow-wrap:anywhere;margin:6px 0 12px}
+.q .gp{display:block;height:.4em}.q .ar-n{display:block;font-weight:500}
+.q .ar-s{display:block;font-weight:800;margin:6px 0;padding:6px 10px;border-left:4px solid #1d4ed8;border-radius:8px;background:rgba(29,78,216,.08)}
 .qpv .po{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--bd);border-radius:10px;padding:8px 10px;margin-bottom:8px}
 .qpv .po.ok{border-color:var(--ok)}.qpv .pk{margin-left:auto;color:var(--ok);font-weight:700}
 .qpv .pl{flex:none;width:26px;height:26px;border-radius:50%;background:rgba(20,87,217,.14);display:grid;place-items:center;font-weight:700;font-size:13px}
@@ -658,12 +660,40 @@ async function bulkGo() {
 }
 /* ---------- Part 4: CBSE/AI templates, AI prompt, preview ---------- */
 /* fmtQ — index.html wale function ki hu-ba-hu copy (dono jagah sync rakho) */
+/* Part 3: lenient Assertion-Reason / Kathan-I-II formatter — intro aur "सही उत्तर चुनिए" normal, asli statements alag box me bold */
+const AR1=/(अभिकथन|कथन|Assertion|Statement)\s*[\(\-–:]?\s*(A|I(?!I)|१)(?![A-Za-z0-9])\s*[\)\-–:.]?/i;
+const AR2=/(कारण|तर्क|Reason|कथन|Statement)\s*[\(\-–:]?\s*(R|II|२|B)(?![A-Za-z0-9])\s*[\)\-–:.]?/i;
+const ARASK=/(\s)(सही उत्तर|सही विकल्प|सही कूट|कूट|उपर्युक्त|उपरोक्त|निम्न(?:लिखित)? में से|नीचे दिए|Select the correct|Choose the correct|Codes?\b)/;
+function arFormat(q){
+  if(!q||/class=["']ar-s/.test(q))return q;
+  const segs=q.split(/(<br\s*\/?>)/i),strip=x=>x.replace(/<\/?(b|strong)>/gi,""),plain=x=>x.replace(/<[^>]*>/g,"").replace(/&nbsp;/g," ").trim();
+  const trimBr=x=>x.replace(/^(\s*<br\s*\/?>)+/i,"").replace(/(<br\s*\/?>\s*)+$/i,"");
+  let ai=-1,m1=null;
+  for(let i=0;i<segs.length;i+=2){const m=segs[i].match(AR1);if(m){ai=i;m1=m;break}}
+  if(ai<0)return q;
+  let ri=-1,r2=-1;
+  {const st=m1.index+m1[0].length,m=segs[ai].slice(st).match(AR2);if(m){ri=ai;r2=st+m.index}}
+  if(ri<0)for(let i=ai+2;i<segs.length;i+=2){const m=segs[i].match(AR2);if(m){ri=i;r2=m.index;break}}
+  if(ri<0)return q;
+  const tb=segs[ai].slice(0,m1.index).match(/(<(b|strong)>\s*)+$/i),st0=tb?m1.index-tb[0].length:m1.index;
+  let pre=segs[ai].slice(0,st0),introSegs=segs.slice(0,ai).join(""),A,R,ask;
+  if(ri===ai){
+    A=segs[ai].slice(st0,r2);const rt=segs[ai].slice(r2),m=rt.match(ARASK);
+    R=m?rt.slice(0,m.index):rt;ask=(m?rt.slice(m.index+1):"")+segs.slice(ai+1).join("");
+  }else{
+    A=segs[ai].slice(st0)+segs.slice(ai+1,ri).join("");
+    const rt=segs[ri],m=rt.match(ARASK);
+    R=m?rt.slice(0,m.index):rt;ask=(m?rt.slice(m.index+1):"")+segs.slice(ri+1).join("");
+  }
+  const intro=trimBr(introSegs+pre);
+  return (plain(intro).length>1?'<span class="ar-n">'+strip(intro)+'</span>':"")+'<span class="ar-s">'+trimBr(A)+'</span><span class="ar-s">'+trimBr(R)+'</span>'+(plain(ask)?'<span class="ar-n">'+strip(trimBr(ask))+'</span>':"");
+}
 const FMQ_C=new Map();
 function fmtQ(h,lite){
   let s=h==null?"":String(h);if(!s)return s;
   const key=(lite?"1":"0")+s,hit=FMQ_C.get(key);if(hit!==undefined)return hit;
   s=s.replace(/\r\n?/g,"\n");
-  if(!lite){s=pipeToTable(s);s=arIntroNormal(s);}   /* pipe(|) text -> table; A-R ki upar wali intro normal weight */
+  if(!lite){s=pipeToTable(s);s=arFormat(s);}   /* pipe(|) text -> table; A-R ki upar wali intro normal weight */
   const parts=s.split(/(<table[\s\S]*?<\/table>)/i),n=parts.length;
   const out=parts.map((p,i)=>{
     if(i%2)return'<div class="tw">'+p.replace(/\n+/g,"")+'</div>';
@@ -676,6 +706,7 @@ function fmtQ(h,lite){
   });
   let r=out.join("");
   if(!lite&&n===1&&!/\n/.test(s))r=fmtAuto(r);
+  if(!lite)r=r.replace(/(<br\s*\/?>\s*){2,}/gi,'<span class="gp"></span>');
   FMQ_C.set(key,r);return r;
 }
 function fmtAuto(t){
