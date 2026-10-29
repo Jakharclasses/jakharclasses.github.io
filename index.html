@@ -1908,6 +1908,15 @@ const stopped=()=>finished||(mode==="practice"&&state[cur].picked!==null);
 /* ---------- क्विज़: QUESTION → EXAM NAME → OPTIONS ---------- */
 /* ---------- Jakhar update: sort / translate / verified ---------- */
 const VERIFIED_CHAPTERS=["राजस्थान के खनिज संसाधन","राजस्थान की झीलें व बावड़ियाँ"]; // नए verified टॉपिक यहाँ जोड़ें
+/* Verified chapters ab admin panel se (Supabase table verified_chapters). Cache + upar ki list fallback. */
+(function(){
+  const CK="jkx_verified_v1",U="https://gpqrkxyypadgvguomfrr.supabase.co/rest/v1/verified_chapters?select=subject,chapter",K="sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq";
+  const fill=a=>{VERIFIED_CHAPTERS.length=0;a.forEach(c=>{if(VERIFIED_CHAPTERS.indexOf(c)<0)VERIFIED_CHAPTERS.push(c)})};
+  try{const c=JSON.parse(localStorage.getItem(CK)||"null");if(Array.isArray(c))fill(c)}catch(e){}
+  try{fetch(U,{cache:"no-store",headers:{apikey:K,Authorization:"Bearer "+K}}).then(r=>r.ok?r.json():null).then(j=>{
+    if(!Array.isArray(j))return;const a=j.map(x=>x.chapter);fill(a);try{localStorage.setItem(CK,JSON.stringify(a))}catch(e){}
+  }).catch(()=>{})}catch(e){}
+})();
 const TRI='<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="display:block"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>';
 const VB='<span class="vb"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#1d9bf0"/><path d="M7 12.5l3.2 3.2L17 8.8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Verified by Jakhar Academy</span>';
 const examYear=e=>{const m=String(e).match(/20\d\d/g);return m?+m[m.length-1]:0};

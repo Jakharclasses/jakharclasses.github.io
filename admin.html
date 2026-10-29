@@ -48,6 +48,7 @@
   .tiles span{font-size:30px;line-height:1}.tiles b{font-size:14px;line-height:1.25}.tiles small{font-size:11px;opacity:.9;font-weight:400}
   .sh{font-weight:700;margin:4px 2px 8px}
   button.bk{margin-bottom:10px}
+  .vbtn{font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;border:1.5px solid #1d9bf0;background:transparent;color:#1d9bf0;cursor:pointer;margin-right:4px;width:auto;min-height:0;line-height:1.3}.vbtn.on{background:#1d9bf0;color:#fff}
   .chrow{cursor:pointer}.chrow:hover,.qrow:hover{background:rgba(20,87,217,.07)}
   .qrow{cursor:pointer;padding:8px 0;border-bottom:1px solid var(--bd);font-size:14px}
   details.sub{border:1px solid var(--bd);border-radius:10px;padding:8px 10px;margin-top:8px}
@@ -453,9 +454,12 @@ function render() {
   $("more").innerHTML = rows.length > SHOW ? '<div class="meta" style="margin-bottom:6px">' + SHOW + ' / ' + rows.length + ' dikh rahe hain</div><button class="sec" id="moreBtn">Aur dikhao (+50)</button>' : "";
 }
 
+/* App (index.html) me jo subject/chapter hain — DB me sawal na ho tab bhi template, AI prompt aur import me aate hain. Naya chapter app me jodo to yahan bhi jodo. */
+const APP_CHAPTERS = {"राजस्थान का इतिहास": ["राजस्थान के इतिहास के स्रोत", "राजस्थान की प्रमुख प्राचीन सभ्यताएँ एवं पुरास्थल", "राजस्थान का पौराणिक, ऐतिहासिक स्वरूप व जनपद युग", "राजपूतों की उत्पत्ति", "प्रतिहार वंश (गुर्जर प्रतिहार)", "चौहान राजवंश", "मेवाड़ का गुहिल राजवंश", "आमेर का कछवाहा राजवंश", "मारवाड़ का राठौड़ राजवंश", "बीकानेर का राठौड़ राजवंश", "जाट राजवंश", "राजस्थान के अन्य महत्त्वपूर्ण राजवंश", "राजस्थान में मध्यकालीन प्रशासन व सामंती व्यवस्था", "राजस्थान में मराठा हस्तक्षेप एवं उसका प्रभाव", "राजस्थान में अंग्रेजी प्रभुत्व और उसके प्रभाव", "राजस्थान में 1857 की क्रांति", "1857 की क्रांति के बाद सुधारों और राजनीतिक चेतना का काल", "राजस्थान के जनजाति एवं किसान आन्दोलन", "राजस्थान में सामाजिक संगठन", "राजस्थान में राजनीतिक संस्थाएँ एवं समाचार-पत्र", "राजस्थान में प्रजामण्डल व स्वतंत्रता आंदोलन", "राजस्थान का एकीकरण", "राजस्थान के प्रमुख ऐतिहासिक व्यक्तित्व एवं स्वतंत्रता सेनानी", "राजस्थान की इतिहास प्रसिद्ध महिलाएँ"], "राजस्थान का भूगोल": ["राजस्थान: सामान्य परिचय", "राजस्थान का भौतिक विभाजन", "राजस्थान: प्राचीन नाम व भौगोलिक उपनाम", "राजस्थान में जल संरक्षण एवं जल प्रबंधन", "राजस्थान की जलवायु", "राजस्थान में मिट्टी, अपरदन व मरुस्थलीकरण", "राजस्थान में सूखा, अकाल, आपदा व आपदा प्रबंधन", "राजस्थान की वन सम्पदा एवं पर्यावरण", "जैव विविधता, वन्य जीव एवं अभयारण्य", "राजस्थान में पशुपालन", "राजस्थान में कृषि एवं प्रमुख फसलें", "राजस्थान में अपवाह तंत्र व नदियाँ", "राजस्थान की झीलें व बावड़ियाँ", "प्रमुख बाँध, सिंचाई परियोजनाएँ व जल संसाधन योजनाएँ", "राजस्थान की नहरें", "राजस्थान के उद्योग", "राजस्थान के खनिज संसाधन", "राजस्थान में ऊर्जा संसाधन", "राजस्थान में पर्यटन", "राजस्थान में परिवहन के साधन", "राजस्थान की जनगणना-2011", "क्षेत्रीय विकास कार्यक्रम", "राजस्थान के प्रमुख अनुसंधान केंद्र", "राजस्थान में सहकारिता", "राजस्थान में जनजातियाँ"]};
 function fillSubjects() {
   const m = {};
   ALL.forEach(q => { (m[q.subject] = m[q.subject] || new Set()).add(q.chapter); });
+  Object.keys(APP_CHAPTERS).forEach(sb => { m[sb] = new Set(APP_CHAPTERS[sb].concat([...(m[sb] || [])])); });
   window.SC = m;
   $("aSub").innerHTML = Object.keys(m).map(s => '<option>' + esc(s) + '</option>').join("");
   fillChapters();
@@ -961,6 +965,8 @@ function aiPrompt(kind, inFile) {
     "24. TOPIC KA NAAM: app me jo topic/chapter ka naam hai uska SCREENSHOT main sirf EK BAAR bhejunga. Us screenshot se naam padhkar CHAPTER LIST se EXACT match karo aur handoff me likh do (rule 23-a), taaki baad ke chat me screenshot na dena pade aur main CSV app me upload karun to koi dikkat na ho (naam mismatch na ho). Agar screenshot ka naam list se thoda alag ho to list wala sahi naam handoff me likho, aur handoff me bata do ki screenshot me kya likha tha.",
     "25. HANDOFF UPDATE: har PDF part ka CSV dene ke baad handoff ko khud update karke (naye count/last sawal ke saath) wapas do; ya jab main bolun 'handoff update karo' tab do. Taaki limit lagne par main updated handoff + template dusre account me daal kar bina rukawat aage badh sakun.",
     "26. CSV CONTINUE: agar main pichli CSV file bhi upload karun to usi ke end me naye rows jodkar poori CSV wapas do. Agar file nahi di to sirf naye rows do (bina header, bina '#' lines) — main unhe usi CSV me jod lunga. Har part ke baad bata do ki ab tak total kitne sawal ho gaye.",
+    "27. GALTI SUDHAR + REPORT: agar PDF me kisi sawal/option/answer me galti ho ya tumhe galat lage (jaise answer key galat, sawal adhura, option me galti, tathya galat), to apne hisaab se use sahi karke CSV me do. Phir CSV ke BAHAR, output ke end me list do: sawal kaun sa (PDF wala number + sawal ki shuruaat), usme dikkat kya thi, aur tumne kya badla. Main use ek baar check karunga; meri manzoori ke baad hi wo final maana jayega. Jis galti ka sahi hal tumhe pakka na ho use mat badlo, bas list me batao.",
+    "28. DELETE WALE SAWAL: agar PDF me kisi sawal ke saath 'डिलीट' / 'Deleted' likha ho ya main bolun ki wo delete hai, to use CSV me BILKUL mat rakhna (na khaali row, na kisi aur form me). Bas CSV ke bahar list me batao ki kaun-kaun se sawal delete maanke chhode.",
     ""
   ] : []).concat(chapListLines(kind).length ? [
     "CHAPTER LIST (subject/chapter ke naam sirf isi list se, bilkul isi spelling me use karo — naam mismatch hone par upload reject ho jaata hai):"
@@ -1790,6 +1796,22 @@ function openChapter(s, c, term) {
   DASH_Y = window.scrollY; showTab("chap"); window.scrollTo(0, 0);
 }
 
+/* ===== Verified by Jakhar Academy: chapter-wise toggle (table: verified_chapters) ===== */
+let VER = new Set();
+async function loadVer() {
+  try { const r = await api("/rest/v1/verified_chapters?select=subject,chapter&limit=1000") || []; VER = new Set(r.map(x => x.subject + "||" + x.chapter)); } catch (e) { console.error("verified load", e); }
+}
+async function toggleVer(i) {
+  const r = CHROWS[i]; if (!r) return; const k = r.s + "||" + r.c, on = VER.has(k);
+  if (on && !confirm("Is chapter se 'Verified by Jakhar Academy' logo hatana hai?\n\n" + r.c)) return;
+  if (!on && !confirm("Is chapter ke SAB sawalon par 'Verified by Jakhar Academy' logo lagana hai?\n\n" + r.c + "\n\n(Pehle sab answer check kar lo.)")) return;
+  try {
+    if (on) await api("/rest/v1/verified_chapters?subject=eq." + encodeURIComponent(r.s) + "&chapter=eq." + encodeURIComponent(r.c), { method: "DELETE" });
+    else await api("/rest/v1/verified_chapters", { method: "POST", headers: { Prefer: "resolution=ignore-duplicates,return=minimal" }, body: JSON.stringify({ subject: r.s, chapter: r.c }) });
+    if (on) VER.delete(k); else VER.add(k);
+    renderDash();
+  } catch (e) { alert("Verified save fail: " + e.message); }
+}
 function renderDash() {
   const act = ALL.filter(q => q.is_active).length, subj = {}, chap = {};
   ALL.forEach(q => {
@@ -1808,8 +1830,8 @@ function renderDash() {
     const chs = Object.keys(chap[s]).sort().filter(c => !t || subHit || c.toLowerCase().includes(t));
     if (!chs.length) return "";
     return '<details class="sub" data-s="' + esc(s) + '"' + (t || OPENS.has(s) ? " open" : "") + '><summary>' + esc(s) + ' <span class="meta">(' + subj[s].t + ' sawal · ' + chs.length + ' chapter)</span></summary>' +
-      chs.map(c => { CHROWS.push({ s, c }); const x = chap[s][c];
-        return '<div class="srow chrow" data-ci="' + (CHROWS.length - 1) + '"><span>' + esc(c) + '</span><span><b>' + x.t + '</b> <span class="meta">(' + x.a + ' active) ›</span></span></div>'; }).join("") + '</details>';
+      chs.map(c => { CHROWS.push({ s, c }); const x = chap[s][c], vi = CHROWS.length - 1, on = VER.has(s + "||" + c);
+        return '<div class="srow chrow" data-ci="' + vi + '"><span>' + esc(c) + '</span><span><button type="button" class="vbtn' + (on ? ' on' : '') + '" data-vi="' + vi + '">' + (on ? '✔ Verified' : 'Verify') + '</button> <b>' + x.t + '</b> <span class="meta">(' + x.a + ' active) ›</span></span></div>'; }).join("") + '</details>';
   }).join("");
   if (t.length >= 2) {
     const hits = ALL.filter(q => q.question.toLowerCase().includes(t));
@@ -1828,11 +1850,12 @@ function renderDash() {
 $("qsearch").oninput = renderDash;
 $("dashTree").addEventListener("toggle", e => { const d = e.target; if (d.dataset && d.dataset.s !== undefined && !$("qsearch").value.trim()) { d.open ? OPENS.add(d.dataset.s) : OPENS.delete(d.dataset.s); } }, true);
 $("dashTree").addEventListener("click", e => {
+  const vb = e.target.closest(".vbtn"); if (vb) { e.stopPropagation(); toggleVer(+vb.dataset.vi); return; }
   const c = e.target.closest(".chrow"); if (c) { const r = CHROWS[+c.dataset.ci]; if (r) openChapter(r.s, r.c); return; }
   const q = e.target.closest(".qrow"); if (q) { const x = ALL.find(z => z.id === q.dataset.qid); if (x) openChapter(x.subject, x.chapter, x.question); }
 });
 ["renderMats", "renderDv"].forEach(n => { const f = window[n]; window[n] = function () { const r = f.apply(this, arguments); renderDash(); return r; }; });
-{ const _ql = window.loadQuestions; window.loadQuestions = async function () { const r = await _ql.apply(this, arguments); renderDash(); return r; }; }
+{ const _ql = window.loadQuestions; window.loadQuestions = async function () { const r = await _ql.apply(this, arguments); await loadVer(); renderDash(); return r; }; }
 { const _op = window.openPanel; window.openPanel = async function () { showTab("dash"); $("logoutBtn").classList.remove("hide"); return _op.apply(this, arguments); }; }
 { const _lo = window.logout; window.logout = function () { const r = _lo.apply(this, arguments); CUR = null; showTab("dash"); MATS = []; $("logoutBtn").classList.add("hide"); return r; }; $("logoutBtn").onclick = window.logout; }
 
