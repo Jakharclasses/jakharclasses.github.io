@@ -981,7 +981,9 @@ function pipeToTable(q) {
 }
 function arIntroNormal(q) {
   if (!q || /font-weight\s*:\s*(400|normal)/i.test(q)) return q;
-  const m = q.match(/(<b>\s*)?(अभिकथन|Assertion)\s*\(A\)/i);
+  /* FIX: "एक अभिकथन (A) के रूप में ..." wali intro line ko asli label na samjho — pehle strict (line/sentence ke shuru me), na mile to lenient */
+  let m = null;
+  for (const strict of [true, false]) { const g = /(<b>\s*)?(अभिकथन|Assertion)\s*\(A\)/gi; let x; while ((x = g.exec(q))) { if (!arIntro(q, x) && (!strict || arPos(q, x))) { m = x; break; } } if (m) break; }
   if (!m || !(/(कारण|Reason)\s*\(R\)/i.test(q))) return q;
   const pre = q.slice(0, m.index), plain = pre.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
   if (plain.length < 4) return q;
@@ -992,16 +994,21 @@ function arIntroNormal(q) {
 const AR1=/(अभिकथन|कथन|Assertion|Statement)\s*[\(\-–:]?\s*(A|I(?!I)|१)(?![A-Za-z0-9])\s*[\)\-–:.]?/i;
 const AR2=/(कारण|तर्क|Reason|कथन|Statement)\s*[\(\-–:]?\s*(R|II|२|B)(?![A-Za-z0-9])\s*[\)\-–:.]?/i;
 const ARASK=/(\s)(सही उत्तर|सही विकल्प|सही कूट|कूट|उपर्युक्त|उपरोक्त|निम्न(?:लिखित)? में से|नीचे दिए|Select the correct|Choose the correct|Codes?\b)/;
+/* FIX: "नीचे दो कथन दिए गए हैं: एक अभिकथन A (Assertion A) के रूप में लिखित है तो दूसरा उसके कारण R के रूप में" —
+   ye INTRO line hai, asli label nahi. Jis match ke aage "... के रूप में" aaye (aur label ke baad ":" na ho) use skip karo. */
+const arIntro=(s,m)=>m[0].indexOf(":")<0&&/^[^<:]{0,30}?के\s*रू?प\s*में/.test(s.slice(m.index+m[0].length));
+const arPos=(s,m)=>{const p=s.slice(0,m.index).replace(/<[^>]*>/g,"").replace(/&nbsp;/g," ").trim();return !p||/[:;।.?!\-–—)]$/.test(p)||/^\(?(\d+|[A-Za-z])[.)]$/.test(p)};   /* asli label: line/sentence ke shuru me; "एक अभिकथन A.." / "labelled as Assertion (A)" jaisi intro nahi */
+const arHit=(re,s,from,strict)=>{const g=new RegExp(re.source,"gi");g.lastIndex=from||0;let m;while((m=g.exec(s))){if(!arIntro(s,m)&&(!strict||arPos(s,m)))return m;if(m[0].length===0)g.lastIndex++}return null};
 function arFormat(q){
   if(!q||/class=["']ar-s/.test(q))return q;
-  const segs=q.split(/(<br\s*\/?>)/i),strip=x=>x.replace(/<\/?(b|strong)>/gi,""),plain=x=>x.replace(/<[^>]*>/g,"").replace(/&nbsp;/g," ").trim();
-  const trimBr=x=>x.replace(/^(\s*<br\s*\/?>)+/i,"").replace(/(<br\s*\/?>\s*)+$/i,"");
+  const segs=q.split(/(<br\s*\/?>|\n+)/i),strip=x=>x.replace(/<\/?(b|strong)>/gi,""),plain=x=>x.replace(/<[^>]*>/g,"").replace(/&nbsp;/g," ").trim();
+  const trimBr=x=>x.replace(/^(?:\s|<br\s*\/?>)+/i,"").replace(/(?:\s|<br\s*\/?>)+$/i,"");
   let ai=-1,m1=null;
-  for(let i=0;i<segs.length;i+=2){const m=segs[i].match(AR1);if(m){ai=i;m1=m;break}}
+  for(const strict of [true,false]){for(let i=0;i<segs.length;i+=2){const m=arHit(AR1,segs[i],0,strict);if(m){ai=i;m1=m;break}}if(ai>=0)break}
   if(ai<0)return q;
   let ri=-1,r2=-1;
-  {const st=m1.index+m1[0].length,m=segs[ai].slice(st).match(AR2);if(m){ri=ai;r2=st+m.index}}
-  if(ri<0)for(let i=ai+2;i<segs.length;i+=2){const m=segs[i].match(AR2);if(m){ri=i;r2=m.index;break}}
+  {const st=m1.index+m1[0].length,m=arHit(AR2,segs[ai],st);if(m){ri=ai;r2=m.index}}
+  if(ri<0)for(let i=ai+2;i<segs.length;i+=2){const m=arHit(AR2,segs[i],0);if(m){ri=i;r2=m.index;break}}
   if(ri<0)return q;
   const tb=segs[ai].slice(0,m1.index).match(/(<(b|strong)>\s*)+$/i),st0=tb?m1.index-tb[0].length:m1.index;
   let pre=segs[ai].slice(0,st0),introSegs=segs.slice(0,ai).join(""),A,R,ask;
@@ -1033,7 +1040,7 @@ function fmtQ(h,lite){
     return t;
   });
   let r=out.join("");
-  if(!lite&&n===1&&!/\n/.test(s))r=fmtAuto(r);
+  if(!lite&&n===1&&!/\n/.test(s)&&!/class="ar-[sn]"/.test(r))r=fmtAuto(r);   /* arFormat ne jo sudhaar diya use dobara mat todo */
   if(!lite)r=r.replace(/(<br\s*\/?>\s*){2,}/gi,'<span class="gp"></span>');
   FMQ_C.set(key,r);return r;
 }
