@@ -1123,7 +1123,7 @@ async function loadMaterials() {
 const isYt = m => m.kind === "youtube";
 const OPENC = new Set();
 function mm(m, t) { return !t || ((m.title || "") + " " + (m.category || "") + " " + (m.url || "")).toLowerCase().includes(t); }
-function openBtn(m) { return '<a href="' + esc(matUrl(m)) + '" target="_blank" rel="noopener" style="padding:10px 12px;border:1px solid var(--bd);border-radius:8px;color:var(--tx);text-decoration:none">Kholo</a>'; }
+function openBtn(m) { return '<a href="' + esc(matUrl(m)) + '" style="padding:10px 12px;border:1px solid var(--bd);border-radius:8px;color:var(--tx);text-decoration:none">Kholo</a>'; }
 function matCard(m, o) {
   o = o || {};
   const vid = isYt(m) ? ytIdA(m.url) : "";
@@ -1434,7 +1434,7 @@ function renderDv() {
       '<div style="margin:6px 0"><span class="tag ' + (d.is_active ? "on" : "hid") + '">' + (d.is_active ? "active" : "hidden") + '</span>' +
       '<span class="tag">' + rs.length + ' remark' + (rs.length === 1 ? "" : "s") + '</span></div>' +
       '<div class="row" style="flex-wrap:wrap;margin-bottom:6px">' +
-      '<a href="' + esc(dvUrl(d)) + '" target="_blank" rel="noopener" style="padding:10px 12px;border:1px solid var(--bd);border-radius:8px;color:var(--tx);text-decoration:none">View PDF</a>' +
+      '<a href="' + esc(dvUrl(d)) + '" style="padding:10px 12px;border:1px solid var(--bd);border-radius:8px;color:var(--tx);text-decoration:none">View PDF</a>' +
       '<button class="sec" data-dv="title" data-id="' + d.id + '">Edit Title</button>' +
       '<button class="sec" data-dv="addrem" data-id="' + d.id + '">Add Remark</button>' +
       '<button class="sec" data-dv="viewrem" data-id="' + d.id + '">' + (open ? "Hide" : "View") + ' Remarks</button></div>' +
@@ -2459,7 +2459,7 @@ async function comClick(e) {
     var to=(r.contact||"").match(/[^\s,;<>()]+@[^\s,;<>()]+\.[^\s,;<>()]+/);if(!to)return "";
     var subj="Jakhar Academy – Login Issue Resolution Confirmation";
     var body="नमस्कार,\n\nआपने हाल ही में Jakhar Academy में लॉगिन करने का प्रयास किया था, लेकिन किसी तकनीकी समस्या के कारण आपको लॉगिन करने में परेशानी हुई थी।\n\nआपके द्वारा भेजी गई रिपोर्ट के आधार पर हमने आपकी समस्या का समाधान करने का प्रयास किया है।\n\nकृपया एक बार दोबारा लॉगिन करके चेक करें कि आपकी समस्या का समाधान हो गया है या नहीं।\n\nयदि आपकी समस्या अभी भी बनी हुई है, तो कृपया इसी ईमेल का रिप्लाई करके हमें बताएं कि आपको किस प्रकार की परेशानी आ रही है।\n\nहम आपकी समस्या का जल्द से जल्द समाधान करने का प्रयास करेंगे।\n\nधन्यवाद!\nJakhar Academy Support Team";
-    return "https://mail.google.com/mail/?view=cm&fs=1&authuser="+encodeURIComponent("vinodnath2259@gmail.com")+"&to="+encodeURIComponent(to[0])+"&su="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);
+    return "mailto:"+to[0]+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);
   }
   function dgRender(){
     var s=seenSet(),n=0;
@@ -2470,7 +2470,7 @@ async function comClick(e) {
       (r.note?'<div class="meta" style="margin-top:4px;white-space:pre-wrap">'+esc(r.note)+'</div>':'')+
       '<details data-dgid="'+r.id+'" style="margin-top:6px"><summary class="meta">Poori report</summary><pre style="white-space:pre-wrap;word-break:break-all;font-size:11px">'+esc(r.report)+'</pre></details>'+
       '<div class="row" style="margin-top:6px">'+
-      (ml?'<a data-dg="mail" data-id="'+r.id+'" href="'+esc(ml)+'" target="_blank" rel="noopener" style="text-decoration:none"><button class="sec" type="button" style="pointer-events:none">✉️ Mail bhejo</button></a>':'<button class="sec" disabled title="Contact me email nahi hai">✉️ Email nahi mili</button>')+
+      (ml?'<a data-dg="mail" data-id="'+r.id+'" href="'+esc(ml)+'" style="text-decoration:none"><button class="sec" type="button" style="pointer-events:none">✉️ Mail bhejo</button></a>':'<button class="sec" disabled title="Contact me email nahi hai">✉️ Email nahi mili</button>')+
       '<button class="sec" data-dg="del" data-id="'+r.id+'" style="color:var(--bad)">Delete</button></div></div>';
     }).join("")||'<div class="card meta">Abhi koi report nahi aayi.</div>';
     setBadge(n);
