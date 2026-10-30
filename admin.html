@@ -81,6 +81,22 @@
 #comStats span{background:var(--bg);border:1px solid var(--bd);border-radius:99px;padding:2px 10px}
   .selrow{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted,#666);margin-bottom:6px}
   .selrow input{width:auto;margin:0}
+
+/* ===== askConfirm modal ===== */
+#acBack{position:fixed;inset:0;z-index:99999;background:rgba(11,20,40,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+#acBox{background:#fff;border-radius:14px;max-width:440px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.35);overflow:hidden;font-family:inherit}
+#acBox .ach{padding:14px 18px;font-weight:800;font-size:16px;background:#eef3fb;color:#0b3a8c}
+#acBox.dng .ach{background:#fdecec;color:#c62828}
+#acBox .acb{padding:14px 18px;font-size:14px;line-height:1.5;color:#14213d;white-space:pre-wrap;word-break:break-word;max-height:50vh;overflow:auto}
+#acBox .acr{padding:0 18px 4px;font-size:13px;color:#5b6b85}
+#acBox .acr input{width:100%;box-sizing:border-box;margin-top:6px;padding:9px 10px;border:2px solid #d7e0f0;border-radius:8px;font-size:15px;font-weight:700;letter-spacing:1px}
+#acBox .acr input:focus{outline:none;border-color:#c62828}
+#acBox .acf{display:flex;gap:10px;justify-content:flex-end;padding:14px 18px 16px}
+#acBox .acf button{padding:10px 16px;border-radius:9px;border:0;font-weight:700;font-size:14px;cursor:pointer}
+#acBox .acc{background:#e6ecf7;color:#14213d}
+#acBox .aco{background:#1457d9;color:#fff}
+#acBox.dng .aco{background:#c62828}
+#acBox .aco:disabled{opacity:.4;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -331,6 +347,46 @@
 </div>
 
 <script>
+/* askConfirm({title,body,danger,requireText,okText,cancelText}) -> Promise<boolean>
+   Cancel default focus; backdrop/Esc = cancel; requireText = user ko wahi text type karna padega */
+function askConfirm(o) {
+  o = o || {};
+  return new Promise(function (resolve) {
+    var old = document.getElementById("acBack"); if (old) old.remove();
+    var back = document.createElement("div"); back.id = "acBack";
+    var box = document.createElement("div"); box.id = "acBox"; if (o.danger) box.className = "dng";
+    box.setAttribute("role", "alertdialog"); box.setAttribute("aria-modal", "true");
+    var h = document.createElement("div"); h.className = "ach"; h.textContent = (o.danger ? "⚠️ " : "") + (o.title || "Pakka?");
+    var b = document.createElement("div"); b.className = "acb"; b.textContent = o.body || "";
+    box.appendChild(h); box.appendChild(b);
+    var inp = null;
+    if (o.requireText) {
+      var r = document.createElement("div"); r.className = "acr";
+      r.appendChild(document.createTextNode("Aage badhne ke liye "));
+      var st = document.createElement("b"); st.textContent = o.requireText; r.appendChild(st);
+      r.appendChild(document.createTextNode(" type karein:"));
+      inp = document.createElement("input"); inp.type = "text"; inp.autocomplete = "off"; inp.autocapitalize = "characters"; inp.spellcheck = false;
+      r.appendChild(inp); box.appendChild(r);
+    }
+    var f = document.createElement("div"); f.className = "acf";
+    var c = document.createElement("button"); c.type = "button"; c.className = "acc"; c.textContent = o.cancelText || "Cancel";
+    var k = document.createElement("button"); k.type = "button"; k.className = "aco"; k.textContent = o.okText || (o.danger ? "हाँ, Delete करो" : "हाँ, करो");
+    if (inp) k.disabled = true;
+    f.appendChild(c); f.appendChild(k); box.appendChild(f); back.appendChild(box); document.body.appendChild(back);
+    var done = false;
+    function fin(v) { if (done) return; done = true; document.removeEventListener("keydown", onKey, true); back.remove(); resolve(v); }
+    function onKey(e) {
+      if (e.key === "Escape") { e.preventDefault(); fin(false); }
+      else if (e.key === "Enter" && e.target === inp && !k.disabled) { e.preventDefault(); fin(true); }
+    }
+    document.addEventListener("keydown", onKey, true);
+    back.addEventListener("click", function (e) { if (e.target === back) fin(false); });
+    c.onclick = function () { fin(false); };
+    k.onclick = function () { if (!k.disabled) fin(true); };
+    if (inp) inp.addEventListener("input", function () { k.disabled = inp.value.trim().toUpperCase() !== String(o.requireText).toUpperCase(); });
+    c.focus();
+  });
+}
 const SB_URL = "https://gpqrkxyypadgvguomfrr.supabase.co";
 const SB_KEY = "sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq"; // publishable key (public hai)
 let BULKMERGE = {};
@@ -415,7 +471,7 @@ async function fetchAllQ() {
 async function loadQuestions() {
   $("list").innerHTML = '<div class="meta">Load ho raha hai...</div>';
   try {
-    ALL = await fetchAllQ();
+    ALL = (await fetchAllQ()).map(q => (q && CHAPTER_ALIAS[q.chapter]) ? { ...q, chapter: CHAPTER_ALIAS[q.chapter] } : q);
     SEL.clear(); render(); fillSubjects(); renderBatches();
   } catch (e) {
     $("list").innerHTML = '<div class="msg">Load error: ' + esc(e.message) + '</div>';
@@ -455,7 +511,10 @@ function render() {
 }
 
 /* App (index.html) me jo subject/chapter hain — DB me sawal na ho tab bhi template, AI prompt aur import me aate hain. Naya chapter app me jodo to yahan bhi jodo. */
-const APP_CHAPTERS = {"राजस्थान का इतिहास": ["राजस्थान के इतिहास के स्रोत", "राजस्थान की प्रमुख प्राचीन सभ्यताएँ एवं पुरास्थल", "राजस्थान का पौराणिक, ऐतिहासिक स्वरूप व जनपद युग", "राजपूतों की उत्पत्ति", "प्रतिहार वंश (गुर्जर प्रतिहार)", "चौहान राजवंश", "मेवाड़ का गुहिल राजवंश", "आमेर का कछवाहा राजवंश", "मारवाड़ का राठौड़ राजवंश", "बीकानेर का राठौड़ राजवंश", "जाट राजवंश", "राजस्थान के अन्य महत्त्वपूर्ण राजवंश", "राजस्थान में मध्यकालीन प्रशासन व सामंती व्यवस्था", "राजस्थान में मराठा हस्तक्षेप एवं उसका प्रभाव", "राजस्थान में अंग्रेजी प्रभुत्व और उसके प्रभाव", "राजस्थान में 1857 की क्रांति", "1857 की क्रांति के बाद सुधारों और राजनीतिक चेतना का काल", "राजस्थान के जनजाति एवं किसान आन्दोलन", "राजस्थान में सामाजिक संगठन", "राजस्थान में राजनीतिक संस्थाएँ एवं समाचार-पत्र", "राजस्थान में प्रजामण्डल व स्वतंत्रता आंदोलन", "राजस्थान का एकीकरण", "राजस्थान के प्रमुख ऐतिहासिक व्यक्तित्व एवं स्वतंत्रता सेनानी", "राजस्थान की इतिहास प्रसिद्ध महिलाएँ"], "राजस्थान का भूगोल": ["राजस्थान: सामान्य परिचय", "राजस्थान का भौतिक विभाजन", "राजस्थान: प्राचीन नाम व भौगोलिक उपनाम", "राजस्थान में जल संरक्षण एवं जल प्रबंधन", "राजस्थान की जलवायु", "राजस्थान में मिट्टी, अपरदन व मरुस्थलीकरण", "राजस्थान में सूखा, अकाल, आपदा व आपदा प्रबंधन", "राजस्थान की वन सम्पदा एवं पर्यावरण", "जैव विविधता, वन्य जीव एवं अभयारण्य", "राजस्थान में पशुपालन", "राजस्थान में कृषि एवं प्रमुख फसलें", "राजस्थान में अपवाह तंत्र व नदियाँ", "राजस्थान की झीलें व बावड़ियाँ", "प्रमुख बाँध, सिंचाई परियोजनाएँ व जल संसाधन योजनाएँ", "राजस्थान की नहरें", "राजस्थान के उद्योग", "राजस्थान के खनिज संसाधन", "राजस्थान में ऊर्जा संसाधन", "राजस्थान में पर्यटन", "राजस्थान में परिवहन के साधन", "राजस्थान की जनगणना-2011", "क्षेत्रीय विकास कार्यक्रम", "राजस्थान के प्रमुख अनुसंधान केंद्र", "राजस्थान में सहकारिता", "राजस्थान में जनजातियाँ"]};
+const CHAPTER_ALIAS={"राजस्थान की नहरें":"प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ","प्रमुख बाँध, सिंचाई परियोजनाएँ व जल संसाधन योजनाएँ":"प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ","क्षेत्रीय विकास कार्यक्रम":"क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ","राजस्थान में जनजातियाँ":"क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ","राजस्थान में सहकारिता":"सहकारिता एवं प्रमुख अनुसंधान केंद्र","राजस्थान के प्रमुख अनुसंधान केंद्र":"सहकारिता एवं प्रमुख अनुसंधान केंद्र"};
+const chAlias=c=>CHAPTER_ALIAS[c]||c;
+/* Part 1: DB me purane chapter naam rahe to bhi yahan naye naam me dikhenge (list/dashboard/template). */
+const APP_CHAPTERS = {"राजस्थान का इतिहास": ["राजस्थान के इतिहास के स्रोत", "राजस्थान की प्रमुख प्राचीन सभ्यताएँ एवं पुरास्थल", "राजस्थान का पौराणिक, ऐतिहासिक स्वरूप व जनपद युग", "राजपूतों की उत्पत्ति", "प्रतिहार वंश (गुर्जर प्रतिहार)", "चौहान राजवंश", "मेवाड़ का गुहिल राजवंश", "आमेर का कछवाहा राजवंश", "मारवाड़ का राठौड़ राजवंश", "बीकानेर का राठौड़ राजवंश", "जाट राजवंश", "राजस्थान के अन्य महत्त्वपूर्ण राजवंश", "राजस्थान में मध्यकालीन प्रशासन व सामंती व्यवस्था", "राजस्थान में मराठा हस्तक्षेप एवं उसका प्रभाव", "राजस्थान में अंग्रेजी प्रभुत्व और उसके प्रभाव", "राजस्थान में 1857 की क्रांति", "1857 की क्रांति के बाद सुधारों और राजनीतिक चेतना का काल", "राजस्थान के जनजाति एवं किसान आन्दोलन", "राजस्थान में सामाजिक संगठन", "राजस्थान में राजनीतिक संस्थाएँ एवं समाचार-पत्र", "राजस्थान में प्रजामण्डल व स्वतंत्रता आंदोलन", "राजस्थान का एकीकरण", "राजस्थान के प्रमुख ऐतिहासिक व्यक्तित्व एवं स्वतंत्रता सेनानी", "राजस्थान की इतिहास प्रसिद्ध महिलाएँ"], "राजस्थान का भूगोल": ["राजस्थान: सामान्य परिचय", "राजस्थान का भौतिक विभाजन", "राजस्थान: प्राचीन नाम व भौगोलिक उपनाम", "राजस्थान में जल संरक्षण एवं जल प्रबंधन", "राजस्थान की जलवायु", "राजस्थान में मिट्टी, अपरदन व मरुस्थलीकरण", "राजस्थान में सूखा, अकाल, आपदा व आपदा प्रबंधन", "राजस्थान की वन सम्पदा एवं पर्यावरण", "जैव विविधता, वन्य जीव एवं अभयारण्य", "राजस्थान में पशुपालन", "राजस्थान में कृषि एवं प्रमुख फसलें", "राजस्थान में अपवाह तंत्र व नदियाँ", "राजस्थान की झीलें व बावड़ियाँ", "प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ", "राजस्थान के उद्योग", "राजस्थान के खनिज संसाधन", "राजस्थान में ऊर्जा संसाधन", "राजस्थान में पर्यटन", "राजस्थान में परिवहन के साधन", "राजस्थान की जनगणना-2011", "क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ", "सहकारिता एवं प्रमुख अनुसंधान केंद्र"]};
 function fillSubjects() {
   const m = {};
   ALL.forEach(q => { (m[q.subject] = m[q.subject] || new Set()).add(q.chapter); });
@@ -596,7 +655,7 @@ function bulkCheck() {
   const amap = { A:0, B:1, C:2, D:3, "1":0, "2":1, "3":2, "4":3 };
   rows.slice(1).forEach((r, k) => {
     const g = n => ix(n) >= 0 ? (r[ix(n)] || "").trim() : "";
-    const e = [], subject = g("subject"), chapter = g("chapter"), q0 = g("question"), fx = fixQ(q0), question = fx.q;
+    const e = [], subject = g("subject"), chapter = chAlias(g("chapter")), q0 = g("question"), fx = fixQ(q0), question = fx.q;
     const options = [1,2,3,4].map(i => g("option" + i));
     const a = amap[g("answer").toUpperCase()];
     if (EX_Q().has(q0)) e.push("ye template ka EXAMPLE sawal hai — hata do, upload nahi hoga");
@@ -638,7 +697,7 @@ async function bulkGo() {
   });
   const LIST = BULK.filter(q => !skip.has(q)), nm = Object.keys(BULKMERGE).length;
   if (!LIST.length && !nm) return;
-  if (!confirm(LIST.length + " naye sawal import karein?" + (nm ? "\n" + nm + " purane sawalon me exams jode jayenge." : "") + (repl.length ? "\n" + repl.length + " purane sawal hataye jayenge (pehle backup download hogi)." : ""))) return;
+  if (!await askConfirm({ title: repl.length ? "Import + " + repl.length + " purane sawal hatayein?" : "Import karein?", body: LIST.length + " naye sawal import karein?" + (nm ? "\n" + nm + " purane sawalon me exams jode jayenge." : "") + (repl.length ? "\n" + repl.length + " purane sawal hataye jayenge (pehle backup download hogi)." : ""), danger: !!repl.length, okText: repl.length ? "हाँ, Import + Delete" : "हाँ, Import करो" })) return;
   const msg = $("bkMsg"); $("bkGo").disabled = true; $("bkCheck").disabled = true;
   const active = $("bkAct").checked; let done = 0;
   const _d = new Date(), _p = n => String(n).padStart(2, "0");
@@ -1270,7 +1329,7 @@ async function mClick(e) {
       const r = await api("/rest/v1/materials?id=eq." + m.id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ video_id: null }) });
       if (!r || !r.length) throw new Error("Update nahi hua (admin permission check karo).");
     } else if (b.dataset.mact === "del") {
-      if (!confirm('"' + m.title + '" hamesha ke liye hata dein?')) return;
+      if (!await askConfirm({ title: "Material delete karein?", body: '"' + m.title + '"\n\nYe hamesha ke liye hat jayega (file bhi).', danger: true })) return;
       if (m.file_path) await api("/storage/v1/object/study-material/" + m.file_path, { method: "DELETE" });
       const r = await api("/rest/v1/materials?id=eq." + m.id, { method: "DELETE", headers: { Prefer: "return=representation" } });
       if (!r || !r.length) throw new Error("Delete nahi hua.");
@@ -1500,7 +1559,7 @@ $("dvList").addEventListener("click", async e => {
     else if (act === "viewrem") { DV_OPEN[doc.id] = !DV_OPEN[doc.id]; renderDv(); return; }
     else if (act === "remedit") { const r = (DVR[doc.id] || []).find(x => x.id === b.dataset.id); if (r) dvOpenModal("edit", doc, r); return; }
     else if (act === "remdel") {
-      if (!confirm("Ye remark hamesha ke liye hata dein?")) return;
+      if (!await askConfirm({ title: "Remark delete karein?", body: "Ye remark hamesha ke liye hat jayega.", danger: true })) return;
       const r = await api(DV_R + "?id=eq." + b.dataset.id, { method: "DELETE", headers: { Prefer: "return=representation" } });
       if (!r || !r.length) throw new Error("Delete nahi hua.");
     } else if (act === "up" || act === "down") { await dvReorder(doc.id, act === "up" ? -1 : 1); }
@@ -1513,7 +1572,7 @@ $("dvList").addEventListener("click", async e => {
         const f = inp.files[0]; let np = null;
         try {
           dvCheck(f);
-          if (!confirm('"' + doc.title + '" ki PDF is nayi file se badal dein? Remarks safe rahenge.')) return;
+          if (!await askConfirm({ title: "PDF badlein?", body: '"' + doc.title + '" ki PDF is nayi file se badal jayegi. Remarks safe rahenge.' })) return;
           np = dvNewPath(); b.disabled = true; b.textContent = "Uploading...";
           await dvPut(np, f);
           const r = await api(DV_T + "?id=eq." + doc.id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ file_path: np, file_name: dvSafeName(f.name), updated_at: new Date().toISOString() }) });
@@ -1525,7 +1584,7 @@ $("dvList").addEventListener("click", async e => {
       inp.click(); return;
     } else if (act === "del") {
       const n = (DVR[doc.id] || []).length;
-      if (!confirm('"' + doc.title + '" hamesha ke liye hata dein?\nIske ' + n + ' remark(s) bhi hat jayenge. Dusre PDF par asar nahi padega.')) return;
+      if (!await askConfirm({ title: "PDF delete karein?", body: '"' + doc.title + '" hamesha ke liye hat jayegi.\nIske ' + n + ' remark(s) bhi hat jayenge. Dusre PDF par asar nahi padega.', danger: true })) return;
       const r = await api(DV_T + "?id=eq." + doc.id, { method: "DELETE", headers: { Prefer: "return=representation" } });
       if (!r || !r.length) throw new Error("Delete nahi hua.");
       await dvDelFile(doc.file_path);
@@ -1688,7 +1747,7 @@ async function testToggle(kind, id, on) {
 }
 async function testDelete(kind, id) {
   const t = (TP[kind].tests || []).find(x => String(x.id) === String(id));
-  if (!confirm('"' + (t ? t.title : "ye test") + '" delete karein? Ye wapas nahi aayega.')) return;
+  if (!await askConfirm({ title: "Test delete karein?", body: '"' + (t ? t.title : "ye test") + '"\n\nYe wapas nahi aayega.', danger: true })) return;
   try {
     const r = await api("/rest/v1/tests?id=eq." + encodeURIComponent(id), { method: "DELETE", headers: { Prefer: "return=representation" } });
     if (!r || !r.length) throw new Error("Koi row delete nahi hui (admin delete permission check karo).");
@@ -1728,7 +1787,7 @@ function testCheck(kind) {
     seen.add(fpT); if (fx.n.length) fixc++; if (!diff) unl2++;
     { const ch = g("chapter"), sb = isSub ? sel : g("subject"), SCm = window.SC || {};
       if (ch && Object.keys(SCm).length && !(sb && SCm[sb] ? SCm[sb].has(ch) : Object.values(SCm).some(x => x.has(ch)))) warns.push("Line " + (k + 2) + ": chapter \"" + ch + "\" DB list me nahi mila"); }
-    out.push({ subject: isSub ? sel : (g("subject") || ""), chapter: g("chapter"), question, options, answer: a, explanation: g("explanation"),
+    out.push({ subject: isSub ? sel : (g("subject") || ""), chapter: chAlias(g("chapter")), question, options, answer: a, explanation: g("explanation"),
       exams: g("exams").split(/[,;|]/).map(s => s.trim()).filter(Boolean), difficulty: diff || null, q_type: type });
   });
   S.rows = out;
@@ -1812,8 +1871,8 @@ async function loadVer() {
 }
 async function toggleVer(i) {
   const r = CHROWS[i]; if (!r) return; const k = r.s + "||" + r.c, on = VER.has(k);
-  if (on && !confirm("Is chapter se 'Verified by Jakhar Academy' logo hatana hai?\n\n" + r.c)) return;
-  if (!on && !confirm("Is chapter ke SAB sawalon par 'Verified by Jakhar Academy' logo lagana hai?\n\n" + r.c + "\n\n(Pehle sab answer check kar lo.)")) return;
+  if (on && !await askConfirm({ title: "Verified logo hatayein?", body: "Is chapter se 'Verified by Jakhar Academy' logo hatana hai?\n\n" + r.c, danger: true, okText: "हाँ, हटाओ" })) return;
+  if (!on && !await askConfirm({ title: "Verified logo lagayein?", body: "Is chapter ke SAB sawalon par 'Verified by Jakhar Academy' logo lagana hai?\n\n" + r.c + "\n\n(Pehle sab answer check kar lo.)", okText: "हाँ, लगाओ" })) return;
   try {
     if (on) await api("/rest/v1/verified_chapters?subject=eq." + encodeURIComponent(r.s) + "&chapter=eq." + encodeURIComponent(r.c), { method: "DELETE" });
     else await api("/rest/v1/verified_chapters", { method: "POST", headers: { Prefer: "resolution=ignore-duplicates,return=minimal" }, body: JSON.stringify({ subject: r.s, chapter: r.c }) });
@@ -1909,7 +1968,7 @@ document.addEventListener("click", async e => {
   const b = e.target.closest("[data-dp]"); if (!b) return;
   const keep = ALL.find(q => q.id === (b.dataset.dp === "mergeB" ? b.dataset.a : b.dataset.b)), drop = ALL.find(q => q.id === (b.dataset.dp === "mergeB" ? b.dataset.b : b.dataset.a));
   if (!keep || !drop) return;
-  if (!confirm("Ek sawal hamesha ke liye hatega (backup download hogi) aur uske exams dusre me jud jayenge. Pakka?")) return;
+  if (!await askConfirm({ title: "Duplicate sawal hatayein?", body: "Ek sawal hamesha ke liye hatega (backup download hogi) aur uske exams dusre me jud jayenge.", danger: true })) return;
   try {
     dlJson("merged_dup_" + Date.now() + ".json", [drop]);
     const ex = [...new Set([...(keep.exams || []), ...(drop.exams || [])])];
@@ -1957,7 +2016,7 @@ document.addEventListener("click", async e => {
       if (!confirm(ids.length + " sawal " + (a === "hide" ? "Hide" : "Show") + " karein?")) return;
       for (let i = 0; i < ids.length; i += 100) await api("/rest/v1/questions?" + inList(ids.slice(i, i + 100)), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ is_active: a === "show", updated_at: new Date().toISOString() }) });
     } else if (a === "del") {
-      if (!confirm(ids.length + " sawal hamesha ke liye DELETE karein?\n\nDhyan: students ka in sawalon ka progress bhi bekaar ho jayega. Agar sirf chhupana hai to Hide use karo.\n\nDelete se pehle in sawalon ki JSON backup download hogi.")) return;
+      if (!await askConfirm({ title: ids.length + " sawal DELETE karein?", body: "Ye sawal hamesha ke liye hat jayenge.\n\nDhyan: students ka in sawalon ka progress bhi bekaar ho jayega. Agar sirf chhupana hai to Hide use karo.\n\nDelete se pehle in sawalon ki JSON backup download hogi.", danger: true, requireText: "DELETE" })) return;
       dlJson("deleted_questions_" + Date.now() + ".json", ALL.filter(q => SEL.has(q.id)));
       const n = await bulkDeleteIds(ids);
       if (n !== ids.length) alert("Dhyan: " + ids.length + " me se " + n + " hi delete hue (admin permission check karo).");
@@ -1990,7 +2049,7 @@ document.addEventListener("click", async e => {
   if (!qs.length) return;
   try {
     if (act === "del") {
-      if (!confirm("Is batch ke " + qs.length + " sawal hamesha ke liye DELETE karein?\n\nPehle in sawalon ki JSON backup download hogi.")) return;
+      if (!await askConfirm({ title: "Batch ke " + qs.length + " sawal DELETE karein?", body: "Is batch ke " + qs.length + " sawal hamesha ke liye hat jayenge.\n\nPehle in sawalon ki JSON backup download hogi.", danger: true, requireText: "DELETE" })) return;
       dlJson("deleted_batch_" + id + ".json", qs);
       const r = await api("/rest/v1/questions?import_batch=eq." + encodeURIComponent(id), { method: "DELETE", headers: { Prefer: "return=representation" } });
       if (!r || r.length !== qs.length) alert("Dhyan: " + qs.length + " me se " + (r ? r.length : 0) + " hi delete hue.");
@@ -2005,7 +2064,7 @@ document.addEventListener("click", async e => {
 async function deleteQ(id, btn) {
   const q = ALL.find(x => x.id === id); if (!q) return;
   const short = q.question.length > 90 ? q.question.slice(0, 90) + "..." : q.question;
-  if (!confirm('Ye sawal hamesha ke liye hata dein?\n\n"' + short + '"\n\nDhyan: students ka is sawal ka done/saved/wrong progress bhi bekaar ho jayega.\nAgar sirf chhupana hai to "Hide karo" use karo.\n\nPehle Backup le liya hai?')) return;
+  if (!await askConfirm({ title: "Sawal delete karein?", body: '"' + short + '"\n\nYe sawal hamesha ke liye hat jayega.\nDhyan: students ka is sawal ka done/saved/wrong progress bhi bekaar ho jayega.\nAgar sirf chhupana hai to "Hide karo" use karo.', danger: true })) return;
   btn.disabled = true;
   try {
     const r = await api("/rest/v1/questions?id=eq." + id, { method: "DELETE", headers: { Prefer: "return=representation" } });
@@ -2085,7 +2144,7 @@ $("ntList").addEventListener("click", async e => {
       const r = await api("/rest/v1/app_notifications?id=eq." + n.id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ is_active: !n.is_active, updated_at: new Date().toISOString() }) });
       if (!r || !r.length) throw new Error("Update nahi hua.");
     } else if (b.dataset.nt === "del") {
-      if (!confirm('"' + n.title + '" hamesha ke liye hata dein?')) return;
+      if (!await askConfirm({ title: "Notification delete karein?", body: '"' + n.title + '"\n\nYe hamesha ke liye hat jayegi.', danger: true })) return;
       const r = await api("/rest/v1/app_notifications?id=eq." + n.id, { method: "DELETE", headers: { Prefer: "return=representation" } });
       if (!r || !r.length) throw new Error("Delete nahi hua.");
       if (NT_EDIT === n.id) ntReset();
@@ -2230,7 +2289,7 @@ $("rmBox").addEventListener("click", async e => {
   const r = RM.find(x => x.id === b.dataset.id); if (!r) return;
   if (b.dataset.rm === "edit") { RM_MODAL = r.id; $("rmMText").value = r.remark_text; $("rmMMsg").textContent = ""; $("rmModal").classList.remove("hide"); $("rmMText").focus(); }
   else if (b.dataset.rm === "del") {
-    if (!confirm("Ye remark hamesha ke liye hata dein?")) return;
+    if (!await askConfirm({ title: "Remark delete karein?", body: "Ye remark hamesha ke liye hat jayega.", danger: true })) return;
     try { const d = await api("/rest/v1/admin_remarks?id=eq." + r.id, { method: "DELETE", headers: { Prefer: "return=representation" } }); if (!d || !d.length) throw new Error("Delete nahi hua."); await rmReload(); }
     catch (er) { alert("Fail: " + er.message); }
   }
@@ -2360,15 +2419,15 @@ async function comClick(e) {
   const a = b.dataset.a, t = b.dataset.t, id = b.dataset.id, u = b.dataset.u;
   try {
     if (a === "hide" || a === "show") { let why = null; if (a === "hide" && t !== "group") why = prompt("Chhupane ka karan (optional):", "") ; if (why === null && a === "hide" && t !== "group") return; await rpcA("admin_hide", { p_type: t, p_id: id, p_hidden: a === "hide", p_reason: why || null }); }
-    else if (a === "del") { if (!confirm("Hamesha ke liye DELETE karein? Yeh wapas nahi aayega.")) return; if (t === "group" && !confirm("Group ke saare post/chat bhi hat jaayenge. Pakka delete?")) return; await rpcA("admin_delete", { p_type: t, p_id: id }); }
+    else if (a === "del") { if (!await askConfirm({ title: "DELETE karein?", body: (t === "group" ? "Group ke saare post/chat bhi hat jaayenge.\n\n" : "") + "Hamesha ke liye DELETE hoga. Yeh wapas nahi aayega.", danger: true, requireText: t === "group" ? "DELETE" : null })) return; await rpcA("admin_delete", { p_type: t, p_id: id }); }
     else if (a === "resolve" || a === "dismiss" || a === "done") await rpcA("admin_resolve_target", { p_type: t, p_target: id, p_status: a === "dismiss" ? "dismissed" : "resolved" });
     else if (a === "ban") { const why = prompt("Ban ka karan (user ko dikhega, optional):", ""); if (why === null) return; const all = confirm("Is user ki saari post/messages bhi chhupa dein?\nOK = haan chhupao, Cancel = sirf ban"); await rpcA("admin_sanction", { p_user: u, p_action: "ban", p_reason: why || null, p_hide_all: all }); }
     else if (a === "unban" || a === "unmute") await rpcA("admin_sanction", { p_user: u, p_action: a });
     else if (a === "mute") { const h = prompt("Kitne ghante ke liye mute? (24 = 1 din, 168 = 1 hafta)", "24"); if (h === null) return; await rpcA("admin_sanction", { p_user: u, p_action: "mute", p_hours: Math.max(1, parseInt(h, 10) || 24) }); }
-    else if (a === "tick" || a === "untick") { if (a === "untick" && !confirm("Blue tick hata dein?")) return; await rpcA("admin_set_verified", { p_user: u, p_verified: a === "tick" }); }
+    else if (a === "tick" || a === "untick") { if (a === "untick" && !await askConfirm({ title: "Blue tick hatayein?", body: "Is user ka blue tick hata diya jayega.", danger: true, okText: "हाँ, हटाओ" })) return; await rpcA("admin_set_verified", { p_user: u, p_verified: a === "tick" }); }
     else if (a === "wset") await rpcA("admin_word_set", { p_id: id, p_action: b.dataset.v });
-    else if (a === "wdel") { if (!confirm("Yeh shabd list se hataein?")) return; await rpcA("admin_word_delete", { p_id: id }); }
-    else if (a === "vok") { if (!confirm("UTR aur amount check kar liya? Approve karte hi user ko blue tick mil jayega.")) return; await rpcA("admin_review_verification", { p_id: id, p_approve: true, p_note: null }); }
+    else if (a === "wdel") { if (!await askConfirm({ title: "Shabd hatayein?", body: "Yeh shabd list se hat jayega.", danger: true, okText: "हाँ, हटाओ" })) return; await rpcA("admin_word_delete", { p_id: id }); }
+    else if (a === "vok") { if (!await askConfirm({ title: "Approve karein?", body: "UTR aur amount check kar liya? Approve karte hi user ko blue tick mil jayega.", okText: "हाँ, Approve" })) return; await rpcA("admin_review_verification", { p_id: id, p_approve: true, p_note: null }); }
     else if (a === "vno") { const why = prompt("Reject ka karan (user ko dikhega):", ""); if (why === null) return; await rpcA("admin_review_verification", { p_id: id, p_approve: false, p_note: why || null }); }
     else return;
     comShow();
@@ -2398,7 +2457,7 @@ async function comClick(e) {
   document.addEventListener("click",async function(e){
     if(e.target.id==="dgRef"){dgLoad();return}
     var b=e.target.closest("[data-dg]");if(!b||b.dataset.dg!=="del")return;
-    if(!confirm("Ye report delete karein?"))return;
+    if(!await askConfirm({title:"Report delete karein?",body:"Ye report hamesha ke liye hat jayegi.",danger:true}))return;
     try{var d=await api("/rest/v1/diag_reports?id=eq."+encodeURIComponent(b.dataset.id),{method:"DELETE",headers:{Prefer:"return=representation"}});
       if(!d||!d.length)throw new Error("delete nahi hua (admin policy?)");
       DG=DG.filter(function(x){return String(x.id)!==b.dataset.id});dgRender()}

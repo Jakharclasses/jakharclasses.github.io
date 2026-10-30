@@ -273,13 +273,13 @@ a.row{text-decoration:none;color:inherit}
 .tiles2 button{position:relative}
 .nbadge{display:inline-block;background:#ef4444;color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.4px;padding:2px 8px;border-radius:10px;line-height:1.35}
 .tiles2 .nbadge{font-size:10.5px;position:absolute;top:8px;right:8px;box-shadow:0 1px 5px rgba(0,0,0,.3);animation:nbp 1.8s ease-in-out infinite}
-@keyframes nbp{50%{transform:scale(1.1)}}
+@keyframes nbp{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 .nbadge.inl{margin-left:6px;vertical-align:middle}
 .scard .nbadge{position:absolute;top:10px;left:10px}
 /* Part 2: NEW badge — hilta-dulta (wiggle) + ring taaki card ke color par bhi alag dikhe. Badge ka rang JS (nbStyle) card ke rang se match hone par badal deta hai */
-.nbadge.wg{animation:nbw 2.2s ease-in-out infinite;transform-origin:50% 50%;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 2px 7px rgba(0,0,0,.35)}
+.nbadge.wg{animation:nbw 1.6s ease-in-out infinite;transform-origin:50% 50%;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 2px 7px rgba(0,0,0,.35)}
 .dark .nbadge.wg{box-shadow:0 0 0 2px rgba(15,23,42,.9),0 2px 7px rgba(0,0,0,.5)}
-@keyframes nbw{0%,55%,100%{transform:rotate(0) scale(1)}12%{transform:rotate(-9deg) scale(1.1)}24%{transform:rotate(9deg) scale(1.1)}36%{transform:rotate(-6deg) scale(1.06)}46%{transform:rotate(6deg) scale(1.04)}}
+@keyframes nbw{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 @media (prefers-reduced-motion:reduce){.nbadge.wg{animation:none}}
 /* Part 3: Privacy policy lists + copyright footer */
 .pol ul{margin:6px 0 0;padding-left:20px}.pol li{margin:5px 0;font-size:14px;line-height:1.55}.pol p+p{margin-top:8px}.pol p,.pol li{overflow-wrap:anywhere}
@@ -315,7 +315,8 @@ p.q{line-height:var(--q-lh,1.45);overflow-wrap:anywhere;margin:6px 0 14px}
 .pfu input{border:0;outline:0;flex:1;padding:11px 8px;background:transparent;color:var(--ink);font:inherit;min-width:0}
 .pfm{font-size:12.5px;color:var(--mute);margin-top:5px;min-height:16px;overflow-wrap:anywhere}.pfm.ok{color:var(--ok)}.pfm.bad{color:var(--bad)}
 .dark .pfchip{background:#26324e;color:#cfe0ff}.dark .pfi,.dark .pfe select,.dark .pfe textarea,.dark .pfu{background:#0f1726;color:#e6ebf5;border-color:#2b3956}.dark .pfu input{color:#e6ebf5}
-.nw{flex:none;background:#ef4444;color:#fff;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px}
+.nw{flex:none;background:#ef4444;color:#fff;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px;animation:nbw 1.6s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.nw,.tiles2 .nbadge{animation:none}}
 .bell{position:relative}.bdot{position:absolute;top:7px;right:8px;width:11px;height:11px;border-radius:50%;background:#ef4444;border:2px solid #fff}
 .bg.dn{background:#16a34a}
 .exc{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 2px}.exc .exl{margin:0;font-size:11px;padding:1px 8px}.exl.more{background:#64748b;cursor:pointer}
@@ -891,12 +892,16 @@ const QUESTIONS_BUILTIN = [
   {"subject": "राजस्थान का भूगोल", "chapter": "राजस्थान के खनिज संसाधन", "question": "राजस्थान का डेगाना – भाकरी क्षेत्र किस खनिज के लिए प्रसिद्ध है?", "exams": ["RSMSSB VDO Mains 2022"], "options": ["चांदी", "बेरिलियम", "टंगस्टन", "तांबा"], "answer": 2, "explanation": "डेगाना (नागौर) क्षेत्र टंगस्टन के लिए प्रसिद्ध है, इसलिए डेगाना – भाकरी क्षेत्र का सही उत्तर टंगस्टन है।<br>• डेगाना की रेवत पहाड़ी पर 1914 में अंग्रेजों ने टंगस्टन की खोज की थी।<br>• परीक्षा-दृष्टि: डेगाना = टंगस्टन।"},
   /* नया प्रश्न जोड़ने से पहले ऊपर वाले आखिरी } के बाद कॉमा (,) लगाएँ */
 ];
+/* ---- Part 1: purane chapter naam -> naye (merge). Purane DB/cache/history wale sawal isi se naye chapter me dikhte hain ---- */
+const CHAPTER_ALIAS={"राजस्थान की नहरें":"प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ","प्रमुख बाँध, सिंचाई परियोजनाएँ व जल संसाधन योजनाएँ":"प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ","क्षेत्रीय विकास कार्यक्रम":"क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ","राजस्थान में जनजातियाँ":"क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ","राजस्थान में सहकारिता":"सहकारिता एवं प्रमुख अनुसंधान केंद्र","राजस्थान के प्रमुख अनुसंधान केंद्र":"सहकारिता एवं प्रमुख अनुसंधान केंद्र"};
+const chAlias=c=>CHAPTER_ALIAS[c]||c;
+QUESTIONS_BUILTIN.forEach(q=>{q.chapter=chAlias(q.chapter)});
 /* ---- Online questions (Supabase cache) : cache valid ho to wahi, warna upar wale built-in questions ---- */
 const QUESTIONS = (function(){
   try{
     const o=JSON.parse(localStorage.getItem("jkx_qcache_v1")||"null");
     if(o&&Array.isArray(o.qs)&&o.qs.length>0&&o.qs.every(r=>r&&typeof r.question==="string"&&typeof r.subject==="string"&&typeof r.chapter==="string"&&Array.isArray(r.options)&&r.options.length===4&&Number.isInteger(r.answer)&&r.answer>=0&&r.answer<4&&Array.isArray(r.exams))){
-      return o.qs.map(r=>({id:r.id,subject:r.subject,chapter:r.chapter,question:r.question,exams:r.exams,options:r.options,answer:r.answer,explanation:r.explanation||"",created_at:r.created_at}));
+      return o.qs.map(r=>({id:r.id,subject:r.subject,chapter:chAlias(r.chapter),question:r.question,exams:r.exams,options:r.options,answer:r.answer,explanation:r.explanation||"",created_at:r.created_at}));
     }
   }catch(e){}
   return QUESTIONS_BUILTIN;
@@ -922,7 +927,7 @@ const SUBJECTS=[
  {name:"राजस्थान का इतिहास",icon:"🏛️",color:"#e8a33d",chapters:[
   "राजस्थान के इतिहास के स्रोत","राजस्थान की प्रमुख प्राचीन सभ्यताएँ एवं पुरास्थल","राजस्थान का पौराणिक, ऐतिहासिक स्वरूप व जनपद युग","राजपूतों की उत्पत्ति","प्रतिहार वंश (गुर्जर प्रतिहार)","चौहान राजवंश","मेवाड़ का गुहिल राजवंश","आमेर का कछवाहा राजवंश","मारवाड़ का राठौड़ राजवंश","बीकानेर का राठौड़ राजवंश","जाट राजवंश","राजस्थान के अन्य महत्त्वपूर्ण राजवंश","राजस्थान में मध्यकालीन प्रशासन व सामंती व्यवस्था","राजस्थान में मराठा हस्तक्षेप एवं उसका प्रभाव","राजस्थान में अंग्रेजी प्रभुत्व और उसके प्रभाव","राजस्थान में 1857 की क्रांति","1857 की क्रांति के बाद सुधारों और राजनीतिक चेतना का काल","राजस्थान के जनजाति एवं किसान आन्दोलन","राजस्थान में सामाजिक संगठन","राजस्थान में राजनीतिक संस्थाएँ एवं समाचार-पत्र","राजस्थान में प्रजामण्डल व स्वतंत्रता आंदोलन","राजस्थान का एकीकरण","राजस्थान के प्रमुख ऐतिहासिक व्यक्तित्व एवं स्वतंत्रता सेनानी","राजस्थान की इतिहास प्रसिद्ध महिलाएँ"]},
  {name:"राजस्थान का भूगोल",icon:"🗺️",color:"#16a34a",chapters:[
-  "राजस्थान: सामान्य परिचय","राजस्थान का भौतिक विभाजन","राजस्थान: प्राचीन नाम व भौगोलिक उपनाम","राजस्थान में जल संरक्षण एवं जल प्रबंधन","राजस्थान की जलवायु","राजस्थान में मिट्टी, अपरदन व मरुस्थलीकरण","राजस्थान में सूखा, अकाल, आपदा व आपदा प्रबंधन","राजस्थान की वन सम्पदा एवं पर्यावरण","जैव विविधता, वन्य जीव एवं अभयारण्य","राजस्थान में पशुपालन","राजस्थान में कृषि एवं प्रमुख फसलें","राजस्थान में अपवाह तंत्र व नदियाँ","राजस्थान की झीलें व बावड़ियाँ","प्रमुख बाँध, सिंचाई परियोजनाएँ व जल संसाधन योजनाएँ","राजस्थान की नहरें","राजस्थान के उद्योग","राजस्थान के खनिज संसाधन","राजस्थान में ऊर्जा संसाधन","राजस्थान में पर्यटन","राजस्थान में परिवहन के साधन","राजस्थान की जनगणना-2011","क्षेत्रीय विकास कार्यक्रम","राजस्थान के प्रमुख अनुसंधान केंद्र","राजस्थान में सहकारिता","राजस्थान में जनजातियाँ"]},
+  "राजस्थान: सामान्य परिचय","राजस्थान का भौतिक विभाजन","राजस्थान: प्राचीन नाम व भौगोलिक उपनाम","राजस्थान में जल संरक्षण एवं जल प्रबंधन","राजस्थान की जलवायु","राजस्थान में मिट्टी, अपरदन व मरुस्थलीकरण","राजस्थान में सूखा, अकाल, आपदा व आपदा प्रबंधन","राजस्थान की वन सम्पदा एवं पर्यावरण","जैव विविधता, वन्य जीव एवं अभयारण्य","राजस्थान में पशुपालन","राजस्थान में कृषि एवं प्रमुख फसलें","राजस्थान में अपवाह तंत्र व नदियाँ","राजस्थान की झीलें व बावड़ियाँ","प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ","राजस्थान के उद्योग","राजस्थान के खनिज संसाधन","राजस्थान में ऊर्जा संसाधन","राजस्थान में पर्यटन","राजस्थान में परिवहन के साधन","राजस्थान की जनगणना-2011","क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ","सहकारिता एवं प्रमुख अनुसंधान केंद्र"]},
  {name:"राजस्थान की कला एवं संस्कृति",icon:"🎭",color:"#be185d",chapters:[]},
  {name:"राजस्थान की राजव्यवस्था एवं प्रशासन",icon:"⚖️",color:"#0f766e",chapters:[]},
  {name:"राजस्थान का बजट एवं आर्थिक समीक्षा",icon:"💰",color:"#b45309",chapters:[]},
@@ -1165,7 +1170,7 @@ const studySoon=()=>comingSoon("Study Material",()=>goTab("home"),"home","स्
 
 /* ---------- 1. Chapter Wise PYQ Test: विषय → चैप्टर → Test/Practice ---------- */
 let pyqFrom="home";
-const subjGrid=fn=>`<div class="sg">${SUBJECTS.map((S,i)=>`<button class="scard" style="--c:${S.color}" onclick="${fn}(${i})">${fn==="pyqChapters"&&newSub(S.name)?`<span class="nbadge wg" style="${nbStyle(S.color)}">NEW</span>`:""}${S.chapters.length?"":'<span class="soonb">Coming Soon</span>'}<span class="si">${S.icon}</span><span><b>${S.name}</b><small>${S.chapters.length?S.chapters.length+" चैप्टर":"जल्द आ रहा है"}</small></span></button>`).join("")}</div>`;
+const subjGrid=fn=>`<div class="sg">${SUBJECTS.map((S,i)=>`<button class="scard" style="--c:${S.color}" onclick="${fn}(${i})">${(fn==="pyqChapters"||fn==="subChapters")&&newSub(S.name)?`<span class="nbadge wg" style="${nbStyle(S.color)}">NEW</span>`:""}${S.chapters.length?"":'<span class="soonb">Coming Soon</span>'}<span class="si">${S.icon}</span><span><b>${S.name}</b><small>${S.chapters.length?S.chapters.length+" चैप्टर":"जल्द आ रहा है"}</small></span></button>`).join("")}</div>`;
 function pyqSubjects(f){
   clearInterval(tick);if(f==="home"||f==="tests")pyqFrom=f;
   view(hdr(BACK,"","Chapter Wise PYQ Test")+`<main class="pg"><div class="sub">विषय चुनें</div>${subjGrid("pyqChapters")}</main>`,pyqFrom,false,pyqFrom==="tests"?()=>tests():()=>home());
@@ -1198,7 +1203,7 @@ function subChapters(si){
   clearInterval(tick);const S=SUBJECTS[si];
   if(!S.chapters.length)return comingSoon(S.name,subjSubjects,"subj","चैप्टर जल्द जोड़े जाएँगे");
   view(hdr(BACK,"",S.name)+`<main class="pg"><div class="sub">${S.chapters.length} चैप्टर · चैप्टर चुनें</div><div class="list">
-  ${S.chapters.map((c,ci)=>R({c:S.color,i:ci+1,t:c,s:"Detail Notes · Short Notes · Video",on:`subOptions(${si},${ci})`})).join("")}</div></main>`,"subj",false,subjSubjects);
+  ${S.chapters.map((c,ci)=>R({c:S.color,i:ci+1,t:c,s:"Detail Notes · Short Notes · Video",n:newChap(S.name,c)?"NEW":"",nc:S.color,on:`subOptions(${si},${ci})`})).join("")}</div></main>`,"subj",false,subjSubjects);
 }
 function subOptions(si,ci){
   clearInterval(tick);const S=SUBJECTS[si],c=S.chapters[ci],D=CONTENT[S.name+"||"+c]||{};
@@ -1954,7 +1959,7 @@ function trFallback(q){
 }
 let trQ=null;const trCache={};
 const EN_W={"1857 की क्रांति के बाद सुधारों और राजनीतिक चेतना का काल":"Reforms & Political Awareness after the Revolt of 1857","राजस्थान में 1857 की क्रांति":"Revolt of 1857 in Rajasthan","लॉगिन वैकल्पिक है। लॉगिन करने पर ही आपका ईमेल और पासवर्ड लिया जाता है; यह ऐप आपसे नाम, फ़ोन नंबर या लोकेशन नहीं माँगता। आपका प्रोग्रेस (हल किए, सेव/रिव्यू और गलत प्रश्न) और टेस्ट का रिकॉर्ड आपके अपने डिवाइस की लोकल स्टोरेज में रहता है। सिर्फ़ तब, जब आप लॉगिन करके “प्रोग्रेस सर्वर पर सेव करें” दबाते हैं, यह प्रोग्रेस और टेस्ट रिकॉर्ड हमारे सुरक्षित सर्वर पर भेजा जाता है।": "Login is optional. Your email and password are collected only if you log in; this app does not ask for your name, phone number or location. Your progress (solved, saved/reviewed and wrong questions) and test records stay in your own device's local storage. Only when you log in and tap “Save progress to server” are this progress and your test records sent to our secure server.", "सर्वर पर रखा गया आपका डेटा सिर्फ़ आपके अकाउंट को दिखता है (सर्वर: Supabase) और किसी तीसरे पक्ष को बेचा या दिया नहीं जाता।": "Data kept on the server is visible only to your own account (server: Supabase) and is never sold or given to any third party.", "प्रोफ़ाइल में \"सारा डेटा रीसेट करें\" दबाने से, या ऐप/ब्राउज़र का डेटा क्लियर करने से आपका सारा डेटा हट जाता है।": "By pressing \"Reset all data\" in Profile, or by clearing the app/browser data, all your data is removed.", "YouTube, Telegram और Email के लिंक दूसरी ऐप/वेबसाइट खोलते हैं। वहाँ उनकी अपनी प्राइवेसी पॉलिसी लागू होती है।": "The YouTube, Telegram and Email links open another app/website, where their own privacy policy applies.", "भविष्य में लॉगिन या डेटा सिंक जैसे फीचर जुड़ने पर यह पॉलिसी अपडेट की जाएगी।": "This policy will be updated if features such as login or data sync are added in the future.", "सबमिट से पहले आप उत्तर बदल या हटा सकते हैं और प्रश्नों को 🚩 रिव्यू में रख सकते हैं।": "Before submitting you can change or clear answers and put questions in 🚩 Review."};
-const EN={"विषय": "Subjects", "चैप्टर": "Chapter", "परीक्षाएँ": "Exams", "अन्य प्रमुख": "Other major", "टेस्ट": "Test", "सही": "Correct", "गलत": "Wrong", "छोड़े": "Skipped", "छोड़ा": "Skipped", "अंक": "Marks", "अभी": "Just now", "मिनट पहले": "min ago", "घंटे पहले": "hr ago", "दिन पहले": "days ago", "इस टेस्ट का विस्तृत रिज़ल्ट उपलब्ध नहीं है": "Detailed result for this test is not available", "इस टेस्ट के प्रश्न अब उपलब्ध नहीं हैं": "Questions for this test are no longer available", "का कंटेंट जल्द ही जोड़ा जाएगा।": "content will be added soon.", "थोड़ा इंतज़ार कीजिए — हम तैयारी में हैं": "Please wait a little — we are getting ready", "वापस जाएँ": "Go back", "स्वागत है": "Welcome", "में आपका स्वागत है। यहाँ राजस्थान की प्रतियोगी परीक्षाओं की तैयारी के लिए": "— welcome! Here, to prepare for Rajasthan's competitive exams,", "प्रैक्टिस, टेस्ट और विश्लेषण सब फ्री है।": "practice, tests and analysis are all free.", "आपका सहयोग और सपोर्ट हमें और बेहतर बनाएगा।": "Your help and support will make us even better.", "विनोद कुमार नाथ": "Vinod Kumar Nath", "ठीक है": "OK", "होम": "Home", "प्रोफ़ाइल": "Profile", "सूचना": "Notice", "लगातार": "Consecutive", "सही उत्तर": "Correct Answer", "विषय के सभी चैप्टर मिलाकर": "all chapters of the subject combined", "गलतियाँ सुधारें": "Fix your mistakes", "स्टडी मटेरियल और": "Study material and", "हाल की गतिविधि": "Recent activity", "सभी देखें": "See all", "अभी कोई टेस्ट नहीं दिया — ऊपर से शुरू करें।": "No test taken yet — start from above.", "जल्द आ रहा है": "Coming soon", "विषय चुनें": "Choose subject", "चैप्टर जल्द जोड़े जाएँगे": "Chapters will be added soon", "प्रश्न": "Questions", "प्रश्न उपलब्ध": "questions available", "सबमिट के बाद ही उत्तर": "Answers only after submit", "नेगेटिव मार्किंग": "Negative marking", "उत्तर चुनते ही सही/गलत और व्याख्या": "Right/wrong and explanation as soon as you choose", "चैप्टर चुनें": "Choose chapter", "पूरे विस्तार से नोट्स": "Detailed notes", "तेज़ रिविज़न के लिए": "For quick revision", "वीडियो लेक्चर": "Video lectures", "खोलें": "Open", "हर विषय का पूरा टेस्ट, उसके सभी चैप्टर मिलाकर": "Full test of each subject, all its chapters combined", "सभी चैप्टर मिलाकर पूर्ण टेस्ट": "Full test combining all chapters", "पिछले टेस्ट": "Previous tests", "अभी कोई टेस्ट नहीं दिया।": "No test taken yet.", "गलत प्रश्नों का रीविज़न": "Revision of wrong questions", "जो प्रश्न गलत हुए": "Questions you got wrong", "गलत प्रश्न रीविज़न": "Wrong Questions Revision", "आपके नोट्स": "Your notes", "टेस्ट में रिव्यू के लिए मार्क किए प्रश्न": "Questions marked for review in tests", "जो आपने सेव किए": "Questions you saved", "आपकी परफॉर्मेंस पर पर्सनल गाइडेंस": "Personal guidance on your performance", "नोट्स और": "Notes and", "वापस": "Back", "अपनी तैयारी के लिए": "For your preparation", "अपनी परीक्षा के अनुसार तैयारी": "Preparation as per your exam", "विद्यार्थियों का समुदाय": "Student community", "अपना सुझाव ईमेल से भेजें": "Send your suggestion by email", "आने वाले नए फ़ीचर्स": "Upcoming new features", "अपनी परीक्षा चुनें": "Choose your exam", "इस परीक्षा की तैयारी जल्द जोड़ी जाएगी": "Preparation for this exam will be added soon", "विद्यार्थी": "Student", "तैयारी जारी है": "Preparation in progress", "हल किए प्रश्न": "Questions solved", "सटीकता": "Accuracy", "टेस्ट दिए": "Tests taken", "सेव": "Saved", "सारा डेटा रीसेट करें": "Reset all data", "आँखों को आराम — डार्क मोड": "Easy on the eyes — dark mode", "चालू": "On", "बंद": "Off", "आपका डेटा कैसे सुरक्षित रहता है": "How your data stays safe", "पक्का? सारा डेटा मिट जाएगा — फिर से दबाएँ": "Sure? All data will be erased — press again", "डेटा रीसेट हो गया": "Data has been reset", "अंतिम अपडेट": "Last updated", "अक्टूबर": "October", "हम कौन सी जानकारी रखते हैं": "What information we keep", "डेटा साझा करना": "Sharing data", "डेटा हटाना": "Deleting data", "बाहरी लिंक": "External links", "बदलाव": "Changes", "संपर्क": "Contact", "किसी भी सवाल के लिए": "For any questions", "हमसे जुड़ें": "Connect with us", "अभी इसमें कोई प्रश्न नहीं है": "There are no questions in this yet", "अभ्यास": "Practice", "टेस्ट निर्देश": "Test Instructions", "कुल प्रश्न": "Total questions", "हर सही उत्तर": "Each correct answer", "हर गलत उत्तर": "Each wrong answer", "उत्तर न देने पर": "If not answered", "टेस्ट के दौरान सही उत्तर नहीं दिखेगा। सबमिट के बाद ही रिज़ल्ट, सही उत्तर और व्याख्या दिखेंगे।": "The correct answer is not shown during the test. Result, correct answers and explanations appear only after submitting.", "सबमिट आखिरी प्रश्न पर दिखेगा। सबमिट के बाद उत्तर बदले नहीं जा सकेंगे।": "Submit appears on the last question. Answers cannot be changed after submitting.", "मैंने सभी निर्देश पढ़ लिए हैं": "I have read all the instructions", "टेस्ट शुरू करें": "Start Test", "क्विज़": "Quiz", "भाषा": "Language", "उत्तर दिया": "Answered", "बाकी": "Remaining", "रिव्यू": "Review", "हटाएँ": "Remove", "पिछला": "Previous", "रिज़ल्ट पर लौटें": "Back to Result", "सबमिट करें": "Submit", "अगला": "Next", "सेव किया": "Saved", "सेव हटाया": "Removed from saved", "टेस्ट बीच में छोड़ें? इसका रिज़ल्ट सेव नहीं होगा।": "Leave the test midway? Its result will not be saved.", "जारी रखें": "Continue", "हाँ, छोड़ें": "Yes, leave", "प्रश्न बाकी हैं": "questions remaining", "प्रश्न रिव्यू में हैं": "questions are marked for review", "। फिर भी सबमिट करें": ". Submit anyway", "नहीं, वापस जाएँ": "No, go back", "हाँ, सबमिट करें": "Yes, submit", "आपका रिज़ल्ट": "Your Result", "कुल समय": "Total time", "औसत प्रति प्रश्न": "Avg per question", "नतीजा": "Outcome", "समय": "Time", "किसी भी पंक्ति पर टैप करें — वही प्रश्न सही उत्तर और व्याख्या के साथ खुलेगा।": "Tap any row — that question opens with the correct answer and explanation.", "सारे उत्तर देखें": "View all answers", "गलत प्रश्न": "Wrong Questions", "रिव्यू वाले प्रश्न": "Review Questions", "राजस्थान का इतिहास": "History of Rajasthan", "राजस्थान के इतिहास के स्रोत": "Sources of Rajasthan History", "राजस्थान की प्रमुख प्राचीन सभ्यताएँ एवं पुरास्थल": "Major Ancient Civilizations & Sites of Rajasthan", "राजस्थान का पौराणिक, ऐतिहासिक स्वरूप व जनपद युग": "Mythological, Historical Form & Janapada Era of Rajasthan", "राजपूतों की उत्पत्ति": "Origin of the Rajputs", "प्रतिहार वंश (गुर्जर प्रतिहार": "Pratihara Dynasty (Gurjara Pratihara", "चौहान राजवंश": "Chauhan Dynasty", "मेवाड़ का गुहिल राजवंश": "Guhila Dynasty of Mewar", "आमेर का कछवाहा राजवंश": "Kachwaha Dynasty of Amer", "मारवाड़ का राठौड़ राजवंश": "Rathore Dynasty of Marwar", "बीकानेर का राठौड़ राजवंश": "Rathore Dynasty of Bikaner", "जाट राजवंश": "Jat Dynasty", "राजस्थान के अन्य महत्त्वपूर्ण राजवंश": "Other Important Dynasties of Rajasthan", "राजस्थान में मध्यकालीन प्रशासन व सामंती व्यवस्था": "Medieval Administration & Feudal System in Rajasthan", "राजस्थान में मराठा हस्तक्षेप एवं उसका प्रभाव": "Maratha Intervention in Rajasthan & Its Impact", "राजस्थान में अंग्रेजी प्रभुत्व और उसके प्रभाव": "British Dominance in Rajasthan & Its Effects", "राजस्थान के जनजाति एवं किसान आन्दोलन": "Tribal & Peasant Movements of Rajasthan", "राजस्थान में सामाजिक संगठन": "Social Organizations in Rajasthan", "राजस्थान में राजनीतिक संस्थाएँ एवं समाचार-पत्र": "Political Institutions & Newspapers in Rajasthan", "राजस्थान में प्रजामण्डल व स्वतंत्रता आंदोलन": "Praja Mandals & Freedom Movement in Rajasthan", "राजस्थान का एकीकरण": "Integration of Rajasthan", "राजस्थान के प्रमुख ऐतिहासिक व्यक्तित्व एवं स्वतंत्रता सेनानी": "Major Historical Figures & Freedom Fighters of Rajasthan", "राजस्थान की इतिहास प्रसिद्ध महिलाएँ": "Historically Famous Women of Rajasthan", "राजस्थान का भूगोल": "Geography of Rajasthan", "राजस्थान: सामान्य परिचय": "Rajasthan: General Introduction", "राजस्थान का भौतिक विभाजन": "Physical Divisions of Rajasthan", "राजस्थान: प्राचीन नाम व भौगोलिक उपनाम": "Rajasthan: Ancient Names & Geographical Epithets", "राजस्थान में जल संरक्षण एवं जल प्रबंधन": "Water Conservation & Management in Rajasthan", "राजस्थान की जलवायु": "Climate of Rajasthan", "राजस्थान में मिट्टी, अपरदन व मरुस्थलीकरण": "Soil, Erosion & Desertification in Rajasthan", "राजस्थान में सूखा, अकाल, आपदा व आपदा प्रबंधन": "Drought, Famine, Disaster & Disaster Management in Rajasthan", "राजस्थान की वन सम्पदा एवं पर्यावरण": "Forest Resources & Environment of Rajasthan", "जैव विविधता, वन्य जीव एवं अभयारण्य": "Biodiversity, Wildlife & Sanctuaries", "राजस्थान में पशुपालन": "Animal Husbandry in Rajasthan", "राजस्थान में कृषि एवं प्रमुख फसलें": "Agriculture & Major Crops in Rajasthan", "राजस्थान में अपवाह तंत्र व नदियाँ": "Drainage System & Rivers of Rajasthan", "राजस्थान की झीलें व बावड़ियाँ": "Lakes & Stepwells of Rajasthan", "प्रमुख बाँध, सिंचाई परियोजनाएँ व जल संसाधन योजनाएँ": "Major Dams, Irrigation Projects & Water Resource Schemes", "राजस्थान की नहरें": "Canals of Rajasthan", "राजस्थान के उद्योग": "Industries of Rajasthan", "राजस्थान के खनिज संसाधन": "Mineral Resources of Rajasthan", "राजस्थान में ऊर्जा संसाधन": "Energy Resources in Rajasthan", "राजस्थान में पर्यटन": "Tourism in Rajasthan", "राजस्थान में परिवहन के साधन": "Means of Transport in Rajasthan", "राजस्थान की जनगणना": "Census of Rajasthan", "क्षेत्रीय विकास कार्यक्रम": "Regional Development Programmes", "राजस्थान के प्रमुख अनुसंधान केंद्र": "Major Research Centres of Rajasthan", "राजस्थान में सहकारिता": "Cooperatives in Rajasthan", "राजस्थान में जनजातियाँ": "Tribes in Rajasthan", "राजस्थान की कला एवं संस्कृति": "Art & Culture of Rajasthan", "राजस्थान की राजव्यवस्था एवं प्रशासन": "Polity & Administration of Rajasthan", "राजस्थान का बजट एवं आर्थिक समीक्षा": "Budget & Economic Review of Rajasthan", "राजस्थान की समसामयिक घटनाएँ": "Current Affairs of Rajasthan", "भारत का इतिहास": "History of India", "भारत का भूगोल": "Geography of India", "भारत की राजव्यवस्था एवं संविधान": "Indian Polity & Constitution", "भारत और विश्व के समसामयिक घटनाक्रम": "India & World Current Affairs", "विश्व का इतिहास": "World History", "विश्व का भूगोल": "World Geography", "सामान्य विज्ञान": "General Science", "हिंदी": "Hindi", "इंग्लिश": "English", "गणित": "Mathematics", "रीजनिंग": "Reasoning", "कंप्यूटर": "Computer"};
+const EN={"विषय": "Subjects", "चैप्टर": "Chapter", "परीक्षाएँ": "Exams", "अन्य प्रमुख": "Other major", "टेस्ट": "Test", "सही": "Correct", "गलत": "Wrong", "छोड़े": "Skipped", "छोड़ा": "Skipped", "अंक": "Marks", "अभी": "Just now", "मिनट पहले": "min ago", "घंटे पहले": "hr ago", "दिन पहले": "days ago", "इस टेस्ट का विस्तृत रिज़ल्ट उपलब्ध नहीं है": "Detailed result for this test is not available", "इस टेस्ट के प्रश्न अब उपलब्ध नहीं हैं": "Questions for this test are no longer available", "का कंटेंट जल्द ही जोड़ा जाएगा।": "content will be added soon.", "थोड़ा इंतज़ार कीजिए — हम तैयारी में हैं": "Please wait a little — we are getting ready", "वापस जाएँ": "Go back", "स्वागत है": "Welcome", "में आपका स्वागत है। यहाँ राजस्थान की प्रतियोगी परीक्षाओं की तैयारी के लिए": "— welcome! Here, to prepare for Rajasthan's competitive exams,", "प्रैक्टिस, टेस्ट और विश्लेषण सब फ्री है।": "practice, tests and analysis are all free.", "आपका सहयोग और सपोर्ट हमें और बेहतर बनाएगा।": "Your help and support will make us even better.", "विनोद कुमार नाथ": "Vinod Kumar Nath", "ठीक है": "OK", "होम": "Home", "प्रोफ़ाइल": "Profile", "सूचना": "Notice", "लगातार": "Consecutive", "सही उत्तर": "Correct Answer", "विषय के सभी चैप्टर मिलाकर": "all chapters of the subject combined", "गलतियाँ सुधारें": "Fix your mistakes", "स्टडी मटेरियल और": "Study material and", "हाल की गतिविधि": "Recent activity", "सभी देखें": "See all", "अभी कोई टेस्ट नहीं दिया — ऊपर से शुरू करें।": "No test taken yet — start from above.", "जल्द आ रहा है": "Coming soon", "विषय चुनें": "Choose subject", "चैप्टर जल्द जोड़े जाएँगे": "Chapters will be added soon", "प्रश्न": "Questions", "प्रश्न उपलब्ध": "questions available", "सबमिट के बाद ही उत्तर": "Answers only after submit", "नेगेटिव मार्किंग": "Negative marking", "उत्तर चुनते ही सही/गलत और व्याख्या": "Right/wrong and explanation as soon as you choose", "चैप्टर चुनें": "Choose chapter", "पूरे विस्तार से नोट्स": "Detailed notes", "तेज़ रिविज़न के लिए": "For quick revision", "वीडियो लेक्चर": "Video lectures", "खोलें": "Open", "हर विषय का पूरा टेस्ट, उसके सभी चैप्टर मिलाकर": "Full test of each subject, all its chapters combined", "सभी चैप्टर मिलाकर पूर्ण टेस्ट": "Full test combining all chapters", "पिछले टेस्ट": "Previous tests", "अभी कोई टेस्ट नहीं दिया।": "No test taken yet.", "गलत प्रश्नों का रीविज़न": "Revision of wrong questions", "जो प्रश्न गलत हुए": "Questions you got wrong", "गलत प्रश्न रीविज़न": "Wrong Questions Revision", "आपके नोट्स": "Your notes", "टेस्ट में रिव्यू के लिए मार्क किए प्रश्न": "Questions marked for review in tests", "जो आपने सेव किए": "Questions you saved", "आपकी परफॉर्मेंस पर पर्सनल गाइडेंस": "Personal guidance on your performance", "नोट्स और": "Notes and", "वापस": "Back", "अपनी तैयारी के लिए": "For your preparation", "अपनी परीक्षा के अनुसार तैयारी": "Preparation as per your exam", "विद्यार्थियों का समुदाय": "Student community", "अपना सुझाव ईमेल से भेजें": "Send your suggestion by email", "आने वाले नए फ़ीचर्स": "Upcoming new features", "अपनी परीक्षा चुनें": "Choose your exam", "इस परीक्षा की तैयारी जल्द जोड़ी जाएगी": "Preparation for this exam will be added soon", "विद्यार्थी": "Student", "तैयारी जारी है": "Preparation in progress", "हल किए प्रश्न": "Questions solved", "सटीकता": "Accuracy", "टेस्ट दिए": "Tests taken", "सेव": "Saved", "सारा डेटा रीसेट करें": "Reset all data", "आँखों को आराम — डार्क मोड": "Easy on the eyes — dark mode", "चालू": "On", "बंद": "Off", "आपका डेटा कैसे सुरक्षित रहता है": "How your data stays safe", "पक्का? सारा डेटा मिट जाएगा — फिर से दबाएँ": "Sure? All data will be erased — press again", "डेटा रीसेट हो गया": "Data has been reset", "अंतिम अपडेट": "Last updated", "अक्टूबर": "October", "हम कौन सी जानकारी रखते हैं": "What information we keep", "डेटा साझा करना": "Sharing data", "डेटा हटाना": "Deleting data", "बाहरी लिंक": "External links", "बदलाव": "Changes", "संपर्क": "Contact", "किसी भी सवाल के लिए": "For any questions", "हमसे जुड़ें": "Connect with us", "अभी इसमें कोई प्रश्न नहीं है": "There are no questions in this yet", "अभ्यास": "Practice", "टेस्ट निर्देश": "Test Instructions", "कुल प्रश्न": "Total questions", "हर सही उत्तर": "Each correct answer", "हर गलत उत्तर": "Each wrong answer", "उत्तर न देने पर": "If not answered", "टेस्ट के दौरान सही उत्तर नहीं दिखेगा। सबमिट के बाद ही रिज़ल्ट, सही उत्तर और व्याख्या दिखेंगे।": "The correct answer is not shown during the test. Result, correct answers and explanations appear only after submitting.", "सबमिट आखिरी प्रश्न पर दिखेगा। सबमिट के बाद उत्तर बदले नहीं जा सकेंगे।": "Submit appears on the last question. Answers cannot be changed after submitting.", "मैंने सभी निर्देश पढ़ लिए हैं": "I have read all the instructions", "टेस्ट शुरू करें": "Start Test", "क्विज़": "Quiz", "भाषा": "Language", "उत्तर दिया": "Answered", "बाकी": "Remaining", "रिव्यू": "Review", "हटाएँ": "Remove", "पिछला": "Previous", "रिज़ल्ट पर लौटें": "Back to Result", "सबमिट करें": "Submit", "अगला": "Next", "सेव किया": "Saved", "सेव हटाया": "Removed from saved", "टेस्ट बीच में छोड़ें? इसका रिज़ल्ट सेव नहीं होगा।": "Leave the test midway? Its result will not be saved.", "जारी रखें": "Continue", "हाँ, छोड़ें": "Yes, leave", "प्रश्न बाकी हैं": "questions remaining", "प्रश्न रिव्यू में हैं": "questions are marked for review", "। फिर भी सबमिट करें": ". Submit anyway", "नहीं, वापस जाएँ": "No, go back", "हाँ, सबमिट करें": "Yes, submit", "आपका रिज़ल्ट": "Your Result", "कुल समय": "Total time", "औसत प्रति प्रश्न": "Avg per question", "नतीजा": "Outcome", "समय": "Time", "किसी भी पंक्ति पर टैप करें — वही प्रश्न सही उत्तर और व्याख्या के साथ खुलेगा।": "Tap any row — that question opens with the correct answer and explanation.", "सारे उत्तर देखें": "View all answers", "गलत प्रश्न": "Wrong Questions", "रिव्यू वाले प्रश्न": "Review Questions", "राजस्थान का इतिहास": "History of Rajasthan", "राजस्थान के इतिहास के स्रोत": "Sources of Rajasthan History", "राजस्थान की प्रमुख प्राचीन सभ्यताएँ एवं पुरास्थल": "Major Ancient Civilizations & Sites of Rajasthan", "राजस्थान का पौराणिक, ऐतिहासिक स्वरूप व जनपद युग": "Mythological, Historical Form & Janapada Era of Rajasthan", "राजपूतों की उत्पत्ति": "Origin of the Rajputs", "प्रतिहार वंश (गुर्जर प्रतिहार": "Pratihara Dynasty (Gurjara Pratihara", "चौहान राजवंश": "Chauhan Dynasty", "मेवाड़ का गुहिल राजवंश": "Guhila Dynasty of Mewar", "आमेर का कछवाहा राजवंश": "Kachwaha Dynasty of Amer", "मारवाड़ का राठौड़ राजवंश": "Rathore Dynasty of Marwar", "बीकानेर का राठौड़ राजवंश": "Rathore Dynasty of Bikaner", "जाट राजवंश": "Jat Dynasty", "राजस्थान के अन्य महत्त्वपूर्ण राजवंश": "Other Important Dynasties of Rajasthan", "राजस्थान में मध्यकालीन प्रशासन व सामंती व्यवस्था": "Medieval Administration & Feudal System in Rajasthan", "राजस्थान में मराठा हस्तक्षेप एवं उसका प्रभाव": "Maratha Intervention in Rajasthan & Its Impact", "राजस्थान में अंग्रेजी प्रभुत्व और उसके प्रभाव": "British Dominance in Rajasthan & Its Effects", "राजस्थान के जनजाति एवं किसान आन्दोलन": "Tribal & Peasant Movements of Rajasthan", "राजस्थान में सामाजिक संगठन": "Social Organizations in Rajasthan", "राजस्थान में राजनीतिक संस्थाएँ एवं समाचार-पत्र": "Political Institutions & Newspapers in Rajasthan", "राजस्थान में प्रजामण्डल व स्वतंत्रता आंदोलन": "Praja Mandals & Freedom Movement in Rajasthan", "राजस्थान का एकीकरण": "Integration of Rajasthan", "राजस्थान के प्रमुख ऐतिहासिक व्यक्तित्व एवं स्वतंत्रता सेनानी": "Major Historical Figures & Freedom Fighters of Rajasthan", "राजस्थान की इतिहास प्रसिद्ध महिलाएँ": "Historically Famous Women of Rajasthan", "राजस्थान का भूगोल": "Geography of Rajasthan", "राजस्थान: सामान्य परिचय": "Rajasthan: General Introduction", "राजस्थान का भौतिक विभाजन": "Physical Divisions of Rajasthan", "राजस्थान: प्राचीन नाम व भौगोलिक उपनाम": "Rajasthan: Ancient Names & Geographical Epithets", "राजस्थान में जल संरक्षण एवं जल प्रबंधन": "Water Conservation & Management in Rajasthan", "राजस्थान की जलवायु": "Climate of Rajasthan", "राजस्थान में मिट्टी, अपरदन व मरुस्थलीकरण": "Soil, Erosion & Desertification in Rajasthan", "राजस्थान में सूखा, अकाल, आपदा व आपदा प्रबंधन": "Drought, Famine, Disaster & Disaster Management in Rajasthan", "राजस्थान की वन सम्पदा एवं पर्यावरण": "Forest Resources & Environment of Rajasthan", "जैव विविधता, वन्य जीव एवं अभयारण्य": "Biodiversity, Wildlife & Sanctuaries", "राजस्थान में पशुपालन": "Animal Husbandry in Rajasthan", "राजस्थान में कृषि एवं प्रमुख फसलें": "Agriculture & Major Crops in Rajasthan", "राजस्थान में अपवाह तंत्र व नदियाँ": "Drainage System & Rivers of Rajasthan", "राजस्थान की झीलें व बावड़ियाँ": "Lakes & Stepwells of Rajasthan", "प्रमुख बाँध, सिंचाई परियोजनाएँ व जल संसाधन योजनाएँ": "Major Dams, Irrigation Projects & Water Resource Schemes", "प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ": "Major Dams, Canals & Irrigation Projects", "क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ": "Regional Development Programmes & Tribes", "सहकारिता एवं प्रमुख अनुसंधान केंद्र": "Cooperatives & Major Research Centres of Rajasthan", "राजस्थान की नहरें": "Canals of Rajasthan", "राजस्थान के उद्योग": "Industries of Rajasthan", "राजस्थान के खनिज संसाधन": "Mineral Resources of Rajasthan", "राजस्थान में ऊर्जा संसाधन": "Energy Resources in Rajasthan", "राजस्थान में पर्यटन": "Tourism in Rajasthan", "राजस्थान में परिवहन के साधन": "Means of Transport in Rajasthan", "राजस्थान की जनगणना": "Census of Rajasthan", "क्षेत्रीय विकास कार्यक्रम": "Regional Development Programmes", "राजस्थान के प्रमुख अनुसंधान केंद्र": "Major Research Centres of Rajasthan", "राजस्थान में सहकारिता": "Cooperatives in Rajasthan", "राजस्थान में जनजातियाँ": "Tribes in Rajasthan", "राजस्थान की कला एवं संस्कृति": "Art & Culture of Rajasthan", "राजस्थान की राजव्यवस्था एवं प्रशासन": "Polity & Administration of Rajasthan", "राजस्थान का बजट एवं आर्थिक समीक्षा": "Budget & Economic Review of Rajasthan", "राजस्थान की समसामयिक घटनाएँ": "Current Affairs of Rajasthan", "भारत का इतिहास": "History of India", "भारत का भूगोल": "Geography of India", "भारत की राजव्यवस्था एवं संविधान": "Indian Polity & Constitution", "भारत और विश्व के समसामयिक घटनाक्रम": "India & World Current Affairs", "विश्व का इतिहास": "World History", "विश्व का भूगोल": "World Geography", "सामान्य विज्ञान": "General Science", "हिंदी": "Hindi", "इंग्लिश": "English", "गणित": "Mathematics", "रीजनिंग": "Reasoning", "कंप्यूटर": "Computer"};
 let lang=store.get("jk_lang")[0]||"hi",trOff=null;
 const DEV=/[\u0900-\u097F](?:[\u0900-\u097F\s,.()'’\-–—\/&:!?‘]*[\u0900-\u097F])?/g,HAS=/[\u0900-\u097F]/;
 let enC={};try{enC=JSON.parse(localStorage.getItem("jk_enc")||"{}")}catch(e){}
@@ -2093,7 +2098,7 @@ splash();
    if(u){try{localStorage.removeItem("jk_after_login")}catch(e){}location.replace(u);return}
    return _home.apply(this,arguments)}}
  window.addEventListener("load",function(){try{var h=location.hash;
-  if(h==="#home"||h==="#login"){var g=document.getElementById("gs");if(g)g.click();try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}}}catch(e){}});
+  if(h==="#home"||h==="#login"){var g=document.getElementById("gs");if(g)g.click();try{history.replaceState(history.state,"",location.pathname+location.search)}catch(e){}}}catch(e){}});
 })();
 </script>
 <script>
@@ -2126,9 +2131,9 @@ splash();
             for(let i=QUESTIONS.length-1;i>=0;i--){if(QUESTIONS[i].id&&!live.has(QUESTIONS[i].id))QUESTIONS.splice(i,1)}
             for(let i=QS.length-1;i>=0;i--){if(QS[i].id&&!live.has(QS[i].id))QS.splice(i,1)}
             const have=new Set(QUESTIONS.map(q=>q.id).filter(Boolean)),byId=new Map(QUESTIONS.filter(q=>q.id).map(q=>[q.id,q]));let added=0;
-            good.forEach(r=>{if(have.has(r.id)){const o=byId.get(r.id);if(o&&r.created_at)o.created_at=r.created_at;return}const q={id:r.id,subject:r.subject,chapter:r.chapter,question:r.question,exams:r.exams,options:r.options,answer:r.answer,explanation:r.explanation||"",created_at:r.created_at};QUESTIONS.push(q);if(SUBJECTS.some(z=>z.name===q.subject&&z.chapters.includes(q.chapter)))QS.push(q);added++});
+            good.forEach(r=>{if(have.has(r.id)){const o=byId.get(r.id);if(o&&r.created_at)o.created_at=r.created_at;return}const q={id:r.id,subject:r.subject,chapter:chAlias(r.chapter),question:r.question,exams:r.exams,options:r.options,answer:r.answer,explanation:r.explanation||"",created_at:r.created_at};QUESTIONS.push(q);if(SUBJECTS.some(z=>z.name===q.subject&&z.chapters.includes(q.chapter)))QS.push(q);added++});
             /* NEW badge time-based hai (created_at); data aate hi home tiles dobara bana do */
-            if(window.nmBump)nmBump();if(document.querySelector(".tiles2")&&window.newRefresh)newRefresh();
+            if(window.nmBump)nmBump();if(window.wnSoon)wnSoon();if(document.querySelector(".tiles2")&&window.newRefresh)newRefresh();
           }
         }
       }catch(e){}
@@ -2321,7 +2326,7 @@ splash();
         const s={access_token:p.get("access_token"),refresh_token:p.get("refresh_token"),expires_at:Math.floor(Date.now()/1000)+(parseInt(p.get("expires_in"),10)||3600),email:"",uid:""};
         if(p.get("type")==="recovery")REC=s;else{save(s);ensureUid()}
       }else return;
-      history.replaceState(null,"",location.pathname+location.search);
+      history.replaceState(history.state,"",location.pathname+location.search);
     }catch(e){}
   }
   takeFromUrl();
@@ -2843,7 +2848,7 @@ function exMore(el){const p=el.closest(".exc");if(!p)return;const L=EXMAP[p.data
 /* ---------- Test ke prashn: ek hi jagah se (tstOpen aur history dono ke liye) ---------- */
 function jvNorm(qs,x){
   const ok=r=>r&&typeof r.question==="string"&&Array.isArray(r.options)&&r.options.length===4&&Number.isInteger(r.answer)&&r.answer>=0&&r.answer<4;
-  return(Array.isArray(qs)?qs:[]).filter(ok).map(r=>({id:r.id,subject:r.subject||(x.kind==="mock"?x.exam:x.subject)||"",chapter:r.chapter||(x.kind==="mock"?"Full Mock Test":"Full Subject Test"),tsub:r.subject||(x.kind==="subject"?(x.subject||""):""),tch:r.chapter||"",question:r.question,exams:Array.isArray(r.exams)?r.exams:[],options:r.options,answer:r.answer,explanation:r.explanation||""}));
+  return(Array.isArray(qs)?qs:[]).filter(ok).map(r=>({id:r.id,subject:r.subject||(x.kind==="mock"?x.exam:x.subject)||"",chapter:chAlias(r.chapter)||(x.kind==="mock"?"Full Mock Test":"Full Subject Test"),tsub:r.subject||(x.kind==="subject"?(x.subject||""):""),tch:chAlias(r.chapter||""),question:r.question,exams:Array.isArray(r.exams)?r.exams:[],options:r.options,answer:r.answer,explanation:r.explanation||""}));
 }
 let TQC=null;
 async function jvLoadTest(x){
@@ -2868,7 +2873,7 @@ function TQALL(rebuild){
       let rows=null;try{rows=JSON.parse(localStorage.getItem(k)||"null")}catch(e){}
       jvNorm(rows,x).forEach(q=>{if(!m.has(q.question))m.set(q.question,q)})}}}catch(e){}
   store.get("jk_hist").forEach(h=>{(h&&h.qo||[]).forEach(o=>{if(o&&o.question&&!m.has(o.question)&&Array.isArray(o.options)&&o.options.length===4)
-    m.set(o.question,{subject:o.subject||"",chapter:o.chapter||"",tsub:o.tsub||"",tch:o.tch||"",question:o.question,exams:o.exams||[],options:o.options,answer:o.answer,explanation:o.explanation||""})})});
+    m.set(o.question,{subject:o.subject||"",chapter:chAlias(o.chapter||""),tsub:o.tsub||"",tch:chAlias(o.tch||""),question:o.question,exams:o.exams||[],options:o.options,answer:o.answer,explanation:o.explanation||""})})});
   return TQC=m;
 }
 const TQX=t=>TQALL().get(t);
@@ -3007,7 +3012,7 @@ function jvChips(it,pref){
   return`<span class="sch">${jvSrcLabel(p)}</span>`+(rest>0&&!pref?`<span class="sch mo">+${rest} और</span>`:"");
 }
 function jvChapOf(it){
-  const s=it.srcs[0]||{};let sub=s.sub||it.q.tsub||it.q.subject,ch=s.ch||it.q.tch||it.q.chapter;
+  const s=it.srcs[0]||{};let sub=s.sub||it.q.tsub||it.q.subject,ch=chAlias(s.ch||it.q.tch||it.q.chapter);
   const S=SUBJECTS.find(z=>z.name===sub);
   if(S&&S.chapters.indexOf(ch)>=0)return{sub:sub,ch:ch};
   const S2=SUBJECTS.find(z=>z.name===it.q.subject);
@@ -3364,7 +3369,7 @@ function retestResult(){
 /* ---------- NEW indicator (Home / Tests) — TIME-BASED (sabhi users ko same) ----------
    Rule (owner): naya square card (home tile / subject card) = 10 din, naya chapter = 2 din, naya Full Subject/Mock test = 10 din.
    Seen-based (jkx_seen_v1) logic hata diya; ab sirf created_at / addedOn dekhta hai. Din badalne ho to NB_D me badlo. */
-const NB_D={card:10,chap:2,test:10};
+const NB_D={card:30,chap:30,test:30};
 /* Static cards ki date (YYYY-MM-DD). Naya static card jodo to yahan uski date likho */
 const NB_ADDED={rank:"2026-10-24"};
 const nbIs=(ts,d)=>{const t=typeof ts==="number"?ts:Date.parse(ts||"");return !isNaN(t)&&Date.now()-t<=d*864e5};
@@ -3408,8 +3413,8 @@ function newRefresh(){
 function homeExtras(){
   jvBackfill();newRefresh();
   if(Date.now()-(window.__tlAt||0)>30000){window.__tlAt=Date.now();
-    tstLoad().then(()=>{if(document.querySelector(".tiles2")){newRefresh()}}).catch(()=>{})}
-  ntCheck();
+    tstLoad().then(()=>{if(document.querySelector(".tiles2")){newRefresh()}if(window.wnSoon)wnSoon()}).catch(()=>{})}
+  ntCheck();if(window.wnSoon)wnSoon();
 }
 
 /* ---------- Notification popup (user-wise tracking) ---------- */
@@ -3479,7 +3484,7 @@ async function ntCheck(){
   const P=new Set(st.pop),fresh=rows.filter(r=>!P.has(String(r.id)));
   paintBell();
   if(!fresh.length)return;
-  if(document.querySelector(".mdl,.ntp"))return;
+  if(document.querySelector(".mdl,.ntp,.wnp"))return;
   const n=fresh[0];
   fresh.forEach(r=>P.add(String(r.id)));st.pop=Array.from(P);ntSave(st);   /* dikhate hi "seen" — dobara nahi aayega */
   ntPush(fresh.map(r=>r.id),{popup_seen:true});
@@ -3633,6 +3638,211 @@ function jvUnpackHist(d,textOf){
     window.loginScreen=function(){log("ui","loginScreen dikhi; loggedIn="+(window.JKAuth&&JKAuth.isLoggedIn()));var r=o.apply(this,arguments);addLink();return r};window.loginScreen.__d=1}
   addLink();
   if(location.hash==="#diag")show();
+})();
+</script>
+<script id="jk-nav">
+/* PART 3 — (a) phone/browser Back = app ke back-button jaisa ek step peeche, (b) Refresh = usi screen par.
+   Back: history me sirf ek "trap" entry rakhte hain ({jk:1}); user Back dabaye to popstate me wahi kaam chalta hai jo screen ka <- button (#bk) karta hai.
+   Refresh: har mukhya screen ka route sessionStorage["jk_route"] me; boot par login ho to wahi screen. */
+(function(){
+  "use strict";
+  var KEY="jk_route";
+  var ROUTABLE={home:1,pyqSubjects:1,pyqChapters:1,chapterModes:1,subjSubjects:1,subChapters:1,subOptions:1,fstSubjects:1,fstTests:1,mockList:1,tests:1,mistakes:1,profile:1,youtube:1,seeMore:1};
+  var route=null,armedAt=0;
+  function ss(){try{return window.sessionStorage}catch(e){return null}}
+  function save(){try{var s=ss();if(s&&route)s.setItem(KEY,JSON.stringify(route))}catch(e){}}
+  function ctx(){var c={};try{c.pf=pyqFrom;c.mf=mockFrom}catch(e){}return c}
+
+  /* ---------- (b) route track ---------- */
+  Object.keys(ROUTABLE).forEach(function(n){
+    var f=window[n];if(typeof f!=="function")return;
+    window[n]=function(){
+      var a=[],ok=true;
+      for(var i=0;i<arguments.length;i++){var v=arguments[i];if(typeof v==="number"||typeof v==="string")a.push(v);else if(v!==undefined&&v!==null)ok=false}
+      if(ok){route={fn:n,args:a,c:ctx()};save()}
+      return f.apply(this,arguments);
+    };
+  });
+  /* chapter ka test/practice chal raha ho to refresh par wahi resume ("जारी रखें" screen) */
+  var start0=window.start;
+  if(typeof start0==="function")window.start=function(f,l,n,m,src){
+    if(route&&route.fn==="chapterModes"&&!src&&!n){route.t=m||"practice";save()}
+    return start0.apply(this,arguments);
+  };
+  var fin0=window.finish;
+  if(typeof fin0==="function")window.finish=function(){
+    if(route&&route.t){delete route.t;save()}
+    return fin0.apply(this,arguments);
+  };
+
+  function validArgs(r){
+    var a=r.args||[];
+    try{
+      if(/^(pyqChapters|chapterModes|subChapters|subOptions|fstTests)$/.test(r.fn)){
+        var S=SUBJECTS[a[0]];if(!S)return false;
+        if((r.fn==="chapterModes"||r.fn==="subOptions")&&!S.chapters[a[1]])return false;
+      }
+    }catch(e){return false}
+    return true;
+  }
+  function restore(){
+    var h=location.hash||"";
+    if(/access_token|error|type=recovery|^#home$|^#login$|^#diag$/.test(h))return;
+    if(/[?&]join=/.test(location.search))return;
+    if(!(window.JKAuth&&JKAuth.isLoggedIn()))return;
+    try{if(JKAuth.pendingRecovery&&JKAuth.pendingRecovery())return}catch(e){}
+    if(!document.getElementById("gs"))return;           /* sirf tab jab splash khula ho */
+    var r=null;try{r=JSON.parse(ss().getItem(KEY)||"null")}catch(e){}
+    if(!r||!ROUTABLE[r.fn]||typeof window[r.fn]!=="function"||!validArgs(r))return;
+    try{if(r.c){if(r.c.pf)pyqFrom=r.c.pf;if(r.c.mf)mockFrom=r.c.mf}}catch(e){}
+    window[r.fn].apply(null,Array.isArray(r.args)?r.args:[]);
+    if(r.t&&r.fn==="chapterModes"&&typeof window.cm==="function")window.cm(r.t);
+  }
+  try{restore()}catch(e){if(!document.getElementById("gs")){try{home()}catch(_){}}}
+
+  /* ---------- (a) Back ---------- */
+  function armTrap(){
+    try{var s=history.state;if(s&&s.jk===1)return;history.replaceState({jk:0},"");history.pushState({jk:1},"")}catch(e){}
+  }
+  /* Chrome bina user-tap ke daali history entries skip kar deta hai, isliye pehle tap par trap lagate hain */
+  var evs=["pointerup","click","touchend","keydown"];
+  function firstTap(){evs.forEach(function(t){document.removeEventListener(t,firstTap,true)});armTrap()}
+  evs.forEach(function(t){document.addEventListener(t,firstTap,true)});
+  try{if(history.state&&history.state.jk===1)firstTap()}catch(e){}   /* refresh ke baad trap pehle se hai */
+
+  function repush(){try{history.pushState({jk:1},"")}catch(e){}}
+  function overlay(){return document.querySelector(".mdl,.rsheet,.ntp,#dgBox,#smenu")}
+  function isHome(){return !!document.querySelector(".tiles2")&&!document.getElementById("bk")}
+  window.addEventListener("popstate",function(e){
+    var s=e.state;
+    if(s&&(s.jk===1||s.ytv))return;                    /* trap / YouTube-viewer wali entry: yahan kuch nahi */
+    if(document.getElementById("ytv")){repush();return}    /* viewer ka apna ytPop band karega */
+    if(document.getElementById("gs")||document.querySelector(".lg")){try{history.back()}catch(x){}return}  /* splash/login par Back = bahar */
+    var ov=overlay();
+    if(!ov&&isHome()&&Date.now()-armedAt<2200){armedAt=0;try{history.back()}catch(x){}return}   /* Home par doosri Back = bahar */
+    repush();
+    if(ov){ov.remove();return}                          /* khula popup/menu pehle band */
+    if(isHome()){armedAt=Date.now();toast("बाहर निकलने के लिए एक बार और Back दबाएँ");return}
+    var b=document.getElementById("bk");
+    if(b&&b.onclick){b.click();return}                  /* wahi jo ← button karta hai (test me "छोड़ें?" wala flow bhi) */
+    try{clearInterval(tick)}catch(x){}
+    home();
+  });
+})();
+</script>
+<script id="jk-install">
+/* PART 5 — Install App banner (PWA). Cooldown: localStorage jk_inst_later (7 din). */
+(function(){
+  var KEY="jk_inst_later",DAY=864e5,deferred=null,shown=false,acts=0,t0=Date.now(),ready=false,bn=null;
+  var ua=navigator.userAgent||"";
+  var standalone=function(){try{return matchMedia("(display-mode: standalone)").matches||navigator.standalone===true}catch(e){return false}};
+  var isIOS=/iPad|iPhone|iPod/.test(ua)&&!window.MSStream;
+  var isAnd=/Android/i.test(ua);
+  var inApp=/FBAN|FBAV|Instagram|Line\/|; wv\)|YouTube|GSA\/|Twitter|Snapchat|WhatsApp|Telegram/i.test(ua)||(isAnd&&/Version\/[\d.]+ Chrome/.test(ua));
+  var iosSafari=isIOS&&/Safari/.test(ua)&&!/CriOS|FxiOS|EdgiOS|FBAN|FBAV|Instagram/.test(ua);
+  function cooling(){try{var t=+localStorage.getItem(KEY)||0;return t&&Date.now()-t<7*DAY}catch(e){return false}}
+  function later(){try{localStorage.setItem(KEY,String(Date.now()))}catch(e){}}
+  function hide(){if(!bn)return;bn.style.transform="translateY(-120%)";var b=bn;bn=null;setTimeout(function(){b.remove()},350)}
+  function loggedIn(){try{return !window.JKAuth||JKAuth.isLoggedIn()}catch(e){return true}}
+  function mode(){
+    if(deferred)return"native";
+    if(isIOS)return iosSafari?"ios":"";
+    if(isAnd&&inApp)return"inapp";
+    return"";
+  }
+  function show(){
+    if(shown||!ready||standalone()||cooling()||!loggedIn())return;
+    var m=mode();if(!m)return;
+    shown=true;
+    var msg,btn="";
+    if(m==="native"){msg="बेहतर अनुभव के लिए ऐप Install करें";btn='<button id="jkiI" style="background:#fff;color:#1457d9;border:0;font-weight:800;padding:8px 14px;border-radius:10px;font-size:13px">Install</button>'}
+    else if(m==="ios"){msg="Install के लिए Share (⬆️) → \u201cAdd to Home Screen\u201d दबाएँ"}
+    else{msg="ऐप Install करने के लिए ऊपर ⋮ → \u201cChrome में खोलें\u201d चुनें"}
+    bn=document.createElement("div");
+    bn.setAttribute("role","dialog");
+    bn.style.cssText="position:fixed;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:99999;background:linear-gradient(135deg,#0b3a8c,#1457d9);color:#fff;border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);transform:translateY(-120%);transition:transform .35s ease;font-family:inherit";
+    bn.innerHTML='<span style="font-size:26px">📲</span><span style="flex:1;font-size:13.5px;font-weight:700;line-height:1.35">'+msg+'</span>'+btn+'<button id="jkiL" style="background:rgba(255,255,255,.2);color:#fff;border:0;padding:8px 10px;border-radius:10px;font-size:12.5px">बाद में</button>';
+    document.body.appendChild(bn);
+    requestAnimationFrame(function(){requestAnimationFrame(function(){if(bn)bn.style.transform="translateY(0)"})});
+    var L=document.getElementById("jkiL");if(L)L.onclick=function(){later();hide()};
+    var I=document.getElementById("jkiI");
+    if(I)I.onclick=function(){
+      var d=deferred;if(!d){hide();return}
+      deferred=null;hide();
+      try{d.prompt();d.userChoice.then(function(c){if(!c||c.outcome!=="accepted")later()}).catch(function(){})}catch(e){}
+    };
+  }
+  window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();deferred=e;if(ready)show()});
+  window.addEventListener("appinstalled",function(){deferred=null;hide();try{localStorage.setItem(KEY,String(Date.now()+3650*DAY))}catch(e){}});
+  function check(){if(!ready&&(Date.now()-t0>=25000||acts>=3)){ready=true}if(ready)show()}
+  /* activity = screen change (view) */
+  var ov=window.view;
+  if(typeof ov==="function"){window.view=function(){acts++;var r=ov.apply(this,arguments);setTimeout(check,400);return r}}
+  setTimeout(check,25000);
+  setInterval(check,5000);
+})();
+</script>
+<script id="jk-whatsnew">
+/* PART 6 — "What's New" popup (Home par, pehli baar). Key: localStorage jk_lastSeenUpdate.
+   Naya feature batana ho to WN_FEATURES me ek line jodo: {ts:Date.parse("2026-11-01"),icon:"✨",title:"...",text:"..."} */
+var WN_FEATURES=[];
+(function(){
+  var KEY="jk_lastSeenUpdate",WIN=30*864e5,MAX=5,tm=null;
+  var st=document.createElement("style");
+  st.textContent=".wnp{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:40;display:flex;align-items:flex-end;justify-content:center;animation:ntf .18s ease-out}.wnp.out{opacity:0;transition:opacity .18s}"
+  +".wnc{position:relative;width:100%;max-width:480px;max-height:86vh;overflow:auto;background:#fff;color:var(--ink,#0f172a);border-radius:22px 22px 0 0;padding:18px 16px calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 40px rgba(0,0,0,.3);animation:wns .25s ease-out;border-top:4px solid #1457d9}"
+  +"@keyframes wns{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}"
+  +".wnc h3{margin:0 0 2px;font-size:19px}.wnc .wns{color:#64748b;font-size:12.5px;margin-bottom:12px}"
+  +".wnx{position:absolute;top:10px;right:10px;width:32px;height:32px;border:0;border-radius:50%;background:#f1f5f9;color:#475569;font-size:15px}"
+  +".wni{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid #e2e8f0}.wni:first-of-type{border-top:0}"
+  +".wni .wi{flex:none;width:34px;height:34px;border-radius:10px;background:#eef4ff;display:flex;align-items:center;justify-content:center;font-size:18px}"
+  +".wni b{display:block;font-size:14px;line-height:1.35}.wni small{display:block;color:#64748b;font-size:12px;margin-top:2px;line-height:1.4}"
+  +".wnok{width:100%;margin-top:12px;border:0;border-radius:14px;background:#1457d9;color:#fff;font-weight:800;font-size:15px;padding:12px}"
+  +".dark .wnc{background:#19243a;color:#e5edff}.dark .wnx{background:#26324e;color:#cbd5e1}.dark .wni{border-color:#26324e}.dark .wni .wi{background:#26324e}";
+  document.head.appendChild(st);
+  var esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
+  function getSeen(){try{var v=+localStorage.getItem(KEY);return v>0?v:0}catch(e){return 0}}
+  function setSeen(t){try{localStorage.setItem(KEY,String(t))}catch(e){}}
+  function collect(since){
+    var out=[],now=Date.now(),lo=Math.max(since,now-WIN);
+    var g={};
+    (typeof QS!=="undefined"?QS:[]).forEach(function(q){
+      var t=Date.parse(q.created_at||"");if(isNaN(t)||t<=lo||t>now+864e5)return;
+      var k=q.subject+"\u0001"+q.chapter,o=g[k]||(g[k]={s:q.subject,c:q.chapter,n:0,t:0});
+      o.n++;if(t>o.t)o.t=t});
+    Object.keys(g).forEach(function(k){var o=g[k];out.push({t:o.t,i:"📝",h:o.s+" › "+o.c,d:"+"+o.n+" नए सवाल"})});
+    (typeof TL!=="undefined"?TL:[]).forEach(function(x){
+      var t=Date.parse(x.created_at||"");if(isNaN(t)||t<=lo||t>now+864e5)return;
+      out.push({t:t,i:"🧪",h:x.title,d:"नया "+(x.kind==="mock"?"Full Mock Test":"Full Subject Test")+(x.subject?" · "+x.subject:"")})});
+    var rows=[];try{rows=(window.jvNT&&jvNT.rows&&jvNT.rows.length?jvNT.rows:(typeof ntCached==="function"?ntCached():[]))||[]}catch(e){}
+    rows.forEach(function(r){var t=Date.parse(r.created_at||"");if(isNaN(t)||t<=lo||t>now+864e5)return;
+      out.push({t:t,i:r.icon||"🔔",h:r.title,d:"नई सूचना"})});
+    (WN_FEATURES||[]).forEach(function(f){if(f&&f.ts>lo&&f.ts<=now+864e5)out.push({t:f.ts,i:f.icon||"✨",h:f.title,d:f.text||"नया फीचर"})});
+    out.sort(function(a,b){return b.t-a.t});
+    return out.slice(0,MAX);
+  }
+  function html(list){
+    return '<button class="wnx" aria-label="बंद करें">✕</button><h3>🆕 क्या नया है</h3><div class="wns">पिछली बार के बाद की ताज़ा अपडेट</div>'
+    +list.map(function(a){return '<div class="wni"><span class="wi">'+esc(a.i)+'</span><div><b>'+esc(a.h)+'</b><small>'+esc(a.d)+'</small></div></div>'}).join("")
+    +'<button class="wnok">ठीक है</button>';
+  }
+  function check(){
+    if(!document.querySelector(".greet"))return;               /* sirf Home par */
+    var open=document.querySelector(".wnp"),seen=getSeen();
+    if(!seen){setSeen(Date.now());return}                      /* pehli baar: purana sab "naya" nahi */
+    var list=collect(seen);
+    if(open){var c=open.querySelector(".wnc");if(c&&list.length){c.innerHTML=html(list);bind(open)}return}
+    if(!list.length)return;
+    if(document.querySelector(".mdl,.ntp,.ov"))return;         /* dusra popup khula ho to agli baar */
+    var d=document.createElement("div");d.className="wnp";d.setAttribute("role","dialog");d.setAttribute("aria-label","क्या नया है");
+    d.innerHTML='<div class="wnc">'+html(list)+'</div>';
+    document.body.appendChild(d);bind(d);
+  }
+  function bind(d){
+    var close=function(){setSeen(Date.now());d.classList.add("out");setTimeout(function(){d.remove()},180)};
+    d.querySelector(".wnx").onclick=close;d.querySelector(".wnok").onclick=close;   /* backdrop se band nahi hota */
+  }
+  window.wnSoon=function(){clearTimeout(tm);tm=setTimeout(check,1500)};
 })();
 </script>
 </body>
