@@ -125,7 +125,7 @@
         <button data-go="dv" style="background:linear-gradient(135deg,#0f766e,#14b8a6)"><span>📑</span><b>Lab Assistant Geography</b><small id="cD"></small></button>
         <button data-go="ntf" style="background:#0ea5e9"><span>🔔</span><b>Notifications</b><small>App ki bell me dikhao</small></button>
         <button data-go="rem" style="background:#db2777"><span>💬</span><b>Admin Remarks</b><small>Mistake Analysis me</small></button>
-        <button data-go="dgn" style="background:#0f766e"><span>🩺</span><b>Student Reports</b><small>Login / app problem ki jaanch</small></button>
+        <button data-go="dgn" style="background:#0f766e;position:relative"><span>🩺</span><b>Student Reports</b><small>Login / app problem ki jaanch</small><span id="dgBadge" style="display:none;position:absolute;top:8px;right:8px;background:#ef4444;color:#fff;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px"></span></button>
         <button data-go="com" style="background:linear-gradient(135deg,#7c3aed,#db2777)"><span>🛡️</span><b>Community Moderation</b><small id="cCom">Reports · Users · Blue Tick</small></button>
         <button data-go="usr" style="background:#475569"><span>👥</span><b>Login Data</b><small>Users · Performance</small></button>
         <button data-go="d" style="background:#f59e0b"><span>💾</span><b>Backup / Export</b><small>JSON · CSV</small></button>
@@ -277,7 +277,7 @@
       <button class="sec bk" data-go="dash">← Dashboard</button>
       <div class="card"><div class="q">🩺 Student Reports</div>
         <div class="meta" style="margin:4px 0 10px">Student app ke login screen par "समस्या आ रही है? जाँच करें" se report bhejta hai. Nayi sabse upar.</div>
-        <button class="sec" id="dgRef">↻ Refresh</button></div>
+        <button class="sec" id="dgRef">↻ Refresh</button> <span id="dgTop"></span></div>
       <div id="dgList"></div>
     </div>
 
@@ -2445,25 +2445,54 @@ async function comClick(e) {
     try{DG=await api("/rest/v1/diag_reports?select=*&order=created_at.desc&limit=200");dgRender()}
     catch(e){b.innerHTML='<div class="msg">Load error: '+esc(e.message)+' — diag_setup.sql Supabase SQL Editor me ek baar chalao.</div>'}
   }
+  /* "Dekha" tracking: sirf is browser me (localStorage), koi DB change nahi */
+  function seenSet(){try{return new Set(JSON.parse(localStorage.getItem("dg_seen")||"[]"))}catch(_){return new Set()}}
+  function markSeen(ids){try{var s=seenSet();ids.forEach(function(i){s.add(String(i))});localStorage.setItem("dg_seen",JSON.stringify(Array.from(s).slice(-500)))}catch(_){}}
+  function isNew(r,s){return !s.has(String(r.id))}
+  function setBadge(n){var el=$("dgBadge");if(!el)return;el.textContent=n>99?"99+":n;el.style.display=n?"inline-block":"none"}
+  async function dgBadge(){
+    if(typeof TOKEN==="undefined"||!TOKEN)return;
+    try{var rows=await api("/rest/v1/diag_reports?select=id&order=created_at.desc&limit=200"),s=seenSet();
+      setBadge(rows.filter(function(r){return isNew(r,s)}).length)}catch(_){}
+  }
+  function mailLink(r){
+    var to=(r.contact||"").match(/[^\s,;<>()]+@[^\s,;<>()]+\.[^\s,;<>()]+/);if(!to)return "";
+    var subj="Jakhar Academy – Login Issue Resolution Confirmation";
+    var body="नमस्कार,\n\nआपने हाल ही में Jakhar Academy में लॉगिन करने का प्रयास किया था, लेकिन किसी तकनीकी समस्या के कारण आपको लॉगिन करने में परेशानी हुई थी।\n\nआपके द्वारा भेजी गई रिपोर्ट के आधार पर हमने आपकी समस्या का समाधान करने का प्रयास किया है।\n\nकृपया एक बार दोबारा लॉगिन करके चेक करें कि आपकी समस्या का समाधान हो गया है या नहीं।\n\nयदि आपकी समस्या अभी भी बनी हुई है, तो कृपया इसी ईमेल का रिप्लाई करके हमें बताएं कि आपको किस प्रकार की परेशानी आ रही है।\n\nहम आपकी समस्या का जल्द से जल्द समाधान करने का प्रयास करेंगे।\n\nधन्यवाद!\nJakhar Academy Support Team";
+    return "https://mail.google.com/mail/?view=cm&fs=1&authuser="+encodeURIComponent("vinodnath2259@gmail.com")+"&to="+encodeURIComponent(to[0])+"&su="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);
+  }
   function dgRender(){
+    var s=seenSet(),n=0;
     $("dgList").innerHTML=DG.map(function(r){
-      return '<div class="card" style="margin-bottom:8px"><div class="q">'+esc(r.contact||"(naam/email nahi diya)")+'</div>'+
+      var nw=isNew(r,s);if(nw)n++;var ml=mailLink(r);
+      return '<div class="card" style="margin-bottom:8px'+(nw?';border-color:#ef4444':'')+'"><div class="q">'+(nw?'<span class="tag hid" style="font-weight:700">🔴 NEW</span> ':'')+esc(r.contact||"(naam/email nahi diya)")+'</div>'+
       '<div class="meta">'+esc(fmtD(r.created_at))+' · '+esc(shortUA(r.ua))+'</div>'+
       (r.note?'<div class="meta" style="margin-top:4px;white-space:pre-wrap">'+esc(r.note)+'</div>':'')+
-      '<details style="margin-top:6px"><summary class="meta">Poori report</summary><pre style="white-space:pre-wrap;word-break:break-all;font-size:11px">'+esc(r.report)+'</pre></details>'+
-      '<div class="row" style="margin-top:6px"><button class="sec" data-dg="del" data-id="'+r.id+'" style="color:var(--bad)">Delete</button></div></div>';
+      '<details data-dgid="'+r.id+'" style="margin-top:6px"><summary class="meta">Poori report</summary><pre style="white-space:pre-wrap;word-break:break-all;font-size:11px">'+esc(r.report)+'</pre></details>'+
+      '<div class="row" style="margin-top:6px">'+
+      (ml?'<a data-dg="mail" data-id="'+r.id+'" href="'+esc(ml)+'" target="_blank" rel="noopener" style="text-decoration:none"><button class="sec" type="button" style="pointer-events:none">✉️ Mail bhejo</button></a>':'<button class="sec" disabled title="Contact me email nahi hai">✉️ Email nahi mili</button>')+
+      '<button class="sec" data-dg="del" data-id="'+r.id+'" style="color:var(--bad)">Delete</button></div></div>';
     }).join("")||'<div class="card meta">Abhi koi report nahi aayi.</div>';
+    setBadge(n);
+    var h=$("dgTop");if(h)h.innerHTML=n?'<button class="sec" id="dgAllSeen">✔ Sab dekha mark karo ('+n+' naye)</button>':"";
   }
+  document.addEventListener("toggle",function(e){
+    var d=e.target;if(d&&d.dataset&&d.dataset.dgid&&d.open){markSeen([d.dataset.dgid]);var c=d.closest(".card");if(c){c.style.borderColor="";var t=c.querySelector(".q .tag");if(t)t.remove()}setBadge(DG.filter(function(r){return isNew(r,seenSet())}).length)}
+  },true);
   document.addEventListener("click",async function(e){
     if(e.target.id==="dgRef"){dgLoad();return}
-    var b=e.target.closest("[data-dg]");if(!b||b.dataset.dg!=="del")return;
+    if(e.target.id==="dgAllSeen"){markSeen(DG.map(function(r){return r.id}));dgRender();return}
+    var b=e.target.closest("[data-dg]");if(!b)return;
+    if(b.dataset.dg==="mail"){markSeen([b.dataset.id]);setTimeout(dgRender,300);return}
+    if(b.dataset.dg!=="del")return;
     if(!await askConfirm({title:"Report delete karein?",body:"Ye report hamesha ke liye hat jayegi.",danger:true}))return;
     try{var d=await api("/rest/v1/diag_reports?id=eq."+encodeURIComponent(b.dataset.id),{method:"DELETE",headers:{Prefer:"return=representation"}});
       if(!d||!d.length)throw new Error("delete nahi hua (admin policy?)");
       DG=DG.filter(function(x){return String(x.id)!==b.dataset.id});dgRender()}
     catch(err){alert("Delete error: "+err.message)}
   });
-  var _st=showTab;showTab=function(n){var r=_st.apply(this,arguments);if(n==="dgn")dgLoad();return r};
+  var _st=showTab;showTab=function(n){var r=_st.apply(this,arguments);if(n==="dgn")dgLoad();if(n==="dash")dgBadge();return r};
+  setInterval(function(){if(!document.hidden)dgBadge()},60000);setTimeout(dgBadge,2500);
 })();
 </script>
 </body>
