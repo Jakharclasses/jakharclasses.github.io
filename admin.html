@@ -58,6 +58,20 @@
   .qrow{cursor:pointer;padding:8px 0;border-bottom:1px solid var(--bd);font-size:14px}
   details.sub{border:1px solid var(--bd);border-radius:10px;padding:8px 10px;margin-top:8px}
   details.sub>summary{cursor:pointer;font-weight:600}
+  /* --- Dashboard: subject / chapter list (rang-birangi, vyavasthit) --- */
+  .srow.sc{border:0;border-left:5px solid var(--ac);border-radius:12px;padding:10px 12px;margin-bottom:8px;align-items:center;background:var(--acbg)}
+  .sc .sn{font-weight:700;font-size:14.5px}.sc .sbar{height:5px;border-radius:5px;background:rgba(127,127,127,.22);overflow:hidden;margin-top:6px;min-width:90px}.sc .sbar i{display:block;height:100%;background:var(--ac);border-radius:5px}
+  details.sub{border:1px solid var(--bd);border-left:5px solid var(--ac,#1457d9);background:var(--acbg,transparent);border-radius:12px;padding:0;overflow:hidden;margin-top:10px}
+  details.sub>summary{padding:11px 12px;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  details.sub>summary::-webkit-details-marker{display:none}
+  details.sub>summary::before{content:"▸";color:var(--ac,#1457d9);font-size:15px;transition:transform .15s}
+  details.sub[open]>summary::before{transform:rotate(90deg)}
+  details.sub>summary .meta{margin-left:auto;font-weight:600;color:var(--ac,#1457d9);background:var(--card);border:1px solid var(--bd);border-radius:99px;padding:2px 10px}
+  details.sub>.srow.chrow{background:var(--card);margin:0 8px 8px;border:1px solid var(--bd);border-radius:12px;padding:10px 10px}
+  details.sub>.srow.chrow:last-child{margin-bottom:10px}.chrow:hover{border-color:var(--ac,#1457d9)}
+  .chrow .cno{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;border-radius:50%;background:var(--ac,#1457d9);color:#fff;font-size:12px;font-weight:700;margin-right:8px}
+  .chrow .cbs{flex-wrap:wrap}.chrow .cnt{font-size:12px;background:var(--acbg);color:var(--ac);border-radius:99px;padding:2px 10px;font-weight:700}
+  .cbtn.xl{border-color:#1457d9;color:#1457d9}.cbtn.vw{border-color:#7c3aed;color:#7c3aed}
   details.cat>summary{cursor:pointer;font-weight:600}
   @media (max-width:430px){.wrap{padding:8px}.card{padding:12px}button.sec,button.danger{padding:9px 10px}}
 
@@ -157,7 +171,7 @@
         </select>
         <div id="stats" class="stats"></div>
       </div>
-      <div class="row" style="margin:8px 0"><button class="sec" id="chCsv">⬇️ Is chapter ka CSV (verify ke liye)</button></div>
+      <div class="row" style="margin:8px 0;flex-wrap:wrap"><button class="sec" id="chXlsx">📊 Excel table (verify ke liye)</button><button class="sec" id="chView">🌐 Table dekho (browser me)</button><button class="sec" id="chCsv">⬇️ CSV</button></div>
       <div class="row" style="margin:8px 0"><button class="sec" id="dupFind">🔍 Is chapter me milte-julte sawal dhoondo</button></div>
       <div id="dupBox"></div>
       <div id="selBar" class="card hide" style="position:sticky;top:0;z-index:20"></div>
@@ -520,7 +534,7 @@ function render() {
 const CHAPTER_ALIAS={"राजस्थान की नहरें":"प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ","प्रमुख बाँध, सिंचाई परियोजनाएँ व जल संसाधन योजनाएँ":"प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ","क्षेत्रीय विकास कार्यक्रम":"क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ","राजस्थान में जनजातियाँ":"क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ","राजस्थान में सहकारिता":"सहकारिता एवं प्रमुख अनुसंधान केंद्र","राजस्थान के प्रमुख अनुसंधान केंद्र":"सहकारिता एवं प्रमुख अनुसंधान केंद्र"};
 const chAlias=c=>CHAPTER_ALIAS[c]||c;
 /* Part 1: DB me purane chapter naam rahe to bhi yahan naye naam me dikhenge (list/dashboard/template). */
-const APP_CHAPTERS = {"राजस्थान का इतिहास": ["राजस्थान के इतिहास के स्रोत", "राजस्थान की प्रमुख प्राचीन सभ्यताएँ एवं पुरास्थल", "राजस्थान का पौराणिक, ऐतिहासिक स्वरूप व जनपद युग", "राजपूतों की उत्पत्ति", "प्रतिहार वंश (गुर्जर प्रतिहार)", "चौहान राजवंश", "मेवाड़ का गुहिल राजवंश", "आमेर का कछवाहा राजवंश", "मारवाड़ का राठौड़ राजवंश", "बीकानेर का राठौड़ राजवंश", "जाट राजवंश", "राजस्थान के अन्य महत्त्वपूर्ण राजवंश", "राजस्थान में मध्यकालीन प्रशासन व सामंती व्यवस्था", "राजस्थान में मराठा हस्तक्षेप एवं उसका प्रभाव", "राजस्थान में अंग्रेजी प्रभुत्व और उसके प्रभाव", "राजस्थान में 1857 की क्रांति", "1857 की क्रांति के बाद सुधारों और राजनीतिक चेतना का काल", "राजस्थान के जनजाति एवं किसान आन्दोलन", "राजस्थान में सामाजिक संगठन", "राजस्थान में राजनीतिक संस्थाएँ एवं समाचार-पत्र", "राजस्थान में प्रजामण्डल व स्वतंत्रता आंदोलन", "राजस्थान का एकीकरण", "राजस्थान के प्रमुख ऐतिहासिक व्यक्तित्व एवं स्वतंत्रता सेनानी", "राजस्थान की इतिहास प्रसिद्ध महिलाएँ"], "राजस्थान का भूगोल": ["राजस्थान: सामान्य परिचय", "राजस्थान का भौतिक विभाजन", "राजस्थान: प्राचीन नाम व भौगोलिक उपनाम", "राजस्थान में जल संरक्षण एवं जल प्रबंधन", "राजस्थान की जलवायु", "राजस्थान में मिट्टी, अपरदन व मरुस्थलीकरण", "राजस्थान में सूखा, अकाल, आपदा व आपदा प्रबंधन", "राजस्थान की वन सम्पदा एवं पर्यावरण", "जैव विविधता, वन्य जीव एवं अभयारण्य", "राजस्थान में पशुपालन", "राजस्थान में कृषि एवं प्रमुख फसलें", "राजस्थान में अपवाह तंत्र व नदियाँ", "राजस्थान की झीलें व बावड़ियाँ", "प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ", "राजस्थान के उद्योग", "राजस्थान के खनिज संसाधन", "राजस्थान में ऊर्जा संसाधन", "राजस्थान में पर्यटन", "राजस्थान में परिवहन के साधन", "राजस्थान की जनगणना-2011", "क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ", "सहकारिता एवं प्रमुख अनुसंधान केंद्र"], "राजस्थान की कला एवं संस्कृति": ["दुर्ग", "महल, पैलेस व स्मारक", "हवेलियाँ", "छतरियाँ", "जल स्थापत्य", "लोकदेवता", "लोकदेवियाँ", "सम्प्रदाय व संत", "मुस्लिम पीर, मस्जिदें, दरगाह, मीनार व मकबरें", "मंदिर, मूर्तिकला व पैनोरमा", "त्योहार व मेले", "चित्रकला शैलियाँ", "हस्तकलाएँ", "लोक नृत्य", "प्रमुख लोक नाट्य", "लोकगायन शैलियाँ, संगीत घराने व संगीतज्ञ", "लोकगीत", "लोक वाद्ययंत्र", "आभूषण", "वेशभूषा व पहनावा", "प्रथाएँ व रीति-रिवाज", "जनजातियाँ", "भाषा व बोलियाँ", "साहित्यकार व कृतियाँ", "संत साहित्य व लौकिक साहित्य", "अन्य साहित्यकार व कृतियाँ", "साहित्यिक एवं सांस्कृतिक संस्थाएँ", "प्रमुख संग्रहालय", "शब्दावली", "डाकटिकट"]};
+const APP_CHAPTERS = {"राजस्थान का इतिहास": ["राजस्थान के इतिहास के स्रोत", "राजस्थान की प्रमुख प्राचीन सभ्यताएँ एवं पुरास्थल", "राजस्थान का पौराणिक, ऐतिहासिक स्वरूप व जनपद युग", "राजपूतों की उत्पत्ति", "प्रतिहार वंश (गुर्जर प्रतिहार)", "चौहान राजवंश", "मेवाड़ का गुहिल राजवंश", "आमेर का कछवाहा राजवंश", "मारवाड़ का राठौड़ राजवंश", "बीकानेर का राठौड़ राजवंश", "जाट राजवंश", "राजस्थान के अन्य महत्त्वपूर्ण राजवंश", "राजस्थान में मध्यकालीन प्रशासन व सामंती व्यवस्था", "राजस्थान में मराठा हस्तक्षेप एवं उसका प्रभाव", "राजस्थान में अंग्रेजी प्रभुत्व और उसके प्रभाव", "राजस्थान में 1857 की क्रांति", "1857 की क्रांति के बाद सुधारों और राजनीतिक चेतना का काल", "राजस्थान के जनजाति एवं किसान आन्दोलन", "राजस्थान में सामाजिक संगठन", "राजस्थान में राजनीतिक संस्थाएँ एवं समाचार-पत्र", "राजस्थान में प्रजामण्डल व स्वतंत्रता आंदोलन", "राजस्थान का एकीकरण", "राजस्थान के प्रमुख ऐतिहासिक व्यक्तित्व एवं स्वतंत्रता सेनानी", "राजस्थान की इतिहास प्रसिद्ध महिलाएँ"], "राजस्थान का भूगोल": ["राजस्थान: सामान्य परिचय", "राजस्थान का भौतिक विभाजन", "राजस्थान: प्राचीन नाम व भौगोलिक उपनाम", "राजस्थान में जल संरक्षण एवं जल प्रबंधन", "राजस्थान की जलवायु", "राजस्थान में मिट्टी, अपरदन व मरुस्थलीकरण", "राजस्थान में सूखा, अकाल, आपदा व आपदा प्रबंधन", "राजस्थान की वन सम्पदा एवं पर्यावरण", "जैव विविधता, वन्य जीव एवं अभयारण्य", "राजस्थान में पशुपालन", "राजस्थान में कृषि एवं प्रमुख फसलें", "राजस्थान में अपवाह तंत्र व नदियाँ", "राजस्थान की झीलें व बावड़ियाँ", "प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ", "राजस्थान के उद्योग", "राजस्थान के खनिज संसाधन", "राजस्थान में ऊर्जा संसाधन", "राजस्थान में पर्यटन", "राजस्थान में परिवहन के साधन", "राजस्थान की जनगणना-2011", "क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ", "सहकारिता एवं प्रमुख अनुसंधान केंद्र"], "राजस्थान की कला एवं संस्कृति": ["दुर्ग", "महल, पैलेस व स्मारक", "हवेलियाँ", "छतरियाँ", "जल स्थापत्य", "लोकदेवता", "लोकदेवियाँ", "सम्प्रदाय व संत", "मुस्लिम पीर, मस्जिदें, दरगाह, मीनार व मकबरें", "मंदिर, मूर्तिकला व पैनोरमा", "त्योहार व मेले", "चित्रकला शैलियाँ", "हस्तकलाएँ", "लोक नृत्य", "प्रमुख लोक नाट्य", "लोकगायन शैलियाँ, संगीत घराने व संगीतज्ञ", "लोकगीत", "लोक वाद्ययंत्र", "आभूषण", "वेशभूषा व पहनावा", "प्रथाएँ व रीति-रिवाज", "जनजातियाँ", "भाषा व बोलियाँ", "साहित्यकार व कृतियाँ", "संत साहित्य व लौकिक साहित्य", "अन्य साहित्यकार व कृतियाँ", "साहित्यिक एवं सांस्कृतिक संस्थाएँ", "प्रमुख संग्रहालय", "शब्दावली", "डाकटिकट"], "सामान्य विज्ञान": ["दैनिक विज्ञान का आधारभूत ज्ञान", "मात्रक और विमाएँ", "द्रव्य के सामान्य गुण", "ठोसों के यांत्रिक गुण", "विराम तथा गति", "बल, गति और ऊर्जा", "कार्य, शक्ति व ऊर्जा", "गुरुत्वाकर्षण", "ताप एवं ऊष्मा", "प्रकाश", "ध्वनि एवं तरंग गति", "विद्युत", "आधुनिक भौतिकी", "ऊर्जा के विभिन्न स्रोत", "अणु एवं परमाणु", "परमाणु संरचना", "तत्त्व, यौगिक एवं मिश्रण", "तत्व एवं अभिक्रियाएँ", "रासायनिक अभिक्रियाएँ एवं उत्प्रेरक", "अम्ल, क्षार एवं लवण, pH स्केल", "धातु, अधातु एवं इनके प्रमुख यौगिक", "कार्बन एवं उसके यौगिक", "ईंधन", "पर्यावरण रसायन", "दैनिक जीवन में रसायन", "कोशिका", "ऊतक", "जीवों का वर्गीकरण", "जंतु जगत का वर्गीकरण", "मानव शरीर", "भोजन एवं पोषक पदार्थ", "मानव रोग: कारण एवं निवारण", "जन स्वास्थ्य", "पादप शरीर क्रिया विज्ञान", "पादपों में संरचनात्मक संगठन एवं पोषण", "पादप हार्मोन एवं पादप रोग", "आनुवंशिकता", "जैव प्रौद्योगिकी", "पादपों एवं जन्तुओं का आर्थिक महत्त्व", "पारिस्थितिकी तंत्र", "जैव-रासायनिक चक्रण", "जैव-अपशिष्ट प्रबंधन", "बायोमास", "सौर मण्डल", "उपग्रह एवं अंतरिक्ष प्रौद्योगिकी", "रक्षा प्रौद्योगिकी एवं परमाणु ऊर्जा कार्यक्रम", "नैनो-प्रौद्योगिकी", "सूचना एवं संचार प्रौद्योगिकी", "विज्ञान एवं प्रौद्योगिकी में भारतीयों का योगदान"]};
 function fillSubjects() {
   const m = {};
   ALL.forEach(q => { (m[q.subject] = m[q.subject] || new Set()).add(q.chapter); });
@@ -1024,6 +1038,7 @@ function aiPrompt(kind, inFile) {
     "13. KATHAN reshuffle (sirf jab bilkul safe ho): kathan ka text mat badlo, sirf unka SEQUENCE badlo (PDF ka kathan 3 ab kathan 1 ban sakta hai). Phir options me 'केवल 1 और 2' / '1, 3 और 4' jaise combination naye numbers ke hisab se dobara likho, sahi answer position se copy mat karo — kathan ki sachchai dekhkar dobara nikalo, explanation me bhi naye numbers. Zara bhi risk lage (arth bigad sakta hai, options complex hain) to kathan jaise the waise hi rehne do — ye bilkul theek hai.",
     "14. OPTIONS reshuffle: 4 options ka order badlo aur answer = sahi option ka naya number. Reshuffle MAT karo jab: option me 'उपरोक्त सभी' / 'इनमें से कोई नहीं' / 'A और B दोनों' / 'All/None of the above' ho; options sankhya ya saal ascending-descending order me hon; assertion-reason (4 standard options fixed); sawal 'सही क्रम / arrange / ascending / पहले-बाद' ka ho (kram hi sawal hai); kathan ek-dusre ko refer karte hon; sumelan me List-I jaisi hai waisi rakho (sirf options reshuffle, codes sahi rakhna). Kathan wale sawal me jab kathan reshuffle na karo tab bhi options badal sakte ho.",
     (kind === "bulk" ? "15. EXPLANATION (bahut important — ye student ke revision ke liye hai, isliye achhi aur detail me likho): (a) Explanation ki shuruaat me \"सही उत्तर\" wali line MAT likho aur sahi option dobara mat likho (app ye by-default dikhata hai). (b) Seedhe sawal ke topic se shuru karo: sawal ka sahi uttar KYU sahi hai, ye bullet points me (• ...) samjhao; kathan / assertion-reason / sumelan me har kathan ya jode ko ek-ek bullet me jaanch ke batao ki wo sahi hai ya galat aur kyun. (c) Phir us sawal ke topic se jude baaki sabhi important tathya (definition, karan, prakar, jile/jagah/saal, tulna, apwad, aankde) bullet points me do, taaki student sirf ye explanation padh kar us topic ke sabhi related points revise kar sake. (d) Last me ek chhoti line: <b>याद रखें:</b> ... (yaad rakhne ka sar ya trick — jaise acronym / kram / tulna; zabardasti trick mat banao, jab asli aadhar ho tabhi). Format: <br> se line todo, bullets ke liye '• ' use karo, <b> sirf zaroori heading/word par, bullets ke baad <br><br> phir याद रखें. Poori explanation tahreeban 5-10 bullets, saaf aur achhi Hindi me. Naya/galat tathya mat jodo; kisi tathya par pakka yakeen na ho to likho hi mat. Namuna (is style me): • कथन A सही है: मरुस्थलीकरण में उपजाऊ भूमि धीरे-धीरे शुष्क व अनुपजाऊ बन जाती है।<br>• कारण R गलत है: मरुस्थलीय मृदा में ह्यूमस बहुत कम होता है।<br>• प्राकृतिक कारण: उच्च तापमान, कम वर्षा, तेज आँधियाँ। मानवीय कारण: अतिचारण, वनों की कटाई।<br>• रोकथाम: वृक्षारोपण, शेल्टर बेल्ट, नियंत्रित चराई।<br><br><b>याद रखें:</b> मरुस्थलीय मृदा = कम ह्यूमस + कम नाइट्रोजन + अधिक कैल्शियम कार्बोनेट।" : "15. EXPLANATION v2: <b>सही उत्तर क्यों</b> (1-2 line) → baaki options/kathan kyun galat (chhota) → 📌 <b>Revision:</b> us topic ke 3-6 zaroori points taaki student padh kar poora topic revise kar sake → 💡 <b>Trick:</b> SIRF tab jab sach me logical yaad rakhne ki trick bane (acronym / kram / tulna jiska asli aadhar ho). Zabardasti trick mat banao; zyadatar sawalon me trick nahi hogi. Poori explanation 4-10 line, <br> aur <b> se. Naya/galat tathya mat jodo; kisi tathya par pakka yakeen na ho to likho hi mat."),
+    "15A. EXPLANATION ME SOURCE / COPY JAISA WORDING BILKUL MAT LIKHO (strict): explanation me koi bhi aisa shabd ya line mat likho jisse lage ki ye kahin se copy ki gayi hai — jaise 'दी गई पुस्तक के अनुसार', 'पुस्तक / किताब के अनुसार', 'PDF के अनुसार', 'स्रोत के अनुसार', 'दिए गए पाठ / पैराग्राफ के अनुसार', 'As per the book / PDF / source', page number ya publication ka naam. Explanation seedhi, confident aur apni Hindi me likho (jaise ek teacher samjha raha ho) — sirf tathya batao, ye mat batao ki tathya kahan se liya.",
     "16. difficulty: easy | moderate | hard. " + DIFF_RUBRIC,
     "17. q_type: simple | statement | assertion_reason | match | table | lengthy. Assertion-reason tab bhi likho jab PDF me 'अभिकथन A / कथन-I / Assertion' kuch bhi likha ho (ek kathan assertion jaisa, ek karan/reason jaisa, options me 'सही व्याख्या').",
     "18. Ek hi PDF me same sawal do baar ho to ek hi row rakho; exams column me dono exam/saal ';' se likho.",
@@ -1886,6 +1901,11 @@ async function toggleVer(i) {
     renderDash();
   } catch (e) { alert("Verified save fail: " + e.message); }
 }
+/* Dashboard helpers: subject/chapter ko app ke order me dikhao + subject ka rang */
+const SUB_COL = { "राजस्थान का इतिहास": "#e8a33d", "राजस्थान की कला एवं संस्कृति": "#be185d", "सामान्य विज्ञान": "#4f46e5" }, SUB_PAL = ["#16a34a", "#0f766e", "#0369a1", "#7c3aed", "#b45309", "#dc2626", "#0891b2", "#9333ea"];
+function subCol(s) { if (SUB_COL[s]) return SUB_COL[s]; let h = 0; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return SUB_PAL[h % SUB_PAL.length]; }
+function subOrder(keys) { const o = Object.keys(APP_CHAPTERS), r = s => { const i = o.indexOf(s); return i < 0 ? 999 : i; }; return keys.slice().sort((a, b) => r(a) - r(b) || a.localeCompare(b)); }
+function chapOrder(s, keys) { const o = APP_CHAPTERS[s] || [], r = c => { const i = o.indexOf(c); return i < 0 ? 999 : i; }; return keys.slice().sort((a, b) => r(a) - r(b) || a.localeCompare(b)); }
 function renderDash() {
   const act = ALL.filter(q => q.is_active).length, subj = {}, chap = {};
   ALL.forEach(q => {
@@ -1894,19 +1914,19 @@ function renderDash() {
   });
   const box = (n, l) => '<div class="stat"><b>' + n + '</b><span>' + l + '</span></div>';
   $("dashStats").innerHTML = box(ALL.length, "Total sawal") + box(act, "Active") + box(ALL.length - act, "Hidden");
-  $("dashSubs").innerHTML = Object.keys(subj).sort().map(s =>
-    '<div class="srow"><span>' + esc(s) + '</span><span><b>' + subj[s].t + '</b> <span class="meta">· ' + subj[s].a + ' active · ' + (subj[s].t - subj[s].a) + ' hidden</span></span></div>'
+  $("dashSubs").innerHTML = subOrder(Object.keys(subj)).map(s => { const k = subCol(s), p = subj[s].t ? Math.round(subj[s].a / subj[s].t * 100) : 0;
+    return '<div class="srow sc" style="--ac:' + k + ';--acbg:' + k + '1a"><div style="flex:1"><div class="sn">' + esc(s) + '</div><div class="sbar"><i style="width:' + p + '%"></i></div></div><span style="text-align:right"><b>' + subj[s].t + '</b> sawal<br><span class="meta">' + subj[s].a + ' active · ' + (subj[s].t - subj[s].a) + ' hidden</span></span></div>'; }
   ).join("") || '<div class="meta">Abhi koi data nahi.</div>';
 
   const t = $("qsearch").value.trim().toLowerCase(); CHROWS = [];
-  let html = Object.keys(chap).sort().map(s => {
-    const subHit = t && s.toLowerCase().includes(t);
-    const chs = Object.keys(chap[s]).sort().filter(c => !t || subHit || c.toLowerCase().includes(t));
+  let html = subOrder(Object.keys(chap)).map(s => {
+    const subHit = t && s.toLowerCase().includes(t), k = subCol(s);
+    const chs = chapOrder(s, Object.keys(chap[s])).filter(c => !t || subHit || c.toLowerCase().includes(t));
     if (!chs.length) return "";
-    return '<details class="sub" data-s="' + esc(s) + '"' + (t || OPENS.has(s) ? " open" : "") + '><summary>' + esc(s) + ' <span class="meta">(' + subj[s].t + ' sawal · ' + chs.length + ' chapter)</span></summary>' +
-      chs.map(c => { CHROWS.push({ s, c }); const x = chap[s][c], vi = CHROWS.length - 1, on = VER.has(s + "||" + c);
-        return '<div class="srow chrow" data-ci="' + vi + '"><div class="cn">' + esc(c) + '</div><div class="cm"><span class="meta"><b>' + x.t + '</b> sawal · ' + x.a + ' active ›</span>' +
-          '<span class="cbs"><button type="button" class="cbtn" data-cv="' + vi + '">⬇ CSV</button><button type="button" class="vbtn' + (on ? ' on' : '') + '" data-vi="' + vi + '">' + (on ? '✔ Verified' : 'Verify') + '</button></span></div></div>'; }).join("") + '</details>';
+    return '<details class="sub" data-s="' + esc(s) + '" style="--ac:' + k + ';--acbg:' + k + '14"' + (t || OPENS.has(s) ? " open" : "") + '><summary>' + esc(s) + ' <span class="meta">' + subj[s].t + ' sawal · ' + chs.length + ' chapter</span></summary>' +
+      chs.map((c, n) => { CHROWS.push({ s, c }); const x = chap[s][c], vi = CHROWS.length - 1, on = VER.has(s + "||" + c);
+        return '<div class="srow chrow" data-ci="' + vi + '"><div class="cn"><span class="cno">' + (n + 1) + '</span>' + esc(c) + '</div><div class="cm"><span class="meta"><span class="cnt">' + x.t + ' sawal</span> ' + x.a + ' active ›</span>' +
+          '<span class="cbs"><button type="button" class="cbtn xl" data-cx="' + vi + '">📊 Excel</button><button type="button" class="cbtn vw" data-cw="' + vi + '">🌐 Table</button><button type="button" class="cbtn" data-cv="' + vi + '">⬇ CSV</button><button type="button" class="vbtn' + (on ? ' on' : '') + '" data-vi="' + vi + '">' + (on ? '✔ Verified' : 'Verify') + '</button></span></div></div>'; }).join("") + '</details>';
   }).join("");
   if (t.length >= 2) {
     const hits = ALL.filter(q => q.question.toLowerCase().includes(t));
@@ -1925,7 +1945,9 @@ function renderDash() {
 $("qsearch").oninput = renderDash;
 $("dashTree").addEventListener("toggle", e => { const d = e.target; if (d.dataset && d.dataset.s !== undefined && !$("qsearch").value.trim()) { d.open ? OPENS.add(d.dataset.s) : OPENS.delete(d.dataset.s); } }, true);
 $("dashTree").addEventListener("click", e => {
-  const cv = e.target.closest(".cbtn"); if (cv) { e.stopPropagation(); const r = CHROWS[+cv.dataset.cv]; if (r) chapterCSV(r.s, r.c); return; }
+  const cx = e.target.closest("[data-cx]"); if (cx) { e.stopPropagation(); const r = CHROWS[+cx.dataset.cx]; if (r) chapterXlsx(r.s, r.c); return; }
+  const cw = e.target.closest("[data-cw]"); if (cw) { e.stopPropagation(); const r = CHROWS[+cw.dataset.cw]; if (r) chapterView(r.s, r.c); return; }
+  const cv = e.target.closest("[data-cv]"); if (cv) { e.stopPropagation(); const r = CHROWS[+cv.dataset.cv]; if (r) chapterCSV(r.s, r.c); return; }
   const vb = e.target.closest(".vbtn"); if (vb) { e.stopPropagation(); toggleVer(+vb.dataset.vi); return; }
   const c = e.target.closest(".chrow"); if (c) { const r = CHROWS[+c.dataset.ci]; if (r) openChapter(r.s, r.c); return; }
   const q = e.target.closest(".qrow"); if (q) { const x = ALL.find(z => z.id === q.dataset.qid); if (x) openChapter(x.subject, x.chapter, x.question); }
@@ -1952,6 +1974,102 @@ function exportCSV(rows, label) {
   document.body.appendChild(a); a.click(); a.remove();
   msg.style.color = "var(--ok)"; msg.textContent = rows.length + " sawal export ho gaye.";
 }
+/* ===== Chapter ka TABLE: Excel (.xlsx) + browser table =====
+   .csv phone me aksar kisi app se nahi khulti. .xlsx Google Sheets / Excel / WPS me tabular (rows-columns) khulti hai;
+   "Table dekho" kisi bhi app ke bina seedha browser me table dikhata hai. */
+const CRC_T = (() => { const t = []; for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b) { let c = -1; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ -1) >>> 0; }
+function zipStore(files) {
+  const enc = new TextEncoder(), parts = [], cd = []; let off = 0;
+  files.forEach(f => {
+    const nm = enc.encode(f.name), data = enc.encode(f.text), crc = crc32(data), sz = data.length;
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(12, 0x21, true);
+    lh.setUint32(14, crc, true); lh.setUint32(18, sz, true); lh.setUint32(22, sz, true); lh.setUint16(26, nm.length, true);
+    parts.push(new Uint8Array(lh.buffer), nm, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(14, 0x21, true);
+    ch.setUint32(16, crc, true); ch.setUint32(20, sz, true); ch.setUint32(24, sz, true); ch.setUint16(28, nm.length, true); ch.setUint32(42, off, true);
+    cd.push(new Uint8Array(ch.buffer), nm);
+    off += 30 + nm.length + sz;
+  });
+  let cdl = 0; cd.forEach(x => cdl += x.length);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true); end.setUint32(12, cdl, true); end.setUint32(16, off, true);
+  return new Blob(parts.concat(cd, [new Uint8Array(end.buffer)]), { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+}
+const xmlEsc = s => String(s == null ? "" : s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+/* HTML tags (<br>, <table> ...) hata kar padhne layak text */
+function cellTxt(s) {
+  return String(s == null ? "" : s).replace(/<br\s*\/?>/gi, "\n").replace(/<\/tr>/gi, "\n").replace(/<\/t[dh]>/gi, " | ").replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+function chapterTable(sub, chap) {
+  const rows = ALL.filter(q => q.subject === sub && q.chapter === chap).sort((a, b) => String(a.created_at || "").localeCompare(String(b.created_at || "")));
+  const hdr = ["No.", "Question", "Option A", "Option B", "Option C", "Option D", "Answer", "Sahi option", "Explanation", "Exams", "Status"];
+  const data = rows.map((q, i) => [i + 1, cellTxt(q.question), cellTxt((q.options || [])[0]), cellTxt((q.options || [])[1]), cellTxt((q.options || [])[2]), cellTxt((q.options || [])[3]),
+    "ABCD"[q.answer ?? 0] || "", cellTxt((q.options || [])[q.answer]), cellTxt(q.explanation), (q.exams || []).join("; "), q.is_active ? "active" : "hidden"]);
+  return { hdr, data, rows };
+}
+function saveBlob(blob, name) {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 20000);
+}
+const fileSlug = (chap, ext) => "verify_" + String(chap).replace(/[\\\/:*?"<>|\s]+/g, "_").slice(0, 60) + "_" + new Date().toISOString().slice(0, 10) + "." + ext;
+function chapterXlsx(sub, chap) {
+  const T = chapterTable(sub, chap); if (!T.data.length) { alert("Is chapter me koi sawal nahi."); return; }
+  const col = i => String.fromCharCode(65 + i), widths = [6, 55, 24, 24, 24, 24, 9, 26, 70, 22, 10], centerCols = new Set([0, 6, 10]);
+  const cell = (v, r, c, s) => typeof v === "number" ? '<c r="' + col(c) + r + '" s="' + s + '"><v>' + v + '</v></c>'
+    : '<c r="' + col(c) + r + '" t="inlineStr" s="' + s + '"><is><t xml:space="preserve">' + xmlEsc(String(v).slice(0, 32000)) + '</t></is></c>';
+  let sheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>' +
+    '<cols>' + widths.map((w, i) => '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>').join("") + '</cols><sheetData>' +
+    '<row r="1" ht="24" customHeight="1">' + T.hdr.map((h, c) => cell(h, 1, c, 1)).join("") + '</row>';
+  T.data.forEach((r, i) => {
+    const n = i + 2, zebra = i % 2 ? 0 : 0;
+    sheet += '<row r="' + n + '">' + r.map((v, c) => {
+      let s = centerCols.has(c) ? 2 : 0; if (c === 6) s = 3; if (c === 10 && v === "hidden") s = 4; return cell(v, n, c, s);
+    }).join("") + '</row>';
+  });
+  sheet += '</sheetData><autoFilter ref="A1:' + col(T.hdr.length - 1) + (T.data.length + 1) + '"/></worksheet>';
+  const styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<fonts count="4"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FF15803D"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFDC2626"/><name val="Calibri"/></font></fonts>' +
+    '<fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1457D9"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFDCFCE7"/><bgColor indexed="64"/></patternFill></fill></fills>' +
+    '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFB6C2D6"/></left><right style="thin"><color rgb="FFB6C2D6"/></right><top style="thin"><color rgb="FFB6C2D6"/></top><bottom style="thin"><color rgb="FFB6C2D6"/></bottom><diagonal/></border></borders>' +
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+    '<cellXfs count="5">' +
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>' +
+    '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>' +
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="top" wrapText="1"/></xf>' +
+    '<xf numFmtId="0" fontId="2" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="top"/></xf>' +
+    '<xf numFmtId="0" fontId="3" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="top"/></xf>' +
+    '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  const sn = xmlEsc(String(chap).replace(/[\\\/?*\[\]:]/g, " ").slice(0, 28) || "Sawal");
+  const files = [
+    { name: "[Content_Types].xml", text: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>' },
+    { name: "_rels/.rels", text: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
+    { name: "xl/workbook.xml", text: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="' + sn + '" sheetId="1" r:id="rId1"/></sheets></workbook>' },
+    { name: "xl/_rels/workbook.xml.rels", text: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>' },
+    { name: "xl/styles.xml", text: styles },
+    { name: "xl/worksheets/sheet1.xml", text: sheet }
+  ];
+  saveBlob(zipStore(files), fileSlug(chap, "xlsx"));
+}
+/* Kisi app ke bina: browser me rang-birangi table (naye tab me). Block ho to .html file download hoti hai (Chrome me kholo). */
+function chapterView(sub, chap) {
+  const T = chapterTable(sub, chap); if (!T.data.length) { alert("Is chapter me koi sawal nahi."); return; }
+  const e = s => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const body = T.data.map((r, i) => '<tr class="' + (r[10] === "hidden" ? "hd" : "") + '">' + r.map((v, c) => '<td class="c' + c + '">' + e(v).replace(/\n/g, "<br>") + "</td>").join("") + "</tr>").join("");
+  const html = '<!DOCTYPE html><html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + e(chap) + '</title><style>' +
+    'body{margin:0;font-family:"Noto Sans Devanagari","Segoe UI",Arial,sans-serif;background:#eef3fb;color:#16202e}h1{font-size:16px;margin:0;padding:12px;background:#1457d9;color:#fff;position:sticky;left:0}' +
+    'h1 small{display:block;font-weight:400;opacity:.85;font-size:12px}.w{overflow:auto;max-height:calc(100vh - 62px)}table{border-collapse:collapse;min-width:1500px;font-size:13px;background:#fff}' +
+    'th{position:sticky;top:0;background:#1457d9;color:#fff;padding:8px;border:1px solid #0b3a8c;z-index:1;white-space:nowrap}td{border:1px solid #c7d2e5;padding:7px 8px;vertical-align:top;min-width:110px}' +
+    'tr:nth-child(even) td{background:#f4f8ff}td.c0,td.c6{text-align:center;min-width:48px;font-weight:700}td.c6{background:#dcfce7!important;color:#15803d}td.c1{min-width:300px}td.c8{min-width:380px}tr.hd td{opacity:.55}</style></head><body>' +
+    '<h1>' + e(chap) + '<small>' + e(sub) + ' · ' + T.data.length + ' sawal — left/right scroll karke dekho</small></h1><div class="w"><table><thead><tr>' + T.hdr.map(h => "<th>" + e(h) + "</th>").join("") + "</tr></thead><tbody>" + body + "</tbody></table></div></body></html>";
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" }), url = URL.createObjectURL(blob);
+  const w = window.open(url, "_blank");
+  if (!w) saveBlob(blob, fileSlug(chap, "html"));
+}
 /* Chapter ka poora CSV (filter ignore) — Excel/Sheets me tabular verify ke liye. Sahi option ka text bhi alag column me. */
 function chapterCSV(sub, chap) {
   const rows = ALL.filter(q => q.subject === sub && q.chapter === chap).sort((a, b) => String(a.created_at || "").localeCompare(String(b.created_at || "")));
@@ -1967,6 +2085,8 @@ function chapterCSV(sub, chap) {
   document.body.appendChild(a); a.click(); a.remove();
 }
 $("chCsv").onclick = () => { if (CUR) chapterCSV(CUR.s, CUR.c); };
+$("chXlsx").onclick = () => { if (CUR) chapterXlsx(CUR.s, CUR.c); };
+$("chView").onclick = () => { if (CUR) chapterView(CUR.s, CUR.c); };
 $("expAll").onclick = () => exportCSV(ALL, "all");
 $("expFiltered").onclick = () => exportCSV(filteredRows(), "filtered");
 
