@@ -275,7 +275,7 @@ a.row{text-decoration:none;color:inherit}
 .tiles2 .nbadge{font-size:10.5px;position:absolute;top:8px;right:8px;box-shadow:0 1px 5px rgba(0,0,0,.3);animation:nbp 1.8s ease-in-out infinite}
 @keyframes nbp{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 .nbadge.inl{margin-left:6px;vertical-align:middle}
-.scard .nbadge{position:absolute;top:10px;left:10px}
+.scard .nbadge{position:absolute;top:10px;right:10px;left:auto}
 /* Part 2: NEW badge — hilta-dulta (wiggle) + ring taaki card ke color par bhi alag dikhe. Badge ka rang JS (nbStyle) card ke rang se match hone par badal deta hai */
 .nbadge.wg{animation:nbw 1.6s ease-in-out infinite;transform-origin:50% 50%;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 2px 7px rgba(0,0,0,.35)}
 .dark .nbadge.wg{box-shadow:0 0 0 2px rgba(15,23,42,.9),0 2px 7px rgba(0,0,0,.5)}
@@ -440,6 +440,22 @@ div.opt{cursor:default}
 <meta name="theme-color" content="#1457d9">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
+<style id="jk-glow">
+/* Rainbow chalti-hui border (Gemini jaisa): square cards, Install banner, What's New popup */
+@property --jkang{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes jkspin{to{--jkang:360deg}}
+.scard::after,.tiles2 button::after,.jkib::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:2.5px;pointer-events:none;
+ background:conic-gradient(from var(--jkang),#ff3b30,#ff9500,#ffd60a,#34c759,#0ea5e9,#5856d6,#af52de,#ff3b30);
+ -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+ mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);mask-composite:exclude;
+ animation:jkspin 4s linear infinite}
+.wnc{border:3px solid transparent!important;border-bottom:0!important;
+ background:linear-gradient(#fff,#fff) padding-box,conic-gradient(from var(--jkang),#ff3b30,#ff9500,#ffd60a,#34c759,#0ea5e9,#5856d6,#af52de,#ff3b30) border-box!important;
+ animation:wns .25s ease-out,jkspin 4s linear infinite!important}
+.dark .wnc{background:linear-gradient(#19243a,#19243a) padding-box,conic-gradient(from var(--jkang),#ff3b30,#ff9500,#ffd60a,#34c759,#0ea5e9,#5856d6,#af52de,#ff3b30) border-box!important}
+.jkib{box-shadow:0 8px 28px rgba(20,87,217,.55)!important}
+@media (prefers-reduced-motion:reduce){.scard::after,.tiles2 button::after,.jkib::after,.wnc{animation:none!important}}
+</style>
 </head>
 <body>
 <div class="wrap" id="app"></div>
@@ -928,7 +944,7 @@ const SUBJECTS=[
   "राजस्थान के इतिहास के स्रोत","राजस्थान की प्रमुख प्राचीन सभ्यताएँ एवं पुरास्थल","राजस्थान का पौराणिक, ऐतिहासिक स्वरूप व जनपद युग","राजपूतों की उत्पत्ति","प्रतिहार वंश (गुर्जर प्रतिहार)","चौहान राजवंश","मेवाड़ का गुहिल राजवंश","आमेर का कछवाहा राजवंश","मारवाड़ का राठौड़ राजवंश","बीकानेर का राठौड़ राजवंश","जाट राजवंश","राजस्थान के अन्य महत्त्वपूर्ण राजवंश","राजस्थान में मध्यकालीन प्रशासन व सामंती व्यवस्था","राजस्थान में मराठा हस्तक्षेप एवं उसका प्रभाव","राजस्थान में अंग्रेजी प्रभुत्व और उसके प्रभाव","राजस्थान में 1857 की क्रांति","1857 की क्रांति के बाद सुधारों और राजनीतिक चेतना का काल","राजस्थान के जनजाति एवं किसान आन्दोलन","राजस्थान में सामाजिक संगठन","राजस्थान में राजनीतिक संस्थाएँ एवं समाचार-पत्र","राजस्थान में प्रजामण्डल व स्वतंत्रता आंदोलन","राजस्थान का एकीकरण","राजस्थान के प्रमुख ऐतिहासिक व्यक्तित्व एवं स्वतंत्रता सेनानी","राजस्थान की इतिहास प्रसिद्ध महिलाएँ"]},
  {name:"राजस्थान का भूगोल",icon:"🗺️",color:"#16a34a",chapters:[
   "राजस्थान: सामान्य परिचय","राजस्थान का भौतिक विभाजन","राजस्थान: प्राचीन नाम व भौगोलिक उपनाम","राजस्थान में जल संरक्षण एवं जल प्रबंधन","राजस्थान की जलवायु","राजस्थान में मिट्टी, अपरदन व मरुस्थलीकरण","राजस्थान में सूखा, अकाल, आपदा व आपदा प्रबंधन","राजस्थान की वन सम्पदा एवं पर्यावरण","जैव विविधता, वन्य जीव एवं अभयारण्य","राजस्थान में पशुपालन","राजस्थान में कृषि एवं प्रमुख फसलें","राजस्थान में अपवाह तंत्र व नदियाँ","राजस्थान की झीलें व बावड़ियाँ","प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ","राजस्थान के उद्योग","राजस्थान के खनिज संसाधन","राजस्थान में ऊर्जा संसाधन","राजस्थान में पर्यटन","राजस्थान में परिवहन के साधन","राजस्थान की जनगणना-2011","क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ","सहकारिता एवं प्रमुख अनुसंधान केंद्र"]},
- {name:"राजस्थान की कला एवं संस्कृति",icon:"🎭",color:"#be185d",chapters:[]},
+ {name:"राजस्थान की कला एवं संस्कृति",icon:"🎭",color:"#be185d",chapters:["दुर्ग", "महल, पैलेस व स्मारक", "हवेलियाँ", "छतरियाँ", "जल स्थापत्य", "लोकदेवता", "लोकदेवियाँ", "सम्प्रदाय व संत", "मुस्लिम पीर, मस्जिदें, दरगाह, मीनार व मकबरें", "मंदिर, मूर्तिकला व पैनोरमा", "त्योहार व मेले", "चित्रकला शैलियाँ", "हस्तकलाएँ", "लोक नृत्य", "प्रमुख लोक नाट्य", "लोकगायन शैलियाँ, संगीत घराने व संगीतज्ञ", "लोकगीत", "लोक वाद्ययंत्र", "आभूषण", "वेशभूषा व पहनावा", "प्रथाएँ व रीति-रिवाज", "जनजातियाँ", "भाषा व बोलियाँ", "साहित्यकार व कृतियाँ", "संत साहित्य व लौकिक साहित्य", "अन्य साहित्यकार व कृतियाँ", "साहित्यिक एवं सांस्कृतिक संस्थाएँ", "प्रमुख संग्रहालय", "शब्दावली", "डाकटिकट"]},
  {name:"राजस्थान की राजव्यवस्था एवं प्रशासन",icon:"⚖️",color:"#0f766e",chapters:[]},
  {name:"राजस्थान का बजट एवं आर्थिक समीक्षा",icon:"💰",color:"#b45309",chapters:[]},
  {name:"राजस्थान की समसामयिक घटनाएँ",icon:"📰",color:"#0369a1",chapters:[]},
@@ -3391,7 +3407,7 @@ const jvCat=c=>TL.filter(x=>x.kind===c);
 const newCount=cat=>cat==="pyq"?(SUBJECTS.some(S=>newSub(S.name)||S.chapters.some(c=>newChap(S.name,c)))?1:0):jvCat(cat).filter(newTest).length;
 /* Badge ka rang card ke rang se kabhi match na kare: card ke saare hex rangon se RGB doori nikalo,
    pehla candidate jo sabse door ho (min doori >= 120) wo lo. */
-const NB_CAND=[["#ef4444","#fff"],["#facc15","#111827"],["#ffffff","#b91c1c"],["#111827","#fff"],["#0ea5e9","#fff"]];
+const NB_CAND=[["#ef4444","#fff"],["#facc15","#111827"],["#0ea5e9","#fff"],["#111827","#fff"],["#ffffff","#b91c1c"]];
 function nbRgb(h){h=h.replace("#","");if(h.length===3)h=h.split("").map(c=>c+c).join("");const n=parseInt(h,16);return[(n>>16)&255,(n>>8)&255,n&255]}
 function nbColorFor(card){
   const cs=(String(card||"").match(/#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b/g)||[]).map(nbRgb);
@@ -3755,13 +3771,13 @@ function jvUnpackHist(d,textOf){
     var m=mode();if(!m)return;
     shown=true;
     var msg,btn="";
-    if(m==="native"){msg="बेहतर अनुभव के लिए ऐप Install करें";btn='<button id="jkiI" style="background:#fff;color:#1457d9;border:0;font-weight:800;padding:8px 14px;border-radius:10px;font-size:13px">Install</button>'}
+    if(m==="native"){msg="बेहतर अनुभव के लिए ऐप Install करें";btn='<button id="jkiI" style="background:#fff;color:#1457d9;border:0;font-weight:800;padding:11px 18px;border-radius:12px;font-size:15px">Install</button>'}
     else if(m==="ios"){msg="Install के लिए Share (⬆️) → \u201cAdd to Home Screen\u201d दबाएँ"}
     else{msg="ऐप Install करने के लिए ऊपर ⋮ → \u201cChrome में खोलें\u201d चुनें"}
     bn=document.createElement("div");
     bn.setAttribute("role","dialog");
-    bn.style.cssText="position:fixed;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:99999;background:linear-gradient(135deg,#0b3a8c,#1457d9);color:#fff;border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);transform:translateY(-120%);transition:transform .35s ease;font-family:inherit";
-    bn.innerHTML='<span style="font-size:26px">📲</span><span style="flex:1;font-size:13.5px;font-weight:700;line-height:1.35">'+msg+'</span>'+btn+'<button id="jkiL" style="background:rgba(255,255,255,.2);color:#fff;border:0;padding:8px 10px;border-radius:10px;font-size:12.5px">बाद में</button>';
+    bn.className="jkib";bn.style.cssText="position:fixed;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:99999;background:linear-gradient(135deg,#0b3a8c,#1457d9);color:#fff;border-radius:20px;padding:18px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.35);transform:translateY(-120%);transition:transform .35s ease;font-family:inherit";
+    bn.innerHTML='<span style="font-size:34px">📲</span><span style="flex:1;font-size:15.5px;font-weight:800;line-height:1.4">'+msg+'</span>'+btn+'<button id="jkiL" style="background:rgba(255,255,255,.2);color:#fff;border:0;padding:10px 12px;border-radius:12px;font-size:13.5px">बाद में</button>';
     document.body.appendChild(bn);
     requestAnimationFrame(function(){requestAnimationFrame(function(){if(bn)bn.style.transform="translateY(0)"})});
     var L=document.getElementById("jkiL");if(L)L.onclick=function(){later();hide()};

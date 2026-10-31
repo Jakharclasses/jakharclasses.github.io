@@ -50,6 +50,11 @@
   button.bk{margin-bottom:10px}
   .vbtn{font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;border:1.5px solid #1d9bf0;background:transparent;color:#1d9bf0;cursor:pointer;margin-right:4px;width:auto;min-height:0;line-height:1.3}.vbtn.on{background:#1d9bf0;color:#fff}
   .chrow{cursor:pointer}.chrow:hover,.qrow:hover{background:rgba(20,87,217,.07)}
+  .srow.chrow{flex-direction:column;align-items:stretch;gap:7px;padding:10px 6px}
+  .chrow .cn{font-size:14.5px;font-weight:700;line-height:1.4;overflow-wrap:anywhere}
+  .chrow .cm{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .chrow .cbs{display:flex;gap:6px;align-items:center}.chrow .cbs .vbtn{margin-right:0;font-size:12px;padding:5px 11px}
+  .cbtn{font-size:12px;font-weight:700;padding:5px 11px;border-radius:12px;border:1.5px solid #16a34a;background:transparent;color:#16a34a;cursor:pointer;width:auto;min-height:0;line-height:1.3}
   .qrow{cursor:pointer;padding:8px 0;border-bottom:1px solid var(--bd);font-size:14px}
   details.sub{border:1px solid var(--bd);border-radius:10px;padding:8px 10px;margin-top:8px}
   details.sub>summary{cursor:pointer;font-weight:600}
@@ -152,6 +157,7 @@
         </select>
         <div id="stats" class="stats"></div>
       </div>
+      <div class="row" style="margin:8px 0"><button class="sec" id="chCsv">⬇️ Is chapter ka CSV (verify ke liye)</button></div>
       <div class="row" style="margin:8px 0"><button class="sec" id="dupFind">🔍 Is chapter me milte-julte sawal dhoondo</button></div>
       <div id="dupBox"></div>
       <div id="selBar" class="card hide" style="position:sticky;top:0;z-index:20"></div>
@@ -514,7 +520,7 @@ function render() {
 const CHAPTER_ALIAS={"राजस्थान की नहरें":"प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ","प्रमुख बाँध, सिंचाई परियोजनाएँ व जल संसाधन योजनाएँ":"प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ","क्षेत्रीय विकास कार्यक्रम":"क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ","राजस्थान में जनजातियाँ":"क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ","राजस्थान में सहकारिता":"सहकारिता एवं प्रमुख अनुसंधान केंद्र","राजस्थान के प्रमुख अनुसंधान केंद्र":"सहकारिता एवं प्रमुख अनुसंधान केंद्र"};
 const chAlias=c=>CHAPTER_ALIAS[c]||c;
 /* Part 1: DB me purane chapter naam rahe to bhi yahan naye naam me dikhenge (list/dashboard/template). */
-const APP_CHAPTERS = {"राजस्थान का इतिहास": ["राजस्थान के इतिहास के स्रोत", "राजस्थान की प्रमुख प्राचीन सभ्यताएँ एवं पुरास्थल", "राजस्थान का पौराणिक, ऐतिहासिक स्वरूप व जनपद युग", "राजपूतों की उत्पत्ति", "प्रतिहार वंश (गुर्जर प्रतिहार)", "चौहान राजवंश", "मेवाड़ का गुहिल राजवंश", "आमेर का कछवाहा राजवंश", "मारवाड़ का राठौड़ राजवंश", "बीकानेर का राठौड़ राजवंश", "जाट राजवंश", "राजस्थान के अन्य महत्त्वपूर्ण राजवंश", "राजस्थान में मध्यकालीन प्रशासन व सामंती व्यवस्था", "राजस्थान में मराठा हस्तक्षेप एवं उसका प्रभाव", "राजस्थान में अंग्रेजी प्रभुत्व और उसके प्रभाव", "राजस्थान में 1857 की क्रांति", "1857 की क्रांति के बाद सुधारों और राजनीतिक चेतना का काल", "राजस्थान के जनजाति एवं किसान आन्दोलन", "राजस्थान में सामाजिक संगठन", "राजस्थान में राजनीतिक संस्थाएँ एवं समाचार-पत्र", "राजस्थान में प्रजामण्डल व स्वतंत्रता आंदोलन", "राजस्थान का एकीकरण", "राजस्थान के प्रमुख ऐतिहासिक व्यक्तित्व एवं स्वतंत्रता सेनानी", "राजस्थान की इतिहास प्रसिद्ध महिलाएँ"], "राजस्थान का भूगोल": ["राजस्थान: सामान्य परिचय", "राजस्थान का भौतिक विभाजन", "राजस्थान: प्राचीन नाम व भौगोलिक उपनाम", "राजस्थान में जल संरक्षण एवं जल प्रबंधन", "राजस्थान की जलवायु", "राजस्थान में मिट्टी, अपरदन व मरुस्थलीकरण", "राजस्थान में सूखा, अकाल, आपदा व आपदा प्रबंधन", "राजस्थान की वन सम्पदा एवं पर्यावरण", "जैव विविधता, वन्य जीव एवं अभयारण्य", "राजस्थान में पशुपालन", "राजस्थान में कृषि एवं प्रमुख फसलें", "राजस्थान में अपवाह तंत्र व नदियाँ", "राजस्थान की झीलें व बावड़ियाँ", "प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ", "राजस्थान के उद्योग", "राजस्थान के खनिज संसाधन", "राजस्थान में ऊर्जा संसाधन", "राजस्थान में पर्यटन", "राजस्थान में परिवहन के साधन", "राजस्थान की जनगणना-2011", "क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ", "सहकारिता एवं प्रमुख अनुसंधान केंद्र"]};
+const APP_CHAPTERS = {"राजस्थान का इतिहास": ["राजस्थान के इतिहास के स्रोत", "राजस्थान की प्रमुख प्राचीन सभ्यताएँ एवं पुरास्थल", "राजस्थान का पौराणिक, ऐतिहासिक स्वरूप व जनपद युग", "राजपूतों की उत्पत्ति", "प्रतिहार वंश (गुर्जर प्रतिहार)", "चौहान राजवंश", "मेवाड़ का गुहिल राजवंश", "आमेर का कछवाहा राजवंश", "मारवाड़ का राठौड़ राजवंश", "बीकानेर का राठौड़ राजवंश", "जाट राजवंश", "राजस्थान के अन्य महत्त्वपूर्ण राजवंश", "राजस्थान में मध्यकालीन प्रशासन व सामंती व्यवस्था", "राजस्थान में मराठा हस्तक्षेप एवं उसका प्रभाव", "राजस्थान में अंग्रेजी प्रभुत्व और उसके प्रभाव", "राजस्थान में 1857 की क्रांति", "1857 की क्रांति के बाद सुधारों और राजनीतिक चेतना का काल", "राजस्थान के जनजाति एवं किसान आन्दोलन", "राजस्थान में सामाजिक संगठन", "राजस्थान में राजनीतिक संस्थाएँ एवं समाचार-पत्र", "राजस्थान में प्रजामण्डल व स्वतंत्रता आंदोलन", "राजस्थान का एकीकरण", "राजस्थान के प्रमुख ऐतिहासिक व्यक्तित्व एवं स्वतंत्रता सेनानी", "राजस्थान की इतिहास प्रसिद्ध महिलाएँ"], "राजस्थान का भूगोल": ["राजस्थान: सामान्य परिचय", "राजस्थान का भौतिक विभाजन", "राजस्थान: प्राचीन नाम व भौगोलिक उपनाम", "राजस्थान में जल संरक्षण एवं जल प्रबंधन", "राजस्थान की जलवायु", "राजस्थान में मिट्टी, अपरदन व मरुस्थलीकरण", "राजस्थान में सूखा, अकाल, आपदा व आपदा प्रबंधन", "राजस्थान की वन सम्पदा एवं पर्यावरण", "जैव विविधता, वन्य जीव एवं अभयारण्य", "राजस्थान में पशुपालन", "राजस्थान में कृषि एवं प्रमुख फसलें", "राजस्थान में अपवाह तंत्र व नदियाँ", "राजस्थान की झीलें व बावड़ियाँ", "प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ", "राजस्थान के उद्योग", "राजस्थान के खनिज संसाधन", "राजस्थान में ऊर्जा संसाधन", "राजस्थान में पर्यटन", "राजस्थान में परिवहन के साधन", "राजस्थान की जनगणना-2011", "क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ", "सहकारिता एवं प्रमुख अनुसंधान केंद्र"], "राजस्थान की कला एवं संस्कृति": ["दुर्ग", "महल, पैलेस व स्मारक", "हवेलियाँ", "छतरियाँ", "जल स्थापत्य", "लोकदेवता", "लोकदेवियाँ", "सम्प्रदाय व संत", "मुस्लिम पीर, मस्जिदें, दरगाह, मीनार व मकबरें", "मंदिर, मूर्तिकला व पैनोरमा", "त्योहार व मेले", "चित्रकला शैलियाँ", "हस्तकलाएँ", "लोक नृत्य", "प्रमुख लोक नाट्य", "लोकगायन शैलियाँ, संगीत घराने व संगीतज्ञ", "लोकगीत", "लोक वाद्ययंत्र", "आभूषण", "वेशभूषा व पहनावा", "प्रथाएँ व रीति-रिवाज", "जनजातियाँ", "भाषा व बोलियाँ", "साहित्यकार व कृतियाँ", "संत साहित्य व लौकिक साहित्य", "अन्य साहित्यकार व कृतियाँ", "साहित्यिक एवं सांस्कृतिक संस्थाएँ", "प्रमुख संग्रहालय", "शब्दावली", "डाकटिकट"]};
 function fillSubjects() {
   const m = {};
   ALL.forEach(q => { (m[q.subject] = m[q.subject] || new Set()).add(q.chapter); });
@@ -1899,7 +1905,8 @@ function renderDash() {
     if (!chs.length) return "";
     return '<details class="sub" data-s="' + esc(s) + '"' + (t || OPENS.has(s) ? " open" : "") + '><summary>' + esc(s) + ' <span class="meta">(' + subj[s].t + ' sawal · ' + chs.length + ' chapter)</span></summary>' +
       chs.map(c => { CHROWS.push({ s, c }); const x = chap[s][c], vi = CHROWS.length - 1, on = VER.has(s + "||" + c);
-        return '<div class="srow chrow" data-ci="' + vi + '"><span>' + esc(c) + '</span><span><button type="button" class="vbtn' + (on ? ' on' : '') + '" data-vi="' + vi + '">' + (on ? '✔ Verified' : 'Verify') + '</button> <b>' + x.t + '</b> <span class="meta">(' + x.a + ' active) ›</span></span></div>'; }).join("") + '</details>';
+        return '<div class="srow chrow" data-ci="' + vi + '"><div class="cn">' + esc(c) + '</div><div class="cm"><span class="meta"><b>' + x.t + '</b> sawal · ' + x.a + ' active ›</span>' +
+          '<span class="cbs"><button type="button" class="cbtn" data-cv="' + vi + '">⬇ CSV</button><button type="button" class="vbtn' + (on ? ' on' : '') + '" data-vi="' + vi + '">' + (on ? '✔ Verified' : 'Verify') + '</button></span></div></div>'; }).join("") + '</details>';
   }).join("");
   if (t.length >= 2) {
     const hits = ALL.filter(q => q.question.toLowerCase().includes(t));
@@ -1918,6 +1925,7 @@ function renderDash() {
 $("qsearch").oninput = renderDash;
 $("dashTree").addEventListener("toggle", e => { const d = e.target; if (d.dataset && d.dataset.s !== undefined && !$("qsearch").value.trim()) { d.open ? OPENS.add(d.dataset.s) : OPENS.delete(d.dataset.s); } }, true);
 $("dashTree").addEventListener("click", e => {
+  const cv = e.target.closest(".cbtn"); if (cv) { e.stopPropagation(); const r = CHROWS[+cv.dataset.cv]; if (r) chapterCSV(r.s, r.c); return; }
   const vb = e.target.closest(".vbtn"); if (vb) { e.stopPropagation(); toggleVer(+vb.dataset.vi); return; }
   const c = e.target.closest(".chrow"); if (c) { const r = CHROWS[+c.dataset.ci]; if (r) openChapter(r.s, r.c); return; }
   const q = e.target.closest(".qrow"); if (q) { const x = ALL.find(z => z.id === q.dataset.qid); if (x) openChapter(x.subject, x.chapter, x.question); }
@@ -1944,6 +1952,21 @@ function exportCSV(rows, label) {
   document.body.appendChild(a); a.click(); a.remove();
   msg.style.color = "var(--ok)"; msg.textContent = rows.length + " sawal export ho gaye.";
 }
+/* Chapter ka poora CSV (filter ignore) — Excel/Sheets me tabular verify ke liye. Sahi option ka text bhi alag column me. */
+function chapterCSV(sub, chap) {
+  const rows = ALL.filter(q => q.subject === sub && q.chapter === chap).sort((a, b) => String(a.created_at || "").localeCompare(String(b.created_at || "")));
+  if (!rows.length) { alert("Is chapter me koi sawal nahi."); return; }
+  const hdr = ["no","subject","chapter","question","option1","option2","option3","option4","answer","sahi_option_text","explanation","exams","status"];
+  const lines = [hdr.join(",")].concat(rows.map((q, i) => [
+    i + 1, q.subject, q.chapter, q.question, (q.options || [])[0], (q.options || [])[1], (q.options || [])[2], (q.options || [])[3],
+    (q.answer ?? 0) + 1, (q.options || [])[q.answer], q.explanation, (q.exams || []).join("; "), q.is_active ? "active" : "hidden"
+  ].map(csvCell).join(",")));
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\uFEFF" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" }));
+  a.download = "verify_" + String(chap).replace(/[\\\/:*?"<>|\s]+/g, "_").slice(0, 60) + "_" + new Date().toISOString().slice(0, 10) + ".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+$("chCsv").onclick = () => { if (CUR) chapterCSV(CUR.s, CUR.c); };
 $("expAll").onclick = () => exportCSV(ALL, "all");
 $("expFiltered").onclick = () => exportCSV(filteredRows(), "filtered");
 
