@@ -18,7 +18,7 @@ window.JKLang={get:function(){var l=null;try{l=localStorage.getItem("jk_lang")}c
 window.JKTheme={mode:mode,set:set,cycle:function(){var n={auto:"light",light:"dark",dark:"auto"}[mode()];set(n);return n}};
 if(mq&&mq.addEventListener)mq.addEventListener("change",apply);apply();})();
 </script>
-<title>JAKHAR Community</title>
+<title>Jakhar Academy Community</title>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -332,7 +332,7 @@ function askLang(){
 function loadJs(src){return new Promise((ok,no)=>{const m=document.createElement("script");m.src=src;m.onload=ok;m.onerror=no;document.head.appendChild(m)})}
 async function boot(){
   if(!JKAuth.isLoggedIn()&&!window.JK_DEV){toLogin();return}
-  await askLang();
+  if(location.hash!=="#donate")await askLang();   /* Donate Us: language popup nahi */
   JKAuth.ensureUid();
   app.className="wrap";
   app.innerHTML=hdr("","","Student Community")+'<main class="pg"><div class="card" style="text-align:center;color:var(--mute)">लोड हो रही है...</div></main>';

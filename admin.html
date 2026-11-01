@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>JAKHAR Admin</title>
+<title>Jakhar Academy Admin</title>
 <style>
   :root{--bg:#eef3fb;--card:#fff;--tx:#14213d;--mut:#5b6b85;--bd:#d7e0f0;--pri:#1457d9;--navy:#0b3a8c;--bad:#c62828;--ok:#2e7d32}
   @media (prefers-color-scheme:dark){:root{--bg:#0e1522;--card:#17202f;--tx:#e8edf6;--mut:#93a1b8;--bd:#273348;--pri:#5b8cff;--navy:#0b2a63;--bad:#ef6b6b;--ok:#6fcf74}}
@@ -120,7 +120,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="hdr"><h1>JAKHAR Admin Panel</h1><div id="who" class="meta" style="margin-bottom:8px"></div><button class="sec hide" id="logoutBtn">Logout</button></div>
+  <div class="hdr"><h1>Jakhar Academy Admin Panel</h1><div id="who" class="meta" style="margin-bottom:8px"></div><button class="sec hide" id="logoutBtn">Logout</button></div>
 
   <!-- LOGIN -->
   <div id="loginBox" class="card">
@@ -1017,7 +1017,7 @@ function aiPrompt(kind, inFile) {
     fmk: "subject aur chapter columns optional hain: sawal ka topic dekhkar neeche di CHAPTER LIST me se subject aur chapter ka EXACT naam likho; match na ho to khaali chhodo."
   }[kind];
   return [
-    "Tum ek exam-question formatter ho. Main tumhe (PDF / photo / text) me sawal dunga. Tumhe unhe Jakhar Study App ke CSV format me badalna hai (" + TPL_TITLE[kind] + ").",
+    "Tum ek exam-question formatter ho. Main tumhe (PDF / photo / text) me sawal dunga. Tumhe unhe Jakhar Academy App ke CSV format me badalna hai (" + TPL_TITLE[kind] + ").",
     "",
     "OUTPUT: sirf ek CSV (ek hi code block). Aage-peeche koi explanation mat likho.",
     "HEADER (pehli line, bilkul yahi, isi order me): " + cols,

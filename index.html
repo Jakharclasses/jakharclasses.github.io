@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b3a8c">
 <link rel="preconnect" href="https://gpqrkxyypadgvguomfrr.supabase.co" crossorigin>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<title>JAKHAR</title>
+<title>Jakhar Academy</title>
 <style>
 :root{--navy:#0b3a8c;--main:#1457d9;--bg:#eef3fb;--ink:#16202e;--mute:#64748b;--line:#d9e1ee;--ok:#16a34a;--okbg:#dcfce7;--bad:#dc2626;--badbg:#fee2e2}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -502,6 +502,31 @@ div.opt{cursor:default}
 .dark .rtabs button i,.dark .rsprev .pn,.dark .rqm span{background:#26324e;color:#cfe0ff}.dark .rsring:before{background:#1451cc}
 @media(max-width:360px){.rscards{grid-template-columns:repeat(2,1fr)}.rsmk b{font-size:20px}.rsh1 h2{font-size:17px}}
 @media(prefers-reduced-motion:reduce){.fresh .rsok,.fresh .rsok path,.rsc{animation:none}.fresh .rsok path{stroke-dashoffset:0}}
+
+/* ===== JK-PART-3: Home header branding + tile waves ===== */
+.hd.hm{position:relative;overflow:hidden;gap:8px;justify-content:flex-start;padding:calc(env(safe-area-inset-top,0px) + 14px) 14px 34px;background:linear-gradient(135deg,#0a2d74 0%,#0d46b8 55%,#1457d9 100%);border-radius:0 0 50% 50%/0 0 30px 30px}
+.hd.hm::before{content:"";position:absolute;left:-10%;right:-10%;bottom:-30px;height:60px;border-radius:50%;background:rgba(255,255,255,.07);pointer-events:none}
+.hd.hm::after{content:"";position:absolute;right:-6%;bottom:-34px;width:60%;height:58px;border-radius:50%;border-top:4px solid #fbbf24;pointer-events:none;opacity:.95}
+.hd.hm>*{position:relative;z-index:1}
+.hmlogo{flex:none;width:44px;height:44px;display:block}
+.hmdiv{flex:none;width:1.5px;height:40px;background:rgba(255,255,255,.55)}
+.hmt{flex:1;min-width:0}
+.hd.hm h1.brand{margin:0;font-size:21px!important;letter-spacing:.2px;line-height:1.15;text-align:left;color:#fff;white-space:nowrap}
+.hd.hm h1.brand em{font-style:normal;color:#fbbf24}
+.hmtag{margin:3px 0 0;display:flex;align-items:center;gap:5px;font-size:10.5px;font-style:italic;color:#fff;white-space:nowrap}
+.hmtag i{flex:1;max-width:16px;height:2px;background:#fbbf24;border-radius:2px}
+@media (max-width:360px){.hd.hm h1.brand{font-size:18px!important}.hmtag{font-size:9px}.hmlogo{width:38px;height:38px}}
+.tiles2 button{overflow:hidden}
+.tiles2 button::before{content:"";position:absolute;left:0;right:0;bottom:0;height:48%;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 44' preserveAspectRatio='none'%3E%3Cpath d='M0 24C40 4 82 6 122 22S178 36 200 14V44H0Z' fill='%23fff' fill-opacity='.17'/%3E%3Cpath d='M0 33C50 15 92 18 132 30S180 38 200 27V44H0Z' fill='%23fff' fill-opacity='.15'/%3E%3C/svg%3E")  center bottom/100% 100% no-repeat;pointer-events:none;z-index:0}
+.tiles2 button>*:not(.nbadge){position:relative;z-index:1}
+.tiles2 button>.nbadge{z-index:2}
+
+/* ===== JK-PART-4: See More cards = Home cards (NEW badge, waves, rainbow border) ===== */
+.sq .nbadge{position:absolute;top:8px;right:8px;z-index:3;font-size:10.5px}
+.sq::before{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 44' preserveAspectRatio='none'%3E%3Cpath d='M0 24C40 4 82 6 122 22S178 36 200 14V44H0Z' fill='%23fff' fill-opacity='.17'/%3E%3Cpath d='M0 33C50 15 92 18 132 30S180 38 200 27V44H0Z' fill='%23fff' fill-opacity='.15'/%3E%3C/svg%3E") center bottom/100% 100% no-repeat;pointer-events:none;z-index:0}
+.sq>*:not(.nbadge){position:relative;z-index:1}
+.sq::after{inset:0;right:0;top:0;width:auto;height:auto;border-radius:inherit;padding:2.5px;background:conic-gradient(from var(--jkang),#ff3b30,#ff9500,#ffd60a,#34c759,#0ea5e9,#5856d6,#af52de,#ff3b30);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);mask-composite:exclude;animation:jkspin 4s linear infinite;z-index:2}
+@media (prefers-reduced-motion:reduce){.sq::after{animation:none}}
 </style>
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#1457d9">
@@ -523,6 +548,56 @@ div.opt{cursor:default}
 .jkib{box-shadow:0 8px 28px rgba(20,87,217,.55)!important}
 @media (prefers-reduced-motion:reduce){.scard::after,.tiles2 button::after,.jkib::after,.wnc{animation:none!important}}
 </style>
+<style id="jk-pfe2">
+.pfe2{padding-top:0!important}
+.pfeh{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 12px) 14px 30px;background:linear-gradient(135deg,#0a2f7a,#1457d9 60%,#1d6bf0);color:#fff;border-radius:0 0 34px 34px;position:relative;box-shadow:0 8px 22px -10px rgba(10,47,122,.7)}
+.pfeh::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:6px;border-radius:0 0 40px 40px;background:linear-gradient(90deg,#fbbf24,#fde68a,#fbbf24);opacity:.9}
+.pfeh .ib{flex:none;background:rgba(255,255,255,.22)}
+.pfeh-t{flex:1;text-align:center}.pfeh-t h1{margin:0;font-size:25px;font-weight:800;letter-spacing:.3px}
+.pfeh-s{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-style:italic;margin-top:2px}.pfeh-s i{display:block;width:22px;height:3px;border-radius:3px;background:#fbbf24}
+.pfeh-c{flex:none;font-size:34px;animation:pfFloat 3s ease-in-out infinite}
+@keyframes pfFloat{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-5px) rotate(6deg)}}
+.pfe-hero{position:relative;display:flex;justify-content:center;align-items:center;min-height:190px;margin:-6px -14px 0;background:radial-gradient(ellipse at 50% 30%,#eaf2ff,#dbe8ff 60%,transparent 100%);overflow:hidden}
+.pfe-dream{position:absolute;left:18px;top:42px;font:italic 800 30px/1.05 "Brush Script MT","Segoe Script",cursive;color:#1d3f9c;transform:rotate(-8deg);animation:pfIn .8s ease both}
+.pfe-fort{position:absolute;right:-6px;bottom:6px;font-size:84px;opacity:.32;filter:grayscale(1) sepia(1) hue-rotate(185deg) saturate(4)}
+.pfe-ring{position:relative;padding:5px;border-radius:50%;background:conic-gradient(#fbbf24,#fff3c4,#fbbf24,#1457d9,#fbbf24);animation:pfGlow 2.6s ease-in-out infinite}
+.pfe-ring .pfa,.pfe-ring img{box-shadow:none}
+.pfe-cam{position:absolute;right:2px;bottom:6px;width:38px;height:38px;border-radius:50%;border:3px solid #fff;background:#1457d9;display:grid;place-items:center;padding:0}
+.pfe-cam svg{width:18px;height:18px}
+@keyframes pfGlow{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.55),0 8px 24px -8px rgba(20,87,217,.6)}50%{box-shadow:0 0 0 12px rgba(251,191,36,0),0 8px 24px -8px rgba(20,87,217,.6)}}
+@keyframes pfIn{from{opacity:0;transform:translateX(-14px) rotate(-8deg)}to{opacity:1;transform:rotate(-8deg)}}
+.pfe-btns{display:flex;gap:10px;margin:8px 0 6px}
+.pfe-b1,.pfe-b2{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 8px;border-radius:16px;font:inherit;font-weight:800;font-size:15px}
+.pfe-b1{border:0;color:#fff;background:linear-gradient(135deg,#1457d9,#2f7bff);box-shadow:0 8px 18px -8px rgba(20,87,217,.8)}
+.pfe-b2{border:2px solid #1457d9;color:#1457d9;background:#fff}.dark .pfe-b2{background:#0f1c38;color:#8fb8ff;border-color:#3b74e0}
+.pfe-b1 svg{width:22px;height:22px}.pfe-gi{font-size:20px}
+.pfe-b1:active,.pfe-b2:active{transform:scale(.97)}
+.pfe-del{border:0;background:none;color:#e11d48;font:inherit;font-weight:700;font-size:13px;padding:4px 10px}
+.pfe-card{padding:14px 12px!important;margin-top:8px;animation:pfUp .5s ease both}
+@keyframes pfUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.pfe-f{display:flex;gap:12px;align-items:flex-start;margin-bottom:6px}
+.pfe-i{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;margin-top:20px;background:linear-gradient(135deg,var(--a),var(--b))}
+.pfe-i svg{width:26px;height:26px}
+.pfe-fb{flex:1;min-width:0}.pfl .rq{color:#e11d48}
+.pfe2 .pfi,.pfe2 select,.pfe2 textarea,.pfe2 .pfu{border-radius:14px;border:1.5px solid #cfdcf5;box-shadow:inset 0 1px 2px rgba(20,60,140,.06)}
+.pfe2 .pfu{padding-left:0}.pfe2 .pfu input{padding:12px}
+.pfuc{flex:none;width:24px;height:24px;margin-right:10px;border-radius:50%;background:#16a34a;position:relative;display:none}
+.pfuc.ok,.pfuc.bad{display:block}.pfuc.bad{background:#e11d48}
+.pfuc.ok::after{content:"✓";color:#fff;position:absolute;inset:0;text-align:center;font-size:15px;line-height:24px;font-weight:800}
+.pfuc.bad::after{content:"✕";color:#fff;position:absolute;inset:0;text-align:center;font-size:14px;line-height:24px;font-weight:800}
+.pfe-tip{margin-top:8px;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,#e3eeff,#d3e3ff);color:#16356f;border:1px solid #b8cffa}
+.pfe-tip b{font-size:16px;color:#1457d9}.pfe-tip ul{margin:6px 0 0;padding:0;list-style:none}
+.pfe-tip li{font-size:13.5px;padding:3px 0 3px 26px;position:relative}.pfe-tip li::before{content:"✓";position:absolute;left:0;top:3px;width:18px;height:18px;border-radius:50%;background:#16a34a;color:#fff;font-size:12px;text-align:center;line-height:18px;font-weight:800}
+.dark .pfe-tip{background:#14284f;color:#cfe0ff;border-color:#2b4478}.dark .pfe-tip b{color:#8fb8ff}
+.dark .pfe-hero{background:radial-gradient(ellipse at 50% 30%,#16284d,#0f1c38 70%,transparent)}.dark .pfe-dream{color:#9fc0ff}
+.pfe-save{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin:14px 0 6px;padding:16px;border:0;border-radius:22px;background:linear-gradient(135deg,#1457d9,#2f7bff);color:#fff;font:inherit;font-weight:800;font-size:20px;box-shadow:0 12px 26px -10px rgba(20,87,217,.9)}
+.pfe-save::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:pfShine 2.8s ease-in-out infinite}
+@keyframes pfShine{0%{left:-60%}60%,100%{left:130%}}
+.pfe-ck{width:30px;height:30px;border-radius:50%;background:#fff;color:#1457d9;display:grid;place-items:center;font-size:19px}
+.pfe-save:active{transform:scale(.98)}.pfe-save:disabled{opacity:.6}
+@media (prefers-reduced-motion:reduce){.pfeh-c,.pfe-ring,.pfe-save::after,.pfe-dream,.pfe-card{animation:none!important}}
+</style>
+<!-- JK-PART-3-DONE --><!-- JK-PART-4-DONE --><!-- JK-PART-5-DONE --><!-- JK-PART-6-DONE -->
 </head>
 <body>
 <div class="wrap" id="app"></div>
@@ -1193,7 +1268,7 @@ function view(html,tab,keep,bf){
   if(!keep)window.scrollTo(0,0);
   if(bf){const b=document.getElementById("bk");if(b)b.onclick=bf}
 }
-function goTab(k){clearInterval(tick);({home:home,subj:subjSubjects,pyq:pyqSubjects,tests:tests,mist:mistakes,prof:profile})[k]()}
+function goTab(k){clearInterval(tick);exI=-1;fromSub=false;({home:home,subj:subjSubjects,pyq:pyqSubjects,tests:tests,mist:mistakes,prof:profile})[k]()}
 /* एक पंक्ति (row): o = {c रंग, i आइकन, raw (SVG हो तो), t, s, b बैज, soon, on क्लिक, href, ext} */
 function R(o){
   const inner=`<span class="ic${o.raw?" raw":""}">${o.i}</span><span class="tx"><b>${o.t}</b><small>${o.s||""}</small></span>${o.n?`<span class="nw"${o.nc?` style="${nbStyle(o.nc)}"`:""}>${o.n}</span>`:""}${o.b?`<span class="bg${o.soon?" soon":""}">${o.b}</span>`:""}<i>›</i>`;
@@ -1207,7 +1282,7 @@ function comingSoon(t,bf,tab,sub){
 
 /* ---------- फ्रंट पेज ---------- */
 function splash(){
-  window.__lgOK=1;view(`<div class="spl2"><img src="${SPLASH_IMG}" alt="JAKHAR Classes"><div class="gsw"><button class="gs2" id="gs">Get Started →</button></div></div>`);
+  window.__lgOK=1;view(`<div class="spl2"><img src="${SPLASH_IMG}" alt="Jakhar Academy"><div class="gsw"><button class="gs2" id="gs">Get Started →</button></div></div>`);
   window.__lgOK=0;document.getElementById("gs").onclick=()=>{store.set("jk_seen",[1]);(window.JKAuth&&!JKAuth.isLoggedIn())?loginScreen():home()};
 }
 
@@ -1217,7 +1292,7 @@ function notifs(from){
   clearInterval(tick);
   const N=from==="yt"
     ?[{i:"🎬",t:"Jakhar TV में आपका स्वागत है!",p:"यहाँ विनोद कुमार नाथ के वीडियो लेक्चर देखें। नए वीडियो यहीं जुड़ते रहेंगे। 😊"}]
-    :[{i:"🙏",t:"स्वागत है!",p:"JAKHAR Classes में आपका स्वागत है। यहाँ राजस्थान की प्रतियोगी परीक्षाओं की तैयारी के लिए PYQ प्रैक्टिस, टेस्ट और विश्लेषण सब फ्री है।<br><br>आपका सहयोग और सपोर्ट हमें और बेहतर बनाएगा। 😊<br><b>— विनोद कुमार नाथ</b>"}];
+    :[{i:"🙏",t:"स्वागत है!",p:"Jakhar Academy में आपका स्वागत है। यहाँ राजस्थान की प्रतियोगी परीक्षाओं की तैयारी के लिए PYQ प्रैक्टिस, टेस्ट और विश्लेषण सब फ्री है।<br><br>आपका सहयोग और सपोर्ट हमें और बेहतर बनाएगा। 😊<br><b>— विनोद कुमार नाथ</b>"}];
   if(from!=="yt"&&window.jkAutoItems)N.unshift.apply(N,jkAutoItems());   /* "क्या नया है" वाले नए सवाल/टेस्ट/फीचर का default message — घंटी में भी */
   const nh=L=>L.map(n=>`<div class="card nt"><span class="nti">${n.i}</span><div><h3>${n.t}</h3><p>${n.p}</p></div></div>`).join("");
   view(hdr(BACK,"","सूचनाएँ")+`<main class="pg" id="ntl">${nh(N)}</main>`,"",false,from==="yt"?ytVideos:home);
@@ -1226,18 +1301,21 @@ function notifs(from){
 }
 function welcome(){
   const d=document.createElement("div");d.className="mdl";
-  d.innerHTML='<div class="card"><h2>🙏 स्वागत है!</h2><p>JAKHAR Classes में आपका स्वागत है। यहाँ राजस्थान की प्रतियोगी परीक्षाओं की तैयारी के लिए PYQ प्रैक्टिस, टेस्ट और विश्लेषण सब फ्री है।<br><br>आपका सहयोग और सपोर्ट हमें और बेहतर बनाएगा। 😊<br><b>— विनोद कुमार नाथ</b></p><button class="btn" style="width:100%">ठीक है</button></div>';
+  d.innerHTML='<div class="card"><h2>🙏 स्वागत है!</h2><p>Jakhar Academy में आपका स्वागत है। यहाँ राजस्थान की प्रतियोगी परीक्षाओं की तैयारी के लिए PYQ प्रैक्टिस, टेस्ट और विश्लेषण सब फ्री है।<br><br>आपका सहयोग और सपोर्ट हमें और बेहतर बनाएगा। 😊<br><b>— विनोद कुमार नाथ</b></p><button class="btn" style="width:100%">ठीक है</button></div>';
   d.onclick=e=>{if(e.target===d||e.target.tagName==="BUTTON")d.remove()};document.body.appendChild(d);
 }
 
 /* ---------- होम ---------- */
+/* Part 6: chhota progress bhi dikhe — <10% par 1 decimal (0.6%), ring me kam se kam chhota arc */
+const pcFmt=(p,d)=>{if(!(p>0))return 0;if(p>=10)return Math.round(p);const r=Math.round(p*10)/10;return r>0?r:0.1};
+const pcArc=(p,d)=>d>0?Math.max(p,3):0;
 function home(){
-  clearInterval(tick);
-  const T=QS.length,done=cnt("jk_done"),pc=T?Math.round(done/T*100):0,H=store.get("jk_hist");
+  clearInterval(tick);exI=-1;fromSub=false;
+  const T=QS.length,done=cnt("jk_done"),pp=T?done/T*100:0,pc=pcFmt(pp,done),pa=pcArc(pp,done),H=store.get("jk_hist");
   const R_=H.reduce((a,h)=>a+h.r,0),A=H.reduce((a,h)=>a+h.r+h.w,0),acc=A?Math.round(R_/A*100):0;
-  view(`<header class="hd"><button class="ib" onclick="goTab('prof')" aria-label="प्रोफ़ाइल">☰</button><h1 class="brand">JAKHAR</h1><button class="ib bell" onclick="notifs()" aria-label="सूचना">🔔${ntDot()}</button></header>
+  view(`<header class="hd hm"><button class="ib" onclick="goTab('prof')" aria-label="प्रोफ़ाइल">☰</button><span class="hmlogo"><svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#0b2f7a" stroke="#fbbf24" stroke-width="3"/><path d="M20 25l4 5 8-8 8 8 4-5-2 10H22z" fill="#fbbf24"/><circle cx="20" cy="25" r="1.8" fill="#fbbf24"/><circle cx="32" cy="21" r="1.8" fill="#fbbf24"/><circle cx="44" cy="25" r="1.8" fill="#fbbf24"/><path d="M32 40c-4-3-10-3.5-15-2v13c5-1.5 11-1 15 2z" fill="#fff"/><path d="M32 40c4-3 10-3.5 15-2v13c-5-1.5-11-1-15 2z" fill="#e8f0ff"/><path d="M32 40v13" stroke="#0b2f7a" stroke-width="1.6"/></svg></span><span class="hmdiv"></span><div class="hmt"><h1 class="brand">Jakhar <em>Academy</em></h1><p class="hmtag"><i></i>Learn • Practice • Excel<i></i></p></div><button class="ib bell" onclick="notifs()" aria-label="सूचना">🔔${ntDot()}</button></header>
   <main class="pg"><div class="greet"><img src="${GREET_IMG}" alt="नमस्कार! आपका लक्ष्य, हमारी जिम्मेदारी"></div>
-  <div class="card stats"><div><span class="ring" style="--p:${pc}"><b>${pc}%</b></span><small>Overall Progress<br>${done} / ${T}</small></div>
+  <div class="card stats"><div><span class="ring" style="--p:${pa}"><b>${pc}%</b></span><small>Overall Progress<br>${done} / ${T}</small></div>
   <div><span class="big">🔥 ${streak()}</span><small>Day Streak<br>लगातार</small></div>
   <div><span class="big">🎯 ${A?acc+"%":"--"}</span><small>Accuracy<br>सही उत्तर</small></div></div>
   <div class="tiles2">
@@ -1254,19 +1332,21 @@ function home(){
 const studySoon=()=>comingSoon("Study Material",()=>goTab("home"),"home","स्टडी मटेरियल और PDF");
 
 /* ---------- 1. Chapter Wise PYQ Test: विषय → चैप्टर → Test/Practice ---------- */
-let pyqFrom="home";
+let pyqFrom="home",exI=-1,fromSub=false;const pTab=()=>exI>=0?"":pyqFrom;
 const subjGrid=fn=>`<div class="sg">${SUBJECTS.map((S,i)=>`<button class="scard" style="--c:${S.color}" onclick="${fn}(${i})">${(fn==="pyqChapters"||fn==="subChapters")&&newSub(S.name)?`<span class="nbadge wg" style="${nbStyle(S.color)}">NEW</span>`:""}${S.chapters.length?"":'<span class="soonb">Coming Soon</span>'}<span class="si">${S.icon}</span><span><b>${S.name}</b><small>${S.chapters.length?S.chapters.length+" चैप्टर":"जल्द आ रहा है"}</small></span></button>`).join("")}</div>`;
 function pyqSubjects(f){
-  clearInterval(tick);if(f==="home"||f==="tests")pyqFrom=f;
+  clearInterval(tick);exI=-1;fromSub=false;if(f==="home"||f==="tests")pyqFrom=f;
   view(hdr(BACK,"","Chapter Wise PYQ Test")+`<main class="pg"><div class="sub">विषय चुनें</div>${subjGrid("pyqChapters")}</main>`,pyqFrom,false,pyqFrom==="tests"?()=>tests():()=>home());
 }
 function pyqChapters(si){
   clearInterval(tick);const S=SUBJECTS[si];
-  if(!S.chapters.length)return comingSoon(S.name,()=>pyqSubjects(pyqFrom),pyqFrom,"चैप्टर जल्द जोड़े जाएँगे");
+  if(!S.chapters.length)return comingSoon(S.name,pyqBack,pTab(),"चैप्टर जल्द जोड़े जाएँगे");
   view(hdr(BACK,"",S.name)+`<main class="pg"><div class="sub">${S.chapters.length} चैप्टर · ${sc_(S.name)} प्रश्न</div><div class="list">
-  ${S.chapters.map((c,ci)=>{const n=qc(S.name,c);return R({c:S.color,i:ci+1,t:c,s:n?n+" प्रश्न उपलब्ध":"जल्द आ रहा है",n:newChap(S.name,c)?"NEW":"",nc:S.color,b:n?n+" प्रश्न":"Coming Soon",soon:!n,on:n?`chapterModes(${si},${ci})`:`chapSoon(${si},${ci})`})}).join("")}</div></main>`,pyqFrom,false,()=>pyqSubjects(pyqFrom));
+  ${S.chapters.map((c,ci)=>{const n=qc(S.name,c);return R({c:S.color,i:ci+1,t:c,s:n?n+" प्रश्न उपलब्ध":"जल्द आ रहा है",n:newChap(S.name,c)?"NEW":"",nc:S.color,b:n?n+" प्रश्न":"Coming Soon",soon:!n,on:n?`chapterModes(${si},${ci})`:`chapSoon(${si},${ci})`})}).join("")}</div></main>`,pTab(),false,pyqBack);
 }
-function chapSoon(si,ci){comingSoon(SUBJECTS[si].chapters[ci],()=>pyqChapters(si),pyqFrom,SUBJECTS[si].name)}
+function subTest(si,ci){if(!qc(SUBJECTS[si].name,SUBJECTS[si].chapters[ci]))return comingSoon("Test",()=>subOptions(si,ci),"subj",SUBJECTS[si].chapters[ci]);fromSub=true;chapterModes(si,ci)}
+const pyqBack=()=>exI>=0?examSubjects(exI):pyqSubjects(pyqFrom);
+function chapSoon(si,ci){comingSoon(SUBJECTS[si].chapters[ci],()=>pyqChapters(si),pTab(),SUBJECTS[si].name)}
 function chapterModes(si,ci){
   const S=SUBJECTS[si],c=S.chapters[ci],n=qc(S.name,c),f=q=>q.subject===S.name&&q.chapter===c;
   ret=()=>chapterModes(si,ci);
@@ -1274,7 +1354,7 @@ function chapterModes(si,ci){
   view(hdr(BACK,"",c)+`<main class="pg"><div class="card hello" style="margin-bottom:14px"><span class="av" style="background:${S.color}">${S.icon}</span><div><b>${S.name}</b><br><small>${ci+1}. ${c} · ${n} प्रश्न</small></div></div><div class="list">
   ${R({c:"#7c3aed",i:"📝",t:"Test Mode",s:"सबमिट के बाद ही उत्तर · −1/3 नेगेटिव मार्किंग",on:"cm('test')"})}
   ${R({c:"#1457d9",i:"📘",t:"Practice Mode",s:"उत्तर चुनते ही सही/गलत और व्याख्या",on:"cm('practice')"})}</div>
-  ${A.length?`<h3>पिछले प्रयास</h3><div class="card act">${A.map(o=>`<div class="ar"><div class="arm" onclick="histOpen(${o.i})"><b>${o.h.m==="test"?"Test Mode":"Practice Mode"}${o.h.an>1?" · प्रयास "+o.h.an:""}</b><small>${o.h.r} सही · ${o.h.w} गलत · ${o.h.s} छोड़े${o.h.m==="test"?" · "+o.h.sc+" अंक":""}</small><em>${ago(o.h.ts)}</em></div><button class="rtb" onclick="cmFresh('${o.h.m}')">🔁 Retest</button></div>`).join("")}</div>`:""}</main>`,pyqFrom,false,()=>pyqChapters(si));
+  ${A.length?`<h3>पिछले प्रयास</h3><div class="card act">${A.map(o=>`<div class="ar"><div class="arm" onclick="histOpen(${o.i})"><b>${o.h.m==="test"?"Test Mode":"Practice Mode"}${o.h.an>1?" · प्रयास "+o.h.an:""}</b><small>${o.h.r} सही · ${o.h.w} गलत · ${o.h.s} छोड़े${o.h.m==="test"?" · "+o.h.sc+" अंक":""}</small><em>${ago(o.h.ts)}</em></div><button class="rtb" onclick="cmFresh('${o.h.m}')">🔁 Retest</button></div>`).join("")}</div>`:""}</main>`,fromSub?"subj":pTab(),false,()=>fromSub?subOptions(si,ci):pyqChapters(si));
   window.cm=m=>start(f,c,0,m);
   window.cmFresh=m=>{const sp=progAll()[m+"|"+c];if(sp&&Array.isArray(sp.qs)&&!confirm("इस चैप्टर का एक अधूरा प्रयास सेव है। Retest शुरू करने पर वह हट जाएगा (पुराने रिज़ल्ट सुरक्षित रहेंगे)। जारी रखें?"))return;start(f,c,0,m,undefined,true)};
 }
@@ -1288,13 +1368,14 @@ function subChapters(si){
   clearInterval(tick);const S=SUBJECTS[si];
   if(!S.chapters.length)return comingSoon(S.name,subjSubjects,"subj","चैप्टर जल्द जोड़े जाएँगे");
   view(hdr(BACK,"",S.name)+`<main class="pg"><div class="sub">${S.chapters.length} चैप्टर · चैप्टर चुनें</div><div class="list">
-  ${S.chapters.map((c,ci)=>R({c:S.color,i:ci+1,t:c,s:"Detail Notes · Short Notes · Video",n:newChap(S.name,c)?"NEW":"",nc:S.color,on:`subOptions(${si},${ci})`})).join("")}</div></main>`,"subj",false,subjSubjects);
+  ${S.chapters.map((c,ci)=>R({c:S.color,i:ci+1,t:c,s:"Test · Detail Notes · Short Notes · Video",n:newChap(S.name,c)?"NEW":"",nc:S.color,on:`subOptions(${si},${ci})`})).join("")}</div></main>`,"subj",false,subjSubjects);
 }
 function subOptions(si,ci){
-  clearInterval(tick);const S=SUBJECTS[si],c=S.chapters[ci],D=CONTENT[S.name+"||"+c]||{};
+  clearInterval(tick);fromSub=false;const S=SUBJECTS[si],c=S.chapters[ci],D=CONTENT[S.name+"||"+c]||{};
   const O=[["detail","#1457d9","📄","Detail Notes","पूरे विस्तार से नोट्स"],["short","#16a34a","⚡","Short Notes","तेज़ रिविज़न के लिए"],["video","#e11d1d","🎬","Video Lecture","वीडियो लेक्चर"]];
   window.noteGo=k=>{const o=O.find(x=>x[0]===k),u=D[k];if(u)window.open(u,"_blank","noopener");else comingSoon(o[3],()=>subOptions(si,ci),"subj",c)};
   view(hdr(BACK,"",c)+`<main class="pg"><div class="card hello" style="margin-bottom:14px"><span class="av" style="background:${S.color}">${S.icon}</span><div><b>${S.name}</b><br><small>${ci+1}. ${c}</small></div></div><div class="list">
+  ${R({c:"#7c3aed",i:"📝",t:"Test",s:"Test Mode · Practice Mode · पिछले प्रयास",b:qc(S.name,c)?qc(S.name,c)+" प्रश्न":"Coming Soon",soon:!qc(S.name,c),on:`subTest(${si},${ci})`})}
   ${O.map(o=>R({c:o[1],i:o[2],t:o[3],s:o[4],b:D[o[0]]?"खोलें":"Coming Soon",soon:!D[o[0]],on:`noteGo('${o[0]}')`})).join("")}</div></main>`,"subj",false,()=>subChapters(si));
 }
 
@@ -1656,7 +1737,7 @@ function ytClose(noBack){
 
 
 function SQ(o){
-  const inner=`<span class="sqi">${o.i}</span><b>${o.t}</b><small>${o.s||""}</small>${o.b?`<span class="sqb${o.soon?" soon":""}">${o.b}</span>`:""}`;
+  const inner=`${o.nk?nbNew(o.nk,o.c):""}<span class="sqi">${o.i}</span><b>${o.t}</b><small>${o.s||""}</small>${o.b?`<span class="sqb${o.soon?" soon":""}">${o.b}</span>`:""}`;
   return o.href?`<a class="sq" style="--c:${o.c}" href="${o.href}"${o.ext?' target="_blank" rel="noopener"':""}>${inner}</a>`:`<button class="sq" style="--c:${o.c}" onclick="${o.on}">${inner}</button>`;
 }
 /* ================= Lab Assistant Geography DV Documents (student side) ================= */
@@ -1793,16 +1874,22 @@ function seeMore(){
   ${SQ({c:"#0891b2",i:"📖",t:"Study Material & PDF",s:"स्टडी मटेरियल और PDF",b:"Coming Soon",soon:1,on:"smSoon('Study Material & PDF')"})}
   ${SQ({c:"#1457d9",i:"🎓",t:"Courses",s:"अपनी तैयारी के लिए Courses",b:"Coming Soon",soon:1,on:"smSoon('Courses')"})}
   ${SQ({c:"#e8590c",i:"🧭",t:"Prepare According to Your Exam",s:"अपनी परीक्षा के अनुसार तैयारी",b:EXAMS.length+" परीक्षाएँ",on:"examList()"})}
-  ${SQ({c:"#7c3aed",i:"👥",t:"Student Community",s:"ग्रुप · चैट · फ़ीड",on:"openCommunity()"})}
-  ${SQ({c:"#f59e0b",i:"💡",t:"Your Suggestion",s:"अपना सुझाव ईमेल से भेजें",href:"mailto:"+CONTACT.mail+"?subject="+encodeURIComponent("JAKHAR App - Suggestion")})}
+  ${SQ({c:"#7c3aed",i:"👥",t:"Student Community",s:"ग्रुप · चैट · फ़ीड",nk:"community",on:"openCommunity()"})}
+  ${SQ({c:"#f59e0b",i:"💡",t:"Your Suggestion",s:"अपना सुझाव ईमेल से भेजें",href:"mailto:"+CONTACT.mail+"?subject="+encodeURIComponent("Jakhar Academy App - Suggestion")})}
   ${SQ({c:"#64748b",i:"✨",t:"Future Features",s:"आने वाले नए फ़ीचर्स",b:"Coming Soon",soon:1,on:"smSoon('Future Features')"})}</div></main>`,"",false,home);
 }
 const smSoon=t=>comingSoon(t,seeMore,"");
 function examList(){
   clearInterval(tick);
   view(hdr(BACK,"","Prepare According to Your Exam")+`<main class="pg"><div class="sub">अपनी परीक्षा चुनें</div><div class="list">
-  ${EXAMS.map((e,i)=>R({c:COLORS[i%COLORS.length],i:i+1,t:exShort(e),s:"Syllabus · PYQ · Strategy · Study Material",b:"Coming Soon",soon:1,on:`examSoon(${i})`})).join("")}</div></main>`,"",false,seeMore);
+  ${EXAMS.map((e,i)=>R({c:COLORS[i%COLORS.length],i:i+1,t:exShort(e),s:"इतिहास · कला-संस्कृति · भूगोल",b:"3 विषय",on:`examSubjects(${i})`})).join("")}</div></main>`,"",false,seeMore);
 }
+const EX_SUBJ=[0,2,1];   /* इतिहास, कला एवं संस्कृति, भूगोल — बदलना हो तो सिर्फ़ यही list */
+function examSubjects(i){
+  clearInterval(tick);
+  view(hdr(BACK,"",exShort(EXAMS[i]))+`<main class="pg"><div class="sub">विषय चुनें</div><div class="sg">${EX_SUBJ.map(si=>{const S=SUBJECTS[si];return `<button class="scard" style="--c:${S.color}" onclick="exChapters(${i},${si})">${newSub(S.name)?`<span class="nbadge wg" style="${nbStyle(S.color)}">NEW</span>`:""}${S.chapters.length?"":'<span class="soonb">Coming Soon</span>'}<span class="si">${S.icon}</span><span><b>${S.name}</b><small>${S.chapters.length?S.chapters.length+" चैप्टर":"जल्द आ रहा है"}</small></span></button>`}).join("")}</div></main>`,"",false,examList);
+}
+function exChapters(i,si){exI=i;fromSub=false;pyqChapters(si)}
 const examSoon=i=>comingSoon(exShort(EXAMS[i]),examList,"","इस परीक्षा की तैयारी जल्द जोड़ी जाएगी");
 
 /* ---------- Profile / Privacy / Contact ---------- */
@@ -1873,9 +1960,9 @@ function profile(){
   const BD=pfBadges().map((b,i)=>({b,i})).sort((x,y)=>(y.b.ok-x.b.ok)||(x.i-y.i)).slice(0,4);
   const gear='<button class="ib" onclick="profileSettings()" aria-label="Settings">'+pfIco("gear","#fff")+'</button>';
   view(hdr(BACK,gear,"My Profile")+`<main class="pg pf">${window.pfHello?pfHello():'<div class="pf-c pf-hero"><div class="pf-id"><span class="pf-av"><span class="pfa">👤</span></span><div class="pf-nm"><h2>JAKHAR विद्यार्थी</h2></div></div></div>'}
-  <section class="pf-c"><div class="pf-h"><span class="pf-hi">${pfIco("chart")}</span><b>Learning Statistics</b><button onclick="goTab('tests')">View All ${pfIco("arrow")}</button></div>
+  <section class="pf-c"><div class="pf-h"><span class="pf-hi">${pfIco("chart")}</span><b>Learning Statistics</b><button onclick="mistakes('stats')">View All ${pfIco("arrow")}</button></div>
   <div class="pf-g">
-  ${tile("help","#3b9bff","<b>"+D+"</b>","Total Questions",bar(D/TQ*100,"#3b9bff"))}
+  ${tile("help","#3b9bff","<b>"+D+"</b>","Total Questions",bar(pcArc(D/TQ*100,D),"#3b9bff"))}
   ${tile("target","#22c55e","<b>"+(acc===null?"--":acc+"%")+"</b>","Accuracy",bar(acc||0,"#22c55e"))}
   ${tile("flame","#fb923c","<b>"+st+"</b>","Day Streak",bar(Math.min(st,7)/7*100,"#fb923c"))}
   ${tile("clip","#f472b6","<b>"+H.length+"</b>","Total Tests",bar(0,"#f472b6").replace('class="pf-b"','class="pf-b" style="visibility:hidden"'),"goTab('tests')")}
@@ -1895,6 +1982,17 @@ function pfAchievements(){
   view(hdr(BACK,"","My Achievements")+`<main class="pg pf"><section class="pf-c"><div class="pf-h"><span class="pf-hi">${pfIco("trophy")}</span><b>${n} / ${L.length} unlocked</b></div>
   ${L.map((b,i)=>`<div class="pf-bi${b.ok?"":" lk"}">${pfBadge(b,i)}<div><b>${b.t}</b><small>${b.hint}</small><i class="pf-b"><u style="width:${Math.round(b.cur/b.goal*100)}%;background:${b.c2}"></u></i></div><em>${b.ok?"✓":b.cur+"/"+b.goal}</em></div>`).join("")}</section></main>`,"prof",false,profile);
 }
+/* Part 2: Security & Support ab Profile screen me (Account Details ke neeche, Logout ke theek upar) */
+function pfRow(ic,c,t,s,end,on){return (on?'<button class="pf-r" onclick="'+on+'">':'<div class="pf-r">')+'<span class="pf-k" style="--c:'+c+'">'+pfIco(ic)+'</span><span class="pf-x"><b>'+t+'</b>'+(s?'<small>'+s+'</small>':"")+'</span>'+(end||"")+(on?'</button>':'</div>')}
+function pfSecHtml(){
+  const logged=window.JKAuth&&JKAuth.isLoggedIn(),ch='<span class="pf-ch">'+pfIco("chev")+'</span>';
+  return '<section class="pf-c"><div class="pf-h"><span class="pf-hi">'+pfIco("shield")+'</span><b>Security & Support</b></div>'+
+    (logged?pfRow("key","#34d399","Change Password","Send a reset link to your email",ch,"pfChangePw()"):"")+
+    pfRow("help","#3b9bff","Help & Support","YouTube · Telegram · Email",ch,"contact()")+
+    pfRow("heart","#e11d48","Donate Us","सहयोग करें · ब्लू टिक पाएँ",ch,"openDonate()")+
+    pfRow("shield","#94a3b8","Privacy Policy","आपका डेटा कैसे सुरक्षित रहता है",ch,"privacy()")+
+    pfRow("info","#a78bfa","About App","Jakhar Academy",ch,"pfAbout()")+'</section>';
+}
 function profileSettings(){
   clearInterval(tick);
   const dark=document.documentElement.classList.contains("dark"),un=window.ntUnread?ntUnread():0,logged=window.JKAuth&&JKAuth.isLoggedIn();
@@ -1908,13 +2006,7 @@ function profileSettings(){
   ${row("moon","#818cf8","Dark Theme","आँखों को आराम — डार्क मोड",'<span class="pf-sw" role="switch" aria-checked="'+dark+'"></span>',"toggleDark()")}
   ${row("bell","#fbbf24","Notifications","सूचनाएँ",(un>0?'<span class="pf-n">'+un+'</span>':"")+ch,"notifs()")}
   </section>
-  <section class="pf-c"><div class="pf-h"><span class="pf-hi">${pfIco("shield")}</span><b>Security & Support</b></div>
-  ${logged?row("key","#34d399","Change Password","Send a reset link to your email",ch,"pfChangePw()"):""}
-  ${row("help","#3b9bff","Help & Support","YouTube · Telegram · Email",ch,"contact()")}
-  ${row("heart","#e11d48","Donate Us","सहयोग करें · ब्लू टिक पाएँ",ch,"openDonate()")}
-  ${row("shield","#94a3b8","Privacy Policy","आपका डेटा कैसे सुरक्षित रहता है",ch,"privacy()")}
-  ${row("info","#a78bfa","About App","JAKHAR Classes",ch,"pfAbout()")}
-  </section><div class="cprt">${cpr()}</div></main>`,"prof",false,profile);
+  <div class="cprt">${cpr()}</div></main>`,"prof",false,profile);
 }
 async function pfChangePw(){
   const s=window.JKAuth&&JKAuth.getSession();
@@ -1926,7 +2018,7 @@ async function pfChangePw(){
 function pfAbout(){
   clearInterval(tick);
   const t=(v,l,c,ic)=>'<div class="pf-t" style="cursor:default"><span class="pf-ti" style="--c:'+c+'">'+pfIco(ic)+'</span><b>'+v+'</b><small>'+l+'</small></div>';
-  view(hdr(BACK,"","About App")+`<main class="pg pf"><section class="pf-c" style="text-align:center"><div class="pf-ab">J</div><h2 style="margin:12px 0 4px">JAKHAR Classes</h2>
+  view(hdr(BACK,"","About App")+`<main class="pg pf"><section class="pf-c" style="text-align:center"><div class="pf-ab" style="padding:0;overflow:hidden;background:none"><img src="data:image/jpeg;base64,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" alt="Jakhar Academy" style="width:100%;height:100%;object-fit:cover;display:block"></div><h2 style="margin:12px 0 4px">Jakhar Academy</h2>
   <p style="color:var(--mute);font-size:13.5px;margin:0 0 16px">राजस्थान की प्रतियोगी परीक्षाओं की तैयारी के लिए PYQ प्रैक्टिस, टेस्ट और विश्लेषण — सब फ्री।</p>
   <div class="pf-g">${t(QS.length,"Questions","#3b9bff","help")}${t(SUBJECTS.length,"Subjects","#22c55e","mark")}${t(EXAMS.length,"Exams","#fb923c","cap")}</div></section>
   <section class="pf-c">${'<button class="pf-r" onclick="privacy()"><span class="pf-k" style="--c:#94a3b8">'+pfIco("shield")+'</span><span class="pf-x"><b>Privacy Policy</b></span><span class="pf-ch">'+pfIco("chev")+'</span></button><button class="pf-r" onclick="contact()"><span class="pf-k" style="--c:#3b9bff">'+pfIco("help")+'</span><span class="pf-x"><b>Help & Support</b></span><span class="pf-ch">'+pfIco("chev")+'</span></button>'}</section>
@@ -1939,7 +2031,7 @@ function toggleDark(){const on=!document.documentElement.classList.contains("dar
 const PRIV_DATE="26 अक्टूबर 2026";
 const cpr=()=>"© "+new Date().getFullYear()+" Jakhar Academy. All rights reserved.";
 const PRIV_SECS=[
-["1. परिचय",`<p>JAKHAR Classes (“हम”, “ऐप”) राजस्थान की प्रतियोगी परीक्षाओं की तैयारी के लिए PYQ प्रैक्टिस, टेस्ट, विश्लेषण और वीडियो/PDF सामग्री देने वाला मंच है। यह नीति बताती है कि हम कौन-सी जानकारी लेते हैं, उसका उपयोग कैसे होता है और आपके पास क्या विकल्प हैं।</p>
+["1. परिचय",`<p>Jakhar Academy (“हम”, “ऐप”) राजस्थान की प्रतियोगी परीक्षाओं की तैयारी के लिए PYQ प्रैक्टिस, टेस्ट, विश्लेषण और वीडियो/PDF सामग्री देने वाला मंच है। यह नीति बताती है कि हम कौन-सी जानकारी लेते हैं, उसका उपयोग कैसे होता है और आपके पास क्या विकल्प हैं।</p>
 <p>यह नीति ऐप की मौजूदा और आने वाली सुविधाओं (प्रोफ़ाइल, कम्युनिटी, फ़ाइल अपलोड, डोनेशन/ब्लू टिक) दोनों पर लागू होती है। जो सुविधा आपके ऐप में अभी उपलब्ध नहीं है, उससे जुड़ी बातें उसके शुरू होने पर ही लागू होंगी। ऐप का उपयोग करके आप इस नीति से सहमत माने जाते हैं।</p>`],
 ["2. हम कौन-सी जानकारी लेते हैं",`<ul>
 <li><b>बिना लॉगिन:</b> आपका प्रोग्रेस (हल किए, सेव/रिव्यू और गलत प्रश्न), टेस्ट रिकॉर्ड और भाषा/थीम की पसंद सिर्फ़ आपके डिवाइस की लोकल स्टोरेज में रहती है। यह हमारे सर्वर पर नहीं जाती।</li>
@@ -2019,7 +2111,7 @@ const PRIV_SECS=[
 ["12. सुरक्षा",`<p>आपके डेटा की सुरक्षा के लिए हम इंटरनेट पर सुरक्षित कनेक्शन (HTTPS) और डेटाबेस के एक्सेस-नियमों का उपयोग करते हैं, ताकि हर उपयोगकर्ता सिर्फ़ अपनी अनुमत जानकारी तक पहुँचे। फिर भी कोई भी इंटरनेट सेवा पूरी तरह सुरक्षित होने की गारंटी नहीं दे सकती।</p>
 <p>अपना पासवर्ड गोपनीय रखें और साझा डिवाइस पर उपयोग के बाद लॉगआउट करें। कोई संदिग्ध गतिविधि दिखे तो हमें तुरंत बताएँ।</p>`],
 ["13. कॉपीराइट और सामग्री के अधिकार",`<ul>
-<li>ऐप का हमारा तैयार किया कंटेंट (व्याख्या, नोट्स, टेस्ट, डिज़ाइन, लोगो और वीडियो) JAKHAR Academy की संपत्ति है। अपनी निजी पढ़ाई के लिए आप इसे उपयोग कर सकते हैं, पर बिना अनुमति इसे कॉपी, बेचना या दोबारा प्रकाशित करना मना है।</li>
+<li>ऐप का हमारा तैयार किया कंटेंट (व्याख्या, नोट्स, टेस्ट, डिज़ाइन, लोगो और वीडियो) Jakhar Academy की संपत्ति है। अपनी निजी पढ़ाई के लिए आप इसे उपयोग कर सकते हैं, पर बिना अनुमति इसे कॉपी, बेचना या दोबारा प्रकाशित करना मना है।</li>
 <li>आप जो सामग्री पोस्ट या अपलोड करते हैं, उसका स्वामित्व आपका रहता है। पर आप हमें उसे ऐप में दिखाने, स्टोर करने और मॉडरेट करने की अनुमति देते हैं, और आपकी ज़िम्मेदारी है कि उसे साझा करने का आपको अधिकार हो।</li>
 <li>यदि आपको लगे कि ऐप में कोई सामग्री आपके कॉपीराइट का उल्लंघन करती है, तो प्रमाण सहित हमें ईमेल करें। जाँच के बाद हम उसे हटा सकते हैं।</li>
 </ul>`],
@@ -2035,7 +2127,7 @@ const PRIV_SECS=[
 ];
 function privacy(){
   clearInterval(tick);
-  view(hdr(BACK,"","Privacy Policy")+`<main class="pg"><div class="card pol"><b>JAKHAR Classes</b><br><small style="color:var(--mute)">अंतिम अपडेट: ${PRIV_DATE}</small>
+  view(hdr(BACK,"","Privacy Policy")+`<main class="pg"><div class="card pol"><b>Jakhar Academy</b><br><small style="color:var(--mute)">अंतिम अपडेट: ${PRIV_DATE}</small>
   ${PRIV_SECS.map(s=>`<h4>${s[0]}</h4>${s[1]}`).join("")}</div><div class="cprt">${cpr()}</div></main>`,"prof",false,profile);
 }
 function contact(){
@@ -2618,7 +2710,7 @@ splash();
       el.innerHTML='<section class="pf-c"><div class="pf-h"><span class="pf-hi">'+pfIco("user")+'</span><b>Account Details</b></div>'+
         kv("mail","#60a5fa","Email",'<em class="pfx">'+esc(s.email)+'</em>')+
         kv("sync","#22c55e","Sync Status",'<em id="syncChip" style="cursor:pointer"></em>')+
-        kv("clock","#a78bfa","Last Sync",'<em id="pfLast">—</em>')+'</section>'+
+        "</section>"+pfSecHtml()+
         '<button class="pf-out" id="acOut">'+pfIco("out")+'Logout</button>';
       document.getElementById("acOut").onclick=()=>{signOut();loginScreen()};
       if(window.JKSync)JKSync.paint();
@@ -2628,7 +2720,7 @@ splash();
       '<input class="pf-in" id="acE" type="email" placeholder="Email" autocomplete="username">'+
       '<input class="pf-in" id="acP" type="password" placeholder="Password (कम से कम 8 अक्षर)" autocomplete="current-password">'+
       '<div class="pf-2"><button class="btn" id="acIn" style="flex:1">लॉगिन</button><button class="btn ghost" id="acUp" style="flex:1">साइनअप</button></div>'+
-      '<div id="acM" style="font-size:13px;margin-top:8px;min-height:18px"></div></section>';
+      '<div id="acM" style="font-size:13px;margin-top:8px;min-height:18px"></div></section>'+pfSecHtml();
     const m=document.getElementById("acM");
     const go=async kind=>{
       const email=document.getElementById("acE").value.trim(),password=document.getElementById("acP").value;
@@ -2774,7 +2866,7 @@ splash();
     if(!window.JKAuth||!JKAuth.isLoggedIn()){window.loginScreen&&loginScreen();return}
     let p=get();
     if(!p){
-      view(EDIT_HDR()+'<main class="pg"><div class="card pfm" id="pfL">लोड हो रही है...</div></main>',"prof",false,profile);
+      view(EDIT_HDR()+'<main class="pg"><div class="card pfm" id="pfL">लोड हो रही है...</div></main>',"",false,profile);
       try{p=await load()}catch(e){console.warn("profile load:",e.message);p=null}
       const L=$("pfL");if(!L)return;
       if(!p){L.textContent="प्रोफ़ाइल अभी लोड नहीं हो पा रही। इंटरनेट जाँचकर थोड़ी देर बाद फिर कोशिश करें।";return}
@@ -2784,21 +2876,25 @@ splash();
   function draw(p){
     const inList=!p.exam||PF_EXAMS.includes(p.exam);
     const opts='<option value="">— चुनें —</option>'+PF_EXAMS.map(e=>'<option value="'+smE(e)+'"'+(e===p.exam?" selected":"")+'>'+smE(e)+'</option>').join("")+'<option value="__o"'+(inList?"":" selected")+'>अन्य (खुद लिखें)</option>';
-    view(EDIT_HDR()+`<main class="pg pf pfe">
-      <div class="card pfp"><div id="pfAv">${avatar(p,1)}</div>
-        <div class="pfb2"><button class="btn" id="pfPick">📷 फ़ोटो बदलें</button><button class="btn ghost" id="pfDel" style="${p.avatar_url?"":"display:none"}">हटाएँ</button></div>
-        <input type="file" id="pfF" accept="image/*" style="display:none"><div class="pfm" id="pfPm">फ़ोटो अपने-आप छोटी (256×256) करके सेव होती है।</div></div>
-      <div class="card">
-        <label class="pfl" for="pfN">नाम</label><input class="pfi pfx" id="pfN" maxlength="40" autocomplete="off" value="${smE(p.display_name)}">
-        <label class="pfl" for="pfU">यूज़रनेम (यूनिक)</label><div class="pfu"><span>@</span><input class="pfx" id="pfU" maxlength="20" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" value="${smE(p.username)}"></div>
-        <div class="pfm" id="pfUm">3-20 अक्षर: a-z, 0-9, _ और .</div>
-        <label class="pfl" for="pfB">बायो</label><textarea class="pfx" id="pfB" rows="3" maxlength="150" placeholder="अपने बारे में छोटा-सा लिखें">${smE(p.bio)}</textarea><div class="pfm" id="pfBc"></div>
-        <label class="pfl" for="pfX">आपकी परीक्षा (Your Exam)</label><select id="pfX">${opts}</select>
-        <input class="pfi" id="pfXo" maxlength="60" placeholder="परीक्षा का नाम लिखें" style="margin-top:8px;${inList?"display:none":""}" value="${inList?"":smE(p.exam)}">
-        <button class="btn" id="pfS" style="width:100%;margin-top:16px">सेव करें</button><div class="pfm" id="pfSm"></div>
-      </div></main>`,"prof",false,profile);
+    view(`<header class="pfeh">${BACK}<div class="pfeh-t"><h1>Edit Profile</h1><div class="pfeh-s"><i></i><span>अपनी पहचान को और बेहतर बनाएँ</span><i></i></div></div><span class="pfeh-c">👑</span></header>
+    <main class="pg pf pfe pfe2">
+      <section class="pfe-hero"><span class="pfe-dream">Dream<br>Big…</span><span class="pfe-fort">🏰</span>
+        <div class="pfe-ring"><div id="pfAv">${avatar(p,1)}</div><button class="pfe-cam" id="pfCam" type="button" aria-label="फ़ोटो">${pfIco("camera","#fff")}</button></div></section>
+      <div class="pfe-btns"><button class="pfe-b1" id="pfPick" type="button">${pfIco("camera","#fff")}<span>फ़ोटो बदलें</span></button><button class="pfe-b2" id="pfGal" type="button"><span class="pfe-gi">🖼️</span><span>गैलरी से चुनें</span></button></div>
+      <input type="file" id="pfFc" accept="image/*" capture="user" style="display:none"><input type="file" id="pfF" accept="image/*" style="display:none">
+      <div class="pfm" id="pfPm" style="text-align:center;font-style:italic">Recommended Size: 256 × 256 (Square)</div>
+      <div style="text-align:center"><button class="pfe-del" id="pfDel" type="button" style="${p.avatar_url?"":"display:none"}">फ़ोटो हटाएँ</button></div>
+      <div class="card pfe-card">
+        <div class="pfe-f"><span class="pfe-i" style="--a:#d6ecff;--b:#9fd0ff;color:#1457d9">${pfIco("user")}</span><div class="pfe-fb"><label class="pfl" for="pfN">नाम <b class="rq">*</b></label><input class="pfi pfx" id="pfN" maxlength="40" autocomplete="off" value="${smE(p.display_name)}"></div></div>
+        <div class="pfe-f"><span class="pfe-i" style="--a:#e6dcff;--b:#b9a2ff;color:#5b2bc9;font-weight:800;font-size:26px">@</span><div class="pfe-fb"><label class="pfl" for="pfU">यूज़रनेम (यूनिक) <b class="rq">*</b></label><div class="pfu"><input class="pfx" id="pfU" maxlength="20" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" value="${smE(p.username)}"><i class="pfuc ok" id="pfUc"></i></div><div class="pfm" id="pfUm">3-20 अक्षर: a-z, 0-9, _ और .</div></div></div>
+        <div class="pfe-f"><span class="pfe-i" style="--a:#ffe0ea;--b:#ffa9c2;color:#e11d48">${pfIco("pencil")}</span><div class="pfe-fb"><label class="pfl" for="pfB">बायो</label><textarea class="pfx" id="pfB" rows="3" maxlength="150" placeholder="अपने बारे में छोटा-सा लिखें">${smE(p.bio)}</textarea><div class="pfm" id="pfBc" style="text-align:right;color:var(--pf-ac);font-weight:700"></div></div></div>
+        <div class="pfe-f"><span class="pfe-i" style="--a:#e6dcff;--b:#c4b0ff;color:#4c1d95">${pfIco("cap")}</span><div class="pfe-fb"><label class="pfl" for="pfX">आपकी परीक्षा (Your Exam)</label><select id="pfX">${opts}</select><input class="pfi" id="pfXo" maxlength="60" placeholder="परीक्षा का नाम लिखें" style="margin-top:8px;${inList?"":"display:block"}${inList?"display:none":""}" value="${inList?"":smE(p.exam)}"></div></div>
+        <div class="pfe-tip"><b>💡 Pro Tips:</b><ul><li>अपनी सही जानकारी भरें ताकि आपके अनुभव बेहतर हों।</li><li>एक अच्छा प्रोफाइल फ़ोटो लगाएं।</li><li>बायो में अपने बारे में कुछ खास लिखें।</li></ul></div>
+      </div>
+      <button class="pfe-save" id="pfS" type="button"><span class="pfe-ck">✓</span>सेव करें</button><div class="pfm" id="pfSm" style="text-align:center"></div>
+    </main>`,"",false,profile);
     const N=$("pfN"),U=$("pfU"),B=$("pfB"),X=$("pfX"),Xo=$("pfXo"),Um=$("pfUm"),Sm=$("pfSm"),cur=p.username;
-    const setM=(el,t,c)=>{el.className="pfm"+(c?" "+c:"");el.textContent=t};
+    const setM=(el,t,c)=>{el.className="pfm"+(c?" "+c:"");el.textContent=t;if(el===Um){const k=$("pfUc");if(k)k.className="pfuc"+(c==="ok"||t==="आपका मौजूदा यूज़रनेम"?" ok":c==="bad"?" bad":"")}};
     const bc=()=>{setM($("pfBc"),B.value.length+"/150")};bc();B.oninput=bc;
     X.onchange=()=>{Xo.style.display=X.value==="__o"?"block":"none"};
     let seq=0,tm;
@@ -2814,14 +2910,15 @@ splash();
       },450);
     };
     /* photo */
-    $("pfPick").onclick=()=>$("pfF").click();
+    $("pfGal").onclick=()=>$("pfF").click();$("pfPick").onclick=()=>$("pfFc").click();$("pfCam").onclick=()=>$("pfFc").click();
     $("pfF").onchange=async e=>{
       const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;
-      const pm=$("pfPm");setM(pm,"फ़ोटो अपलोड हो रही है...");$("pfPick").disabled=true;
+      const pm=$("pfPm");setM(pm,"फ़ोटो अपलोड हो रही है...");$("pfPick").disabled=true;$("pfGal").disabled=true;
       try{const r=await setAvatar(f);if(!$("pfAv"))return;$("pfAv").innerHTML=avatar(r,1);$("pfDel").style.display="";setM(pm,"✅ फ़ोटो सेव हो गई","ok")}
       catch(er){if(!$("pfPm"))return;setM(pm,er.message==="IMG"?"यह फ़ोटो पढ़ी नहीं जा सकी। JPG/PNG फ़ोटो चुनें।":er.message==="NET"?"इंटरनेट नहीं है। फिर कोशिश करें।":"फ़ोटो अपलोड नहीं हो पाई। थोड़ी देर बाद फिर कोशिश करें।","bad")}
-      if($("pfPick"))$("pfPick").disabled=false;
+      if($("pfPick")){$("pfPick").disabled=false;$("pfGal").disabled=false}
     };
+    $("pfFc").onchange=$("pfF").onchange;
     $("pfDel").onclick=async()=>{
       if(!confirm("प्रोफ़ाइल फ़ोटो हटाएँ?"))return;
       try{const r=await removeAvatar();$("pfAv").innerHTML=avatar(r,1);$("pfDel").style.display="none";setM($("pfPm"),"फ़ोटो हटा दी गई","ok")}
@@ -3271,14 +3368,18 @@ function mistItems(kind){
   return out;
 }
 const mcount=kind=>mistItems(kind).length;
-function mistakes(){
+function mistakes(from){
   clearInterval(tick);jvBackfill();
-  view(hdr(BACK,"","Mistake Analysis")+`<main class="pg"><div class="list">
+  const st=from==="stats";let sum="";
+  if(st){const H=store.get("jk_hist"),R_=H.reduce((a,h)=>a+h.r,0),W_=H.reduce((a,h)=>a+h.w,0),A=R_+W_,D=cnt("jk_done"),acc=A?Math.round(R_/A*100):null;
+    const tl=(ic,c,v,l)=>'<div class="pf-t" style="cursor:default"><span class="pf-ti" style="--c:'+c+'">'+pfIco(ic)+'</span><b>'+v+'</b><small>'+l+'</small></div>';
+    sum='<div class="pf"><section class="pf-c"><div class="pf-h"><span class="pf-hi">'+pfIco("chart")+'</span><b>Learning Statistics</b></div><div class="pf-g">'+tl("help","#3b9bff",D,"Total Questions")+tl("target","#22c55e",acc===null?"--":acc+"%","Accuracy")+tl("ok","#22c55e",R_,"Correct")+tl("bad","#ef4444",W_,"Incorrect")+tl("clip","#f472b6",H.length,"Total Tests")+tl("mark","#3b9bff",cnt("pyq_saved"),"Saved Questions")+'</div></section></div>'}
+  view(hdr(BACK,"","Mistake Analysis")+`<main class="pg">${sum}<div class="list">
   ${R({c:"#dc2626",i:"❌",t:"Wrong Questions",s:"जो प्रश्न गलत हुए · All / Chapter-wise / Source Test",b:mcount("w"),on:"mistList('w')"})}
   ${R({c:"#16a34a",i:"📒",t:"Notes",s:"आपके नोट्स",b:"Coming Soon",soon:1,on:"mistSoon('Notes')"})}
   ${R({c:"#f59e0b",i:"🚩",t:"Review Questions",s:"टेस्ट में रिव्यू के लिए मार्क किए प्रश्न",b:mcount("r"),on:"mistList('r')"})}
   ${R({c:"#2563eb",i:BM(1).replace('fill="#ffd21f"','fill="#2563eb"').replace(/#ffd21f/g,"#2563eb"),raw:1,t:"Saved Questions",s:"जो आपने सेव किए",b:mcount("s"),on:"mistList('s')"})}
-  ${R({c:"#7c3aed",i:"💬",t:"Remark by Admin",s:"आपकी परफॉर्मेंस पर पर्सनल गाइडेंस",on:"adminRemarks()"})}</div></main>`,"mist",false,home);
+  ${R({c:"#7c3aed",i:"💬",t:"Remark by Admin",s:"आपकी परफॉर्मेंस पर पर्सनल गाइडेंस",on:"adminRemarks()"})}</div></main>`,st?"prof":"mist",false,st?profile:home);
 }
 /* kis source se aaya: ek chhota label */
 function jvSrcLabel(s){
@@ -3656,7 +3757,7 @@ function retestResult(){
    Seen-based (jkx_seen_v1) logic hata diya; ab sirf created_at / addedOn dekhta hai. Din badalne ho to NB_D me badlo. */
 const NB_D={card:30,chap:30,test:30};
 /* Static cards ki date (YYYY-MM-DD). Naya static card jodo to yahan uski date likho */
-const NB_ADDED={rank:"2026-10-24"};
+const NB_ADDED={rank:"2026-10-24",community:"2026-11-01"};
 const nbIs=(ts,d)=>{const t=typeof ts==="number"?ts:Date.parse(ts||"");return !isNaN(t)&&Date.now()-t<=d*864e5};
 /* DB questions se: subject card kab bana (sabse purana question) aur chapter kab bana */
 let NMV=0,_nm=null,_nmK="";
@@ -3926,47 +4027,94 @@ function jvUnpackHist(d,textOf){
   if(location.hash==="#diag")show();
 })();
 </script>
+<!-- JK-PART-1-DONE --><!-- JK-PART-2-DONE -->
 <script id="jk-nav">
-/* PART 3 — (a) phone/browser Back = app ke back-button jaisa ek step peeche, (b) Refresh = usi screen par.
-   Back: history me sirf ek "trap" entry rakhte hain ({jk:1}); user Back dabaye to popstate me wahi kaam chalta hai jo screen ka <- button (#bk) karta hai.
-   Refresh: har mukhya screen ka route sessionStorage["jk_route"] me; boot par login ho to wahi screen. */
+/* PART 1 (v2) — Screen-stack Back + Refresh. Naya screen jodne par koi list/whitelist badalne ki zaroorat nahi:
+   boot par har global function jisme view( hai apne-aap track hoti hai.
+   - Phone Back = stack ka pichhla screen (jahan se aaye the wahin). Overlay pehle band, Home par double-Back = bahar.
+   - Test/quiz/result jaise screens DENY me hain: wahan Back = screen ka apna <- (#bk) flow ("छोड़ें?" wagairah).
+   - Refresh: stack sessionStorage[jk_route2] me; boot par top screen wapas + stack wahi. */
 (function(){
   "use strict";
-  var KEY="jk_route";
-  var ROUTABLE={home:1,pyqSubjects:1,pyqChapters:1,chapterModes:1,subjSubjects:1,subChapters:1,subOptions:1,fstSubjects:1,fstTests:1,mockList:1,tests:1,mistakes:1,profile:1,youtube:1,seeMore:1};
-  var route=null,armedAt=0;
+  var KEY="jk_route2",MAXS=14,armedAt=0,stack=[],curTracked=false,busy=0,tracked={};
+  var DENY={view:1,splash:1,comingSoon:1,resumeAsk:1,intro:1,tintro:1,render:1,scoreLegend:1,result:1,tstOpen:1,histOpen:1,mistOpen:1,pdfOpen:1,dvView:1,smShell:1,smCat:1,ytVideos:1};
+  var DENY_RE=/login|reset|recover|splash/i;
   function ss(){try{return window.sessionStorage}catch(e){return null}}
-  function save(){try{var s=ss();if(s&&route)s.setItem(KEY,JSON.stringify(route))}catch(e){}}
-  function ctx(){var c={};try{c.pf=pyqFrom;c.mf=mockFrom}catch(e){}return c}
+  function ctx(){var c={};try{c.pf=pyqFrom;c.mf=mockFrom;c.ei=exI;c.fs=fromSub}catch(e){}return c}
+  function setCtx(c){try{if(c){if(c.pf)pyqFrom=c.pf;if(c.mf)mockFrom=c.mf;if(typeof c.ei==="number")exI=c.ei;if(typeof c.fs==="boolean")fromSub=c.fs}}catch(e){}}
+  function save(){try{var s=ss();if(s)s.setItem(KEY,JSON.stringify(stack.filter(function(e){return !e.nr}).slice(-MAXS)))}catch(e){}}
+  function sig(e){return e.fn+"|"+JSON.stringify(e.args)}
+  function top(){return stack[stack.length-1]}
 
-  /* ---------- (b) route track ---------- */
-  Object.keys(ROUTABLE).forEach(function(n){
-    var f=window[n];if(typeof f!=="function")return;
-    window[n]=function(){
+  /* ---------- track ---------- */
+  function track(n,a,ok){
+    if(busy)return;
+    var e={fn:n,args:ok?a:null,nr:!ok,c:ctx()};
+    if(n==="home"){stack=[e]}
+    else{
+      var i=-1,sg=sig(e);
+      if(!e.nr){for(var k=stack.length-1;k>=0;k--){if(!stack[k].nr&&sig(stack[k])===sg){i=k;break}}}
+      if(i>=0){stack=stack.slice(0,i+1);stack[i]=e}          /* pehle dekhi screen par lauti: uske upar ka hissa hatao */
+      else{var t=top();if(t&&t.fn===n&&(e.nr||t.nr))stack[stack.length-1]=e;else stack.push(e)}
+    }
+    if(stack.length>40)stack=stack.slice(-40);
+    save();
+  }
+  function wrapTracked(n){
+    var f=window[n];if(typeof f!=="function"||f.__jn)return;
+    var w=function(){
       var a=[],ok=true;
-      for(var i=0;i<arguments.length;i++){var v=arguments[i];if(typeof v==="number"||typeof v==="string")a.push(v);else if(v!==undefined&&v!==null)ok=false}
-      if(ok){route={fn:n,args:a,c:ctx()};save()}
+      for(var i=0;i<arguments.length;i++){var v=arguments[i];if(typeof v==="number"||typeof v==="string"||typeof v==="boolean")a.push(v);else if(v!==undefined&&v!==null)ok=false}
+      curTracked=true;track(n,a,ok);
       return f.apply(this,arguments);
     };
-  });
-  /* chapter ka test/practice chal raha ho to refresh par wahi resume ("जारी रखें" screen) */
+    w.__jn=1;tracked[n]=1;window[n]=w;
+  }
+  function wrapDeny(n){
+    var f=window[n];if(typeof f!=="function"||f.__jn)return;
+    var w=function(){curTracked=false;return f.apply(this,arguments)};
+    w.__jn=1;window[n]=w;
+  }
+  function scan(){
+    var names=Object.getOwnPropertyNames(window),i,n,d,src;
+    for(i=0;i<names.length;i++){
+      n=names[i];
+      try{
+        d=Object.getOwnPropertyDescriptor(window,n);
+        if(!d||typeof d.value!=="function"||d.value.__jn)continue;
+        if(n==="view"||n==="goTab")continue;
+        src=Function.prototype.toString.call(d.value);
+        if(/\[native code\]/.test(src))continue;
+        if(DENY[n]||DENY_RE.test(n)){if(/\bview\(/.test(src)||DENY[n])wrapDeny(n);continue}
+        if(/\bview\(/.test(src))wrapTracked(n);
+      }catch(e){}
+    }
+    Object.keys(DENY).forEach(function(k){if(k!=="view")wrapDeny(k)});
+  }
+  scan();
+  /* neeche ke tab: stack saaf, naya root */
+  var g0=window.goTab;
+  if(typeof g0==="function")window.goTab=function(){stack=[];return g0.apply(this,arguments)};
+
+  /* chapter ka test/practice chal raha ho to refresh par wahi resume ("जारी रखें") */
   var start0=window.start;
   if(typeof start0==="function")window.start=function(f,l,n,m,src){
-    if(route&&route.fn==="chapterModes"&&!src&&!n){route.t=m||"practice";save()}
+    var t=top();if(t&&t.fn==="chapterModes"&&!src&&!n){t.t=m||"practice";save()}
     return start0.apply(this,arguments);
   };
   var fin0=window.finish;
   if(typeof fin0==="function")window.finish=function(){
-    if(route&&route.t){delete route.t;save()}
+    for(var i=0;i<stack.length;i++){if(stack[i].t)delete stack[i].t}save();
     return fin0.apply(this,arguments);
   };
 
-  function validArgs(r){
-    var a=r.args||[];
+  /* ---------- Refresh: wahi screen ---------- */
+  function validEntry(r){
+    if(!r||!tracked[r.fn]||typeof window[r.fn]!=="function"||!Array.isArray(r.args))return false;
     try{
       if(/^(pyqChapters|chapterModes|subChapters|subOptions|fstTests)$/.test(r.fn)){
-        var S=SUBJECTS[a[0]];if(!S)return false;
-        if((r.fn==="chapterModes"||r.fn==="subOptions")&&!S.chapters[a[1]])return false;
+        var S=SUBJECTS[r.args[0]];if(!S)return false;
+        if((r.fn==="chapterModes"||r.fn==="subOptions")&&!S.chapters[r.args[1]])return false;
       }
     }catch(e){return false}
     return true;
@@ -3978,42 +4126,55 @@ function jvUnpackHist(d,textOf){
     if(!(window.JKAuth&&JKAuth.isLoggedIn()))return;
     try{if(JKAuth.pendingRecovery&&JKAuth.pendingRecovery())return}catch(e){}
     if(!document.getElementById("gs"))return;           /* sirf tab jab splash khula ho */
-    var r=null;try{r=JSON.parse(ss().getItem(KEY)||"null")}catch(e){}
-    if(!r||!ROUTABLE[r.fn]||typeof window[r.fn]!=="function"||!validArgs(r))return;
-    try{if(r.c){if(r.c.pf)pyqFrom=r.c.pf;if(r.c.mf)mockFrom=r.c.mf}}catch(e){}
-    window[r.fn].apply(null,Array.isArray(r.args)?r.args:[]);
-    if(r.t&&r.fn==="chapterModes"&&typeof window.cm==="function")window.cm(r.t);
+    var arr=null;try{arr=JSON.parse(ss().getItem(KEY)||"null")}catch(e){}
+    if(!Array.isArray(arr))return;
+    while(arr.length&&!validEntry(arr[arr.length-1]))arr.pop();
+    if(!arr.length)return;
+    var t=arr[arr.length-1];
+    stack=arr.filter(validEntry);
+    setCtx(t.c);busy=1;curTracked=true;
+    try{window[t.fn].apply(null,t.args)}finally{busy=0}
+    if(t.t&&t.fn==="chapterModes"&&typeof window.cm==="function")window.cm(t.t);
   }
-  try{restore()}catch(e){if(!document.getElementById("gs")){try{home()}catch(_){}}}
+  try{restore()}catch(e){busy=0;if(!document.getElementById("gs")){try{home()}catch(_){}}}
 
-  /* ---------- (a) Back ---------- */
+  /* ---------- Back ---------- */
   function armTrap(){
     try{var s=history.state;if(s&&s.jk===1)return;history.replaceState({jk:0},"");history.pushState({jk:1},"")}catch(e){}
   }
-  /* Chrome bina user-tap ke daali history entries skip kar deta hai, isliye pehle tap par trap lagate hain */
   var evs=["pointerup","click","touchend","keydown"];
   function firstTap(){evs.forEach(function(t){document.removeEventListener(t,firstTap,true)});armTrap()}
   evs.forEach(function(t){document.addEventListener(t,firstTap,true)});
-  try{if(history.state&&history.state.jk===1)firstTap()}catch(e){}   /* refresh ke baad trap pehle se hai */
+  try{if(history.state&&history.state.jk===1)firstTap()}catch(e){}
 
   function repush(){try{history.pushState({jk:1},"")}catch(e){}}
   function overlay(){return document.querySelector(".mdl,.rsheet,.ntp,#dgBox,#smenu")}
   function isHome(){return !!document.querySelector(".tiles2")&&!document.getElementById("bk")}
+  function stackBack(){
+    if(!curTracked||stack.length<2)return false;
+    var p=stack[stack.length-2];
+    if(!p||p.nr||typeof window[p.fn]!=="function")return false;
+    stack.pop();setCtx(p.c);busy=1;curTracked=true;
+    try{window[p.fn].apply(null,p.args||[])}catch(e){busy=0;try{home()}catch(_){}return true}
+    busy=0;save();return true;
+  }
   window.addEventListener("popstate",function(e){
     var s=e.state;
-    if(s&&(s.jk===1||s.ytv))return;                    /* trap / YouTube-viewer wali entry: yahan kuch nahi */
-    if(document.getElementById("ytv")){repush();return}    /* viewer ka apna ytPop band karega */
-    if(document.getElementById("gs")||document.querySelector(".lg")){try{history.back()}catch(x){}return}  /* splash/login par Back = bahar */
+    if(s&&(s.jk===1||s.ytv))return;
+    if(document.getElementById("ytv")){repush();return}
+    if(document.getElementById("gs")||document.querySelector(".lg")){try{history.back()}catch(x){}return}
     var ov=overlay();
-    if(!ov&&isHome()&&Date.now()-armedAt<2200){armedAt=0;try{history.back()}catch(x){}return}   /* Home par doosri Back = bahar */
+    if(!ov&&isHome()&&Date.now()-armedAt<2200){armedAt=0;try{history.back()}catch(x){}return}
     repush();
-    if(ov){ov.remove();return}                          /* khula popup/menu pehle band */
+    if(ov){ov.remove();return}
     if(isHome()){armedAt=Date.now();toast("बाहर निकलने के लिए एक बार और Back दबाएँ");return}
+    if(stackBack())return;                               /* jahan se aaye wahin */
     var b=document.getElementById("bk");
-    if(b&&b.onclick){b.click();return}                  /* wahi jo ← button karta hai (test me "छोड़ें?" wala flow bhi) */
+    if(b&&b.onclick){b.click();return}                  /* test/quiz: screen ka apna <- flow */
     try{clearInterval(tick)}catch(x){}
     home();
   });
+  window.JKNav={stack:function(){return stack.slice()},back:stackBack};
 })();
 </script>
 <script id="jk-install">
