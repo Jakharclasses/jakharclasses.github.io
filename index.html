@@ -315,6 +315,73 @@ p.q{line-height:var(--q-lh,1.45);overflow-wrap:anywhere;margin:6px 0 14px}
 .pfu input{border:0;outline:0;flex:1;padding:11px 8px;background:transparent;color:var(--ink);font:inherit;min-width:0}
 .pfm{font-size:12.5px;color:var(--mute);margin-top:5px;min-height:16px;overflow-wrap:anywhere}.pfm.ok{color:var(--ok)}.pfm.bad{color:var(--bad)}
 .dark .pfchip{background:#26324e;color:#cfe0ff}.dark .pfi,.dark .pfe select,.dark .pfe textarea,.dark .pfu{background:#0f1726;color:#e6ebf5;border-color:#2b3956}.dark .pfu input{color:#e6ebf5}
+/* ===== Profile redesign (My Profile / Settings / Achievements) ===== */
+.pf{--pf-s:#fff;--pf-s2:#eff4ff;--pf-ln:rgba(20,87,217,.13);--pf-sh:0 10px 28px -16px rgba(20,60,140,.45);--pf-ac:#1457d9;--pf-hi:#e4edff}
+.dark .pf{--pf-s:#0f1c38;--pf-s2:#16284d;--pf-ln:rgba(90,150,255,.24);--pf-sh:0 0 0 1px rgba(90,150,255,.06),0 14px 34px -18px rgba(0,0,0,.9);--pf-ac:#5aa2ff;--pf-hi:#1a2f5c}
+.pf svg{display:block}
+.pf-c{background:var(--pf-s);border:1px solid var(--pf-ln);border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:var(--pf-sh)}
+.pf-hero{position:relative;overflow:hidden;background:radial-gradient(120% 80% at 100% 0,rgba(77,155,255,.2),transparent 60%),var(--pf-s)}
+.pf-id{display:flex;gap:16px;align-items:center}
+.pf-av{position:relative;flex:none;width:92px;height:92px;padding:3px;border:0;border-radius:50%;background:conic-gradient(from 210deg,#7fd0ff,#1457d9,#5aa2ff,#7fd0ff);box-shadow:0 0 0 4px rgba(77,155,255,.12),0 0 26px rgba(77,155,255,.4);display:block}
+button.pf-av{cursor:pointer}
+.pf-av.sm{width:64px;height:64px;padding:2px}.pf-av.sm .pfa{font-size:26px}
+.pf-av .pfa{width:100%;height:100%;font-size:36px;border:3px solid var(--pf-s);box-sizing:border-box}
+.pf-cam{position:absolute;right:-2px;bottom:-2px;width:30px;height:30px;border-radius:50%;background:var(--pf-s);border:2px solid var(--pf-ac);color:var(--pf-ac);display:grid;place-items:center}
+.pf-cam svg{width:15px;height:15px}
+.pf-nm{min-width:0;flex:1}
+.pf-nm h2{margin:0;font-size:21px;line-height:1.25;display:flex;align-items:center;gap:6px;overflow-wrap:anywhere}
+.pf-vf{flex:none;width:19px;height:19px;display:inline-flex}.pf-vf svg{width:100%;height:100%}
+.pf-un{color:var(--pf-ac);font-weight:700;font-size:14px;margin-top:1px;overflow-wrap:anywhere}
+.pf-chip{display:inline-flex;align-items:center;gap:6px;margin-top:9px;max-width:100%;padding:5px 11px;border-radius:12px;background:var(--pf-hi);color:var(--pf-ac);font-size:12.5px;font-weight:700;border:1px solid var(--pf-ln)}
+.pf-chip svg{width:15px;height:15px;flex:none}
+.pf-bio{margin:14px 2px 0;font-size:14.5px;line-height:1.55;white-space:pre-line;overflow-wrap:anywhere}
+.pf-edit{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;padding:11px 14px;border:0;border-radius:14px;font:inherit;font-weight:700;color:#fff;background:linear-gradient(135deg,#1457d9,#2f7bff);box-shadow:0 10px 22px -10px rgba(20,87,217,.9)}
+.pf-edit svg{width:17px;height:17px}
+.pf-mini .pf-edit{margin-top:14px}
+.pf-h{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.pf-hi{flex:none;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--pf-hi);color:var(--pf-ac)}.pf-hi svg{width:17px;height:17px}
+.pf-h b{flex:1;font-size:16.5px}
+.pf-h button{border:0;background:none;color:var(--pf-ac);font:inherit;font-weight:700;font-size:13px;display:flex;align-items:center;gap:4px;padding:4px 0}.pf-h button svg{width:15px;height:15px}
+.pf-g{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pf-t{border:0;border-radius:16px;background:var(--pf-s2);padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;color:inherit;font:inherit;min-width:0}
+.pf-t:not([onclick]){cursor:default}
+.pf-ti{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 17%,transparent);margin-bottom:4px}.pf-ti svg{width:18px;height:18px}
+.pf-t b{font-size:21px;line-height:1.2;white-space:nowrap}
+.pf-t small{font-size:11.5px;color:var(--mute);text-align:center;line-height:1.25}
+.pf-b{display:flex;width:70%;height:4px;border-radius:4px;background:rgba(128,150,190,.25);margin-top:8px;overflow:hidden}
+.pf-b u{display:block;height:100%;text-decoration:none}
+.pf-bd{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}
+.pf-bd small{display:block;font-size:11.5px;font-weight:600;line-height:1.25;margin-top:4px}
+.pf-bd svg{width:56px;height:63px;margin:0 auto}
+.pf .lk svg{filter:grayscale(1);opacity:.42}.pf .lk small{color:var(--mute)}
+.pf-bi{display:flex;align-items:center;gap:12px;padding:10px 0}.pf-bi+.pf-bi{border-top:1px solid var(--pf-ln)}
+.pf-bi>svg{flex:none;width:46px;height:52px}.pf-bi>div{flex:1;min-width:0}
+.pf-bi b{display:block;font-size:14.5px}.pf-bi small{display:block;color:var(--mute);font-size:12px}
+.pf-bi .pf-b{width:100%;margin-top:6px}
+.pf-bi em{font-style:normal;font-weight:700;font-size:12.5px;color:var(--pf-ac)}
+.pf-kv,.pf-r{display:flex;align-items:center;gap:12px;width:100%;padding:11px 0;border:0;background:none;color:inherit;font:inherit;text-align:left}
+.pf-kv+.pf-kv,.pf-r+.pf-r{border-top:1px solid var(--pf-ln)}
+.pf-k{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 15%,transparent)}.pf-k svg{width:19px;height:19px}
+.pf-x{flex:1;min-width:0;display:block}
+.pf-x b{display:block;font-size:14.5px}.pf-x small{display:block;color:var(--mute);font-size:12px}
+.pf-x em{display:block;font-style:normal;font-weight:700;font-size:14px;overflow-wrap:anywhere}
+.pf-kv .pf-x small{font-size:12px}
+.pf-ch{flex:none;color:var(--mute)}.pf-ch svg{width:18px;height:18px}
+.pf-n{min-width:20px;height:20px;border-radius:10px;background:#ef4444;color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 6px}
+.pf-sw{flex:none;width:48px;height:28px;border-radius:20px;background:rgba(128,150,190,.4);position:relative;transition:background .2s}
+.pf-sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.pf-sw[aria-checked=true]{background:#1457d9}.pf-sw[aria-checked=true]::after{transform:translateX(20px)}
+.pf-seg{flex:none;display:flex;padding:3px;border-radius:12px;background:var(--pf-s2)}
+.pf-seg button{border:0;background:none;padding:6px 13px;border-radius:9px;font:inherit;font-weight:700;font-size:13px;color:var(--mute)}
+.pf-seg button.on{background:#1457d9;color:#fff}
+.pf-out{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin:0 0 14px;padding:14px;border:0;border-radius:16px;font:inherit;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(135deg,#1457d9,#2f7bff);box-shadow:0 12px 26px -12px rgba(20,87,217,.95)}.pf-out svg{width:20px;height:20px}
+.pf-in{display:block;width:100%;box-sizing:border-box;padding:11px 12px;margin:8px 0;border-radius:12px;border:1.5px solid var(--pf-ln);background:var(--pf-s2);color:var(--ink);font:inherit}
+.pf-in:focus{outline:0;border-color:var(--pf-ac)}
+.pf-2{display:flex;gap:8px;margin-top:6px}
+.pf-ab{width:72px;height:72px;margin:6px auto 0;border-radius:22px;display:grid;place-items:center;font-size:34px;font-weight:800;color:#fff;background:linear-gradient(135deg,#0b3a8c,#2f7bff);box-shadow:0 0 26px rgba(77,155,255,.4)}
+.pfe .card{border:1px solid var(--pf-ln);border-radius:20px;box-shadow:var(--pf-sh)}
+.dark .pfe .card{background:var(--pf-s)}
+.pfe .pfa.big{box-shadow:0 0 0 3px var(--pf-ac),0 0 24px rgba(77,155,255,.4)}
 .nw{flex:none;background:#ef4444;color:#fff;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px;animation:nbw 1.6s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){.nw,.tiles2 .nbadge{animation:none}}
 .bell{position:relative}.bdot{position:absolute;top:7px;right:8px;width:11px;height:11px;border-radius:50%;background:#ef4444;border:2px solid #fff}
@@ -1739,22 +1806,133 @@ function examList(){
 const examSoon=i=>comingSoon(exShort(EXAMS[i]),examList,"","इस परीक्षा की तैयारी जल्द जोड़ी जाएगी");
 
 /* ---------- Profile / Privacy / Contact ---------- */
+/* ---------- Profile redesign: icons, badges, screens ---------- */
+const PFI={
+gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33 1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82 1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+camera:'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+pencil:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+cap:'<path d="M22 10 12 5 2 10l10 5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/>',
+chart:'<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',
+help:'<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+clip:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h4"/>',
+ok:'<circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/>',
+bad:'<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/>',
+mark:'<path d="M6 3h12v18l-6-4.5L6 21z"/>',
+trophy:'<path d="M8 21h8M12 17v4M7 4h10v6a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
+user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+mail:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>',
+sync:'<path d="M21 12a9 9 0 0 0-15-6.7L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"/><path d="M21 21v-5h-5"/>',
+clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>',
+globe:'<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>',
+moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+key:'<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.3-9.3M16 7l3 3"/>',
+heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>',
+info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+chev:'<path d="m9 6 6 6-6 6"/>',
+arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+star:'<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>',
+bolt:'<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>',
+sliders:'<path d="M4 6h8M18 6h2M4 12h2M12 12h8M4 18h10M20 18h0"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>'
+};
+const PF_VF='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#1d9bf0"/><path d="m7.5 12.5 3 3 6-6.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function pfIco(k,c){return '<svg viewBox="0 0 24 24" fill="none" stroke="'+(c||"currentColor")+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+PFI[k]+'</svg>'}
+function pfBest(){const D=Array.from(new Set(store.get("jk_days"))).sort();let b=0,n=0,p=null;D.forEach(s=>{const t=new Date(s+"T00:00:00").getTime();n=(p!==null&&Math.round((t-p)/864e5)===1)?n+1:1;p=t;if(n>b)b=n});return Math.max(b,streak())}
+function pfBadges(){
+  const H=store.get("jk_hist"),R_=H.reduce((a,h)=>a+h.r,0),A=H.reduce((a,h)=>a+h.r+h.w,0),acc=A?R_/A*100:0;
+  const D=cnt("jk_done"),T=H.length,S=cnt("pyq_saved"),B=pfBest();
+  const mk=(id,t,hint,c1,c2,ic,cur,goal,ok)=>({id,t,hint,c1,c2,ic,cur:Math.min(cur,goal),goal,ok:ok===undefined?cur>=goal:ok});
+  return [
+    mk("tl","Top Learner","Solve 100 questions","#ffd25a","#c98300","star",D,100),
+    mk("tc","Test Champ","Take 10 tests","#b794ff","#5b2bc9","trophy",T,10),
+    mk("as","Accuracy Star","80% accuracy over 50+ questions","#6cc4ff","#0b4fc4","target",A,50,A>=50&&acc>=80),
+    mk("ru","Regular User","Study 7 days in a row","#ffa45c","#c2410c","flame",B,7),
+    mk("fs","First Step","Solve your first question","#5eead4","#047857","bolt",D,1),
+    mk("bw","Bookworm","Save 25 questions","#7dd3fc","#0369a1","mark",S,25),
+    mk("c5","500 Club","Solve 500 questions","#f9a8d4","#be185d","star",D,500),
+    mk("s3","30-Day Streak","Study 30 days in a row","#fca5a5","#b91c1c","flame",B,30)
+  ];
+}
+function pfBadge(b,i){
+  const g="pfg"+i+b.id;
+  return '<svg viewBox="0 0 64 72" aria-hidden="true"><defs><linearGradient id="'+g+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+b.c1+'"/><stop offset="1" stop-color="'+b.c2+'"/></linearGradient></defs><path d="M32 3 58 12v22c0 17-12 29-26 35C18 63 6 51 6 34V12z" fill="url(#'+g+')" stroke="rgba(255,255,255,.55)" stroke-width="2" stroke-linejoin="round"/><g transform="translate(19.5 21) scale(1.05)" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+PFI[b.ic]+'</g></svg>';
+}
 function profile(){
   clearInterval(tick);
-  const H=store.get("jk_hist"),R_=H.reduce((a,h)=>a+h.r,0),A=H.reduce((a,h)=>a+h.r+h.w,0);
-  view(hdr(BACK,"","प्रोफ़ाइल")+`<main class="pg">${window.pfHello?pfHello():'<div class="card hello"><span class="av">👤</span><div><b>JAKHAR विद्यार्थी</b><br><small>तैयारी जारी है 💪</small></div></div>'}
-  <div class="card"><div class="stat" style="margin:0"><div><b>${cnt("jk_done")}</b>हल किए प्रश्न</div><div><b>${A?Math.round(R_/A*100)+"%":"--"}</b>सटीकता</div><div><b>${streak()}</b>Day Streak</div></div>
-  <p style="margin:12px 0 0;font-size:13px;color:var(--mute)">टेस्ट दिए: ${H.length} · सेव: ${cnt("pyq_saved")} · गलत: ${cnt("pyq_wrong")}</p></div>
-  <div class="card" id="acct"></div>
-  <div class="card"><b>🌐 ${lang==="en"?"Language":"भाषा · Language"}</b><div class="lgs"><button class="${lang==="en"?"":"on"}" onclick="setLang('hi')">हिंदी</button><button class="${lang==="en"?"on":""}" onclick="setLang('en')">English</button></div></div>
-  <div class="list">${R({c:"#334155",i:"🌙",t:"Dark Theme",s:"आँखों को आराम — डार्क मोड",b:document.documentElement.classList.contains("dark")?"चालू":"बंद",on:"toggleDark()"})}
-  ${R({c:"#e11d48",i:"💝",t:"Donate Us",s:"सहयोग करें · ब्लू टिक पाएँ",on:"openDonate()"})}
-  ${R({c:"#64748b",i:"🔒",t:"Privacy Policy",s:"आपका डेटा कैसे सुरक्षित रहता है",on:"privacy()"})}
-  ${R({c:"#1457d9",i:"📞",t:"Contact Us",s:"YouTube · Telegram · Email",on:"contact()"})}</div><div class="cprt">${cpr()}</div></main>`,"prof",false,home);
+  const H=store.get("jk_hist"),R_=H.reduce((a,h)=>a+h.r,0),W_=H.reduce((a,h)=>a+h.w,0),A=R_+W_;
+  const D=cnt("jk_done"),acc=A?Math.round(R_/A*100):null,st=streak(),sv=cnt("pyq_saved"),TQ=Math.max(QS.length,1);
+  const bar=(p,c)=>'<i class="pf-b"><u style="width:'+Math.max(0,Math.min(100,p))+'%;background:'+c+'"></u></i>';
+  const rp=A?Math.round(R_/A*100):0;
+  const split='<i class="pf-b"><u style="width:'+rp+'%;background:#22c55e"></u><u style="width:'+(A?100-rp:0)+'%;background:#ef4444"></u></i>';
+  const tile=(ic,c,v,l,b,on)=>'<button class="pf-t"'+(on?' onclick="'+on+'"':"")+'><span class="pf-ti" style="--c:'+c+'">'+pfIco(ic)+'</span>'+v+'<small>'+l+'</small>'+b+'</button>';
+  const cv=R_+" / "+W_,cvh='<b'+(cv.length>8?' style="font-size:16px"':"")+'><span style="color:#22c55e">'+R_+'</span> / <span style="color:#ef4444">'+W_+'</span></b>';
+  const BD=pfBadges().map((b,i)=>({b,i})).sort((x,y)=>(y.b.ok-x.b.ok)||(x.i-y.i)).slice(0,4);
+  const gear='<button class="ib" onclick="profileSettings()" aria-label="Settings">'+pfIco("gear","#fff")+'</button>';
+  view(hdr(BACK,gear,"My Profile")+`<main class="pg pf">${window.pfHello?pfHello():'<div class="pf-c pf-hero"><div class="pf-id"><span class="pf-av"><span class="pfa">👤</span></span><div class="pf-nm"><h2>JAKHAR विद्यार्थी</h2></div></div></div>'}
+  <section class="pf-c"><div class="pf-h"><span class="pf-hi">${pfIco("chart")}</span><b>Learning Statistics</b><button onclick="goTab('tests')">View All ${pfIco("arrow")}</button></div>
+  <div class="pf-g">
+  ${tile("help","#3b9bff","<b>"+D+"</b>","Total Questions",bar(D/TQ*100,"#3b9bff"))}
+  ${tile("target","#22c55e","<b>"+(acc===null?"--":acc+"%")+"</b>","Accuracy",bar(acc||0,"#22c55e"))}
+  ${tile("flame","#fb923c","<b>"+st+"</b>","Day Streak",bar(Math.min(st,7)/7*100,"#fb923c"))}
+  ${tile("clip","#f472b6","<b>"+H.length+"</b>","Total Tests",bar(0,"#f472b6").replace('class="pf-b"','class="pf-b" style="visibility:hidden"'),"goTab('tests')")}
+  ${tile("ok","#22c55e",cvh,"Correct / Incorrect",split,"mistList('w')")}
+  ${tile("mark","#3b9bff","<b>"+sv+"</b>","Saved Questions",bar(0,"#3b9bff").replace('class="pf-b"','class="pf-b" style="visibility:hidden"'),"mistList('s')")}
+  </div></section>
+  <section class="pf-c"><div class="pf-h"><span class="pf-hi">${pfIco("trophy")}</span><b>My Achievements</b><button onclick="pfAchievements()">View All ${pfIco("arrow")}</button></div>
+  <div class="pf-bd">${BD.map(x=>`<div class="${x.b.ok?"":"lk"}">${pfBadge(x.b,x.i)}<small>${x.b.t}</small></div>`).join("")}</div></section>
+  <div id="acct"></div>
+  <div class="cprt">${cpr()}</div></main>`,"prof",false,home);
   if(window.acctRender)acctRender();
   if(window.pfRefresh)pfRefresh();
 }
-function toggleDark(){const on=!document.documentElement.classList.contains("dark");document.documentElement.classList.toggle("dark",on);store.set("jk_theme",[on?"dark":"light"]);profile()}
+function pfAchievements(){
+  clearInterval(tick);
+  const L=pfBadges(),n=L.filter(b=>b.ok).length;
+  view(hdr(BACK,"","My Achievements")+`<main class="pg pf"><section class="pf-c"><div class="pf-h"><span class="pf-hi">${pfIco("trophy")}</span><b>${n} / ${L.length} unlocked</b></div>
+  ${L.map((b,i)=>`<div class="pf-bi${b.ok?"":" lk"}">${pfBadge(b,i)}<div><b>${b.t}</b><small>${b.hint}</small><i class="pf-b"><u style="width:${Math.round(b.cur/b.goal*100)}%;background:${b.c2}"></u></i></div><em>${b.ok?"✓":b.cur+"/"+b.goal}</em></div>`).join("")}</section></main>`,"prof",false,profile);
+}
+function profileSettings(){
+  clearInterval(tick);
+  const dark=document.documentElement.classList.contains("dark"),un=window.ntUnread?ntUnread():0,logged=window.JKAuth&&JKAuth.isLoggedIn();
+  const p=logged&&window.JKProfile?JKProfile.get():null;
+  const ch='<span class="pf-ch">'+pfIco("chev")+'</span>';
+  const row=(ic,c,t,s,end,on)=>(on?'<button class="pf-r" onclick="'+on+'">':'<div class="pf-r">')+'<span class="pf-k" style="--c:'+c+'">'+pfIco(ic)+'</span><span class="pf-x"><b>'+t+'</b>'+(s?'<small>'+s+'</small>':"")+'</span>'+(end||"")+(on?'</button>':'</div>');
+  const top=p?'<section class="pf-c pf-mini"><div class="pf-id"><span class="pf-av sm">'+JKProfile.avatar(p)+'</span><div class="pf-nm pfx"><h2>'+smE(p.display_name)+(p.verified?'<span class="pf-vf" title="Verified">'+PF_VF+'</span>':"")+'</h2><div class="pf-un">@'+smE(p.username)+'</div></div></div><button class="pf-edit" onclick="profileEdit()">'+pfIco("pencil")+'Edit Profile</button></section>':"";
+  view(hdr(BACK,"","Profile Settings")+`<main class="pg pf" id="pfSet">${top}
+  <section class="pf-c"><div class="pf-h"><span class="pf-hi">${pfIco("sliders")}</span><b>App Preferences</b></div>
+  ${row("globe","#38bdf8","Language","",'<span class="pf-seg"><button class="'+(lang==="en"?"":"on")+'" onclick="setLang(\'hi\')">हिंदी</button><button class="'+(lang==="en"?"on":"")+'" onclick="setLang(\'en\')">English</button></span>')}
+  ${row("moon","#818cf8","Dark Theme","आँखों को आराम — डार्क मोड",'<span class="pf-sw" role="switch" aria-checked="'+dark+'"></span>',"toggleDark()")}
+  ${row("bell","#fbbf24","Notifications","सूचनाएँ",(un>0?'<span class="pf-n">'+un+'</span>':"")+ch,"notifs()")}
+  </section>
+  <section class="pf-c"><div class="pf-h"><span class="pf-hi">${pfIco("shield")}</span><b>Security & Support</b></div>
+  ${logged?row("key","#34d399","Change Password","Send a reset link to your email",ch,"pfChangePw()"):""}
+  ${row("help","#3b9bff","Help & Support","YouTube · Telegram · Email",ch,"contact()")}
+  ${row("heart","#e11d48","Donate Us","सहयोग करें · ब्लू टिक पाएँ",ch,"openDonate()")}
+  ${row("shield","#94a3b8","Privacy Policy","आपका डेटा कैसे सुरक्षित रहता है",ch,"privacy()")}
+  ${row("info","#a78bfa","About App","JAKHAR Classes",ch,"pfAbout()")}
+  </section><div class="cprt">${cpr()}</div></main>`,"prof",false,profile);
+}
+async function pfChangePw(){
+  const s=window.JKAuth&&JKAuth.getSession();
+  if(!s||!s.email){toast("पहले लॉगिन करें");return}
+  if(!confirm("पासवर्ड बदलने का लिंक "+s.email+" पर भेजें?"))return;
+  try{await JKAuth.resetPassword(s.email);toast("लिंक भेज दिया — ईमेल देखें ✅")}
+  catch(e){const m=JKAuth.friendly(e);if(m)toast(m)}
+}
+function pfAbout(){
+  clearInterval(tick);
+  const t=(v,l,c,ic)=>'<div class="pf-t" style="cursor:default"><span class="pf-ti" style="--c:'+c+'">'+pfIco(ic)+'</span><b>'+v+'</b><small>'+l+'</small></div>';
+  view(hdr(BACK,"","About App")+`<main class="pg pf"><section class="pf-c" style="text-align:center"><div class="pf-ab">J</div><h2 style="margin:12px 0 4px">JAKHAR Classes</h2>
+  <p style="color:var(--mute);font-size:13.5px;margin:0 0 16px">राजस्थान की प्रतियोगी परीक्षाओं की तैयारी के लिए PYQ प्रैक्टिस, टेस्ट और विश्लेषण — सब फ्री।</p>
+  <div class="pf-g">${t(QS.length,"Questions","#3b9bff","help")}${t(SUBJECTS.length,"Subjects","#22c55e","mark")}${t(EXAMS.length,"Exams","#fb923c","cap")}</div></section>
+  <section class="pf-c">${'<button class="pf-r" onclick="privacy()"><span class="pf-k" style="--c:#94a3b8">'+pfIco("shield")+'</span><span class="pf-x"><b>Privacy Policy</b></span><span class="pf-ch">'+pfIco("chev")+'</span></button><button class="pf-r" onclick="contact()"><span class="pf-k" style="--c:#3b9bff">'+pfIco("help")+'</span><span class="pf-x"><b>Help & Support</b></span><span class="pf-ch">'+pfIco("chev")+'</span></button>'}</section>
+  <div class="cprt">${cpr()}</div></main>`,"prof",false,profileSettings);
+}
+function toggleDark(){const on=!document.documentElement.classList.contains("dark");document.documentElement.classList.toggle("dark",on);store.set("jk_theme",[on?"dark":"light"]);(document.getElementById("pfSet")?profileSettings:profile)()}
 /* ---------- Privacy Policy (Part 3) ----------
    Naya section jodna ho to PRIV_SECS me [heading, html] jodo. English mode me har text-node Google Translate se jata hai
    (URL limit), isliye har <p>/<li> chhota (~450 akshar se kam) rakho. Community/moderation/blue tick ki dhara 5-8 hain — Part 7/8 ke saath sync rakho. */
@@ -1990,7 +2168,7 @@ function enNode(n){const v=n.nodeValue;if(!HAS.test(v))return;const k=v.trim();
 const enSkip=n=>{const p=n.parentElement;return !p||/^(SCRIPT|STYLE|TEXTAREA)$/.test(p.tagName)||!!p.closest("p.q,.opt .t,.exp p,.exp b,.pfx")};
 function enWalk(root){const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),a=[];while(w.nextNode())a.push(w.currentNode);a.forEach(n=>{if(!enSkip(n))enNode(n)})}
 new MutationObserver(ms=>{if(lang!=="en")return;ms.forEach(m=>{if(m.type==="characterData"){if(!enSkip(m.target))enNode(m.target)}else m.addedNodes.forEach(n=>{if(n.nodeType===3){if(!enSkip(n))enNode(n)}else if(n.nodeType===1)enWalk(n)})})}).observe(document.body||document.documentElement,{childList:true,subtree:true,characterData:true});
-function setLang(l){lang=l;store.set("jk_lang",[l]);trQ=null;trOff=null;profile();if(l==="en")enWalk(document.body)}
+function setLang(l){lang=l;store.set("jk_lang",[l]);trQ=null;trOff=null;(document.getElementById("pfSet")?profileSettings:profile)();if(l==="en")enWalk(document.body)}
 if(lang==="en")setTimeout(()=>enWalk(document.body),0);
 
 async function gtr(t,tl){const r=await fetch("https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl="+tl+"&dt=t&q="+encodeURIComponent(t));if(!r.ok)throw new Error("tr");const j=await r.json();return j[0].map(x=>x[0]).join("")}
@@ -2120,42 +2298,124 @@ splash();
 })();
 </script>
 <script>
-/* Background refresh: Supabase se questions la kar cache me rakhta hai (agli baar app khulne par use hoga). Fail ho to chup-chaap ignore. */
+/* Background sync: Supabase se questions session me jodta hai aur cache me rakhta hai.
+   (1) Pehli baar / har 3 din me: poora download (full sync).
+   (2) Baaki har baar: sirf NAYE ya BADLE sawal (created_at / updated_at) + hat chuke sawalon ki jaanch (delta sync) -> kam data, tez.
+   (3) localStorage bhar jaye to bhi sawal turant jud jate hain; backup cache IndexedDB me (badi limit).
+   (4) built-in (bina id wali) list ho to bhi DB ke sawal session me aa jate hain. */
 (function(){
-  const URL_BASE="https://gpqrkxyypadgvguomfrr.supabase.co/rest/v1/questions";
+  const BASEQ="https://gpqrkxyypadgvguomfrr.supabase.co/rest/v1/questions";
   const KEY="sb_publishable_WIDLgN0x4IX2_LYy2WBWCA_3-zLJvrq";
-  async function fetchAll(){
-    let all=[],from=0,step=500;
+  const H={apikey:KEY,Authorization:"Bearer "+KEY};
+  const F="id,subject,chapter,question,options,answer,explanation,exams,created_at";
+  const FULL_EVERY=3*864e5;
+  const S=window.__qsync={state:"start"};
+  async function page(url,step){
+    let all=[],from=0;
     while(true){
-      const r=await fetch(URL_BASE+"?select=id,subject,chapter,question,options,answer,explanation,exams,created_at&is_active=eq.true&order=created_at.asc,id.asc",{cache:"no-store",headers:{apikey:KEY,Authorization:"Bearer "+KEY,Range:from+"-"+(from+step-1)}});
-      if(!r.ok&&r.status!==206)throw new Error("HTTP "+r.status);
+      const r=await fetch(url,{cache:"no-store",headers:Object.assign({Range:from+"-"+(from+step-1)},H)});
+      if(!r.ok&&r.status!==206){const e=new Error("HTTP "+r.status);e.status=r.status;throw e}
       const d=await r.json();all=all.concat(d);if(d.length<step)break;from+=step;
     }
     return all;
   }
+  /* since=null -> sab; since=timestamp -> sirf us waqt ke baad naye/badle. updated_at column na ho to created_at par chalta hai */
+  async function rows(since){
+    const mk=u=>{let f="";if(since){const t=encodeURIComponent(since);f=u?"&or=(created_at.gte."+t+",updated_at.gte."+t+")":"&created_at=gte."+t}
+      return BASEQ+"?select="+F+(u?",updated_at":"")+"&is_active=eq.true"+f+"&order=created_at.asc,id.asc"};
+    try{const d=await page(mk(true),500);S.upd=true;return d}
+    catch(e){if(e.status!==400)throw e;S.upd=false;return page(mk(false),500)}
+  }
+  async function remoteCount(){
+    try{const r=await fetch(BASEQ+"?select=id&is_active=eq.true",{cache:"no-store",headers:Object.assign({Range:"0-0",Prefer:"count=exact"},H)});
+      const cr=r.headers.get("content-range"),m=cr&&cr.match(/\/(\d+)$/);return m?+m[1]:null}catch(e){return null}
+  }
   function valid(r){return r&&typeof r.question==="string"&&typeof r.subject==="string"&&typeof r.chapter==="string"&&Array.isArray(r.options)&&r.options.length===4&&Number.isInteger(r.answer)&&r.answer>=0&&r.answer<4&&Array.isArray(r.exams)}
+  function maxTs(list,prev){let best=prev||"",bt=prev?Date.parse(prev):-1;list.forEach(r=>{[r.created_at,r.updated_at].forEach(v=>{if(!v)return;const t=Date.parse(v);if(t>bt){bt=t;best=v}})});return best}
+  /* IndexedDB backup cache */
+  function idb(){return new Promise((res,rej)=>{try{const o=indexedDB.open("jkx_qdb",1);o.onupgradeneeded=()=>o.result.createObjectStore("kv");o.onsuccess=()=>res(o.result);o.onerror=()=>rej(o.error)}catch(e){rej(e)}})}
+  function idbSet(v){return idb().then(db=>new Promise((res,rej)=>{const t=db.transaction("kv","readwrite");t.objectStore("kv").put(v,"qs");t.oncomplete=()=>res();t.onerror=()=>rej(t.error)}))}
+  function idbGet(){return idb().then(db=>new Promise((res,rej)=>{const r=db.transaction("kv").objectStore("kv").get("qs");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}))}
+  function saveCache(list,meta){
+    let ls=false;
+    try{const str=JSON.stringify({ts:Date.now(),sync:meta.sync,full:meta.full,qs:list});
+      try{localStorage.setItem("jkx_qcache_v1",str);ls=true}
+      catch(e){try{localStorage.removeItem("jkx_qcache_v1")}catch(e2){}/* purana (stale) cache hatao taaki wo naye sawal na chhupaye */
+        try{localStorage.setItem("jkx_qcache_v1",str);ls=true}catch(e3){try{localStorage.removeItem("jkx_qcache_v1")}catch(e4){}}}
+    }catch(e){}
+    S.ls=ls;
+    idbSet({qs:list,sync:meta.sync,full:meta.full}).then(()=>{S.idb=true}).catch(()=>{S.idb=false});
+  }
+  function readLsMeta(){try{const o=JSON.parse(localStorage.getItem("jkx_qcache_v1")||"null");return o&&o.sync&&o.full?{sync:o.sync,full:o.full}:null}catch(e){return null}}
+  const snapshot=()=>QUESTIONS.filter(q=>q.id).map(q=>({id:q.id,subject:q.subject,chapter:q.chapter,question:q.question,exams:q.exams,options:q.options,answer:q.answer,explanation:q.explanation,created_at:q.created_at}));
+  const haveN=()=>QUESTIONS.filter(q=>q.id).length;
+  function prune(live){
+    for(let i=QUESTIONS.length-1;i>=0;i--){if(QUESTIONS[i].id&&!live.has(QUESTIONS[i].id))QUESTIONS.splice(i,1)}
+    for(let i=QS.length-1;i>=0;i--){if(QS[i].id&&!live.has(QS[i].id))QS.splice(i,1)}
+  }
+  /* naya sawal jodo / badla hua sawal update karo. Return: kitne jude ya badle */
+  function upsert(list){
+    const byId=new Map(QUESTIONS.filter(q=>q.id).map(q=>[q.id,q]));let n=0;
+    const inSub=q=>SUBJECTS.some(z=>z.name===q.subject&&z.chapters.includes(q.chapter));
+    list.forEach(r=>{
+      const ch=chAlias(r.chapter),ex=r.explanation||"";let o=byId.get(r.id);
+      if(o){
+        if(r.created_at)o.created_at=r.created_at;
+        if(o.question===r.question&&o.answer===r.answer&&o.subject===r.subject&&o.chapter===ch&&o.explanation===ex&&JSON.stringify(o.options)===JSON.stringify(r.options)&&JSON.stringify(o.exams)===JSON.stringify(r.exams))return;
+        Object.assign(o,{subject:r.subject,chapter:ch,question:r.question,exams:r.exams,options:r.options,answer:r.answer,explanation:ex});
+      }else{o={id:r.id,subject:r.subject,chapter:ch,question:r.question,exams:r.exams,options:r.options,answer:r.answer,explanation:ex,created_at:r.created_at};QUESTIONS.push(o);byId.set(o.id,o)}
+      const k=QS.indexOf(o),ok=inSub(o);
+      if(k<0&&ok)QS.push(o);else if(k>=0&&!ok)QS.splice(k,1);
+      n++;
+    });
+    return n;
+  }
+  function refreshUI(){
+    /* NEW badge time-based hai (created_at); data aate hi home tiles dobara bana do */
+    try{if(window.nmBump)nmBump();if(window.wnSoon)wnSoon();if(document.querySelector(".tiles2")&&window.newRefresh)newRefresh()}catch(e){}
+  }
+  function applyFull(good){
+    if(!QUESTIONS.some(q=>q.id)){QUESTIONS.length=0;QS.length=0}/* built-in list: DB hi source of truth */
+    prune(new Set(good.map(q=>q.id)));upsert(good);refreshUI();
+  }
+  async function fullSync(){
+    const raw=await rows(null),good=raw.filter(valid);
+    S.mode="full";S.fetched=raw.length;S.valid=good.length;
+    if(!good.length){S.state="empty";return}
+    applyFull(good);                                  /* pehle session me jodo - cache fail ho tab bhi */
+    saveCache(good,{sync:maxTs(raw),full:Date.now()});
+    S.state="ok";
+  }
+  async function deltaSync(meta){
+    const raw=await rows(meta.sync),good=raw.filter(valid);
+    let changed=upsert(good);
+    const total=await remoteCount();
+    if(total===null||total!==haveN()){                 /* kuch hide/delete hua (ya gadbad) -> sirf ID list se milaan */
+      const ids=new Set((await page(BASEQ+"?select=id&is_active=eq.true&order=id.asc",1000)).map(r=>r.id));
+      const before=haveN();prune(ids);const after=haveN();
+      if(ids.size>after)throw new Error("local me sawal kam hain -> full sync");
+      changed+=before-after;
+    }
+    S.mode="delta";S.fetched=raw.length;S.changed=changed;S.state="ok";
+    if(changed){refreshUI();saveCache(snapshot(),{sync:maxTs(raw,meta.sync),full:meta.full})}
+  }
   window.addEventListener("load",function(){
-    if(!navigator.onLine)return;
-    setTimeout(async function(){
+    (async function(){
+      let meta=null;
+      if(QUESTIONS.some(q=>q.id))meta=readLsMeta();
+      else{/* localStorage khali/bhara: IndexedDB wala backup turant dikhao (offline me bhi) */
+        try{const v=await idbGet();if(v){const arr=Array.isArray(v)?v:v.qs,g=(arr||[]).filter(valid);
+          if(g.length&&!QUESTIONS.some(q=>q.id)){applyFull(g);S.from="idb";if(!Array.isArray(v)&&v.sync&&v.full)meta={sync:v.sync,full:v.full}}}}catch(e){}
+      }
+      if(!navigator.onLine)return;
+      await new Promise(r=>setTimeout(r,1500));
       try{
-        const qs=await fetchAll();
-        /* Fix: pehle ek bhi invalid row hone par cache kabhi update nahi hota tha => admin se delete kiye sawal ghoom-phir kar dikhte rahte the.
-           Ab invalid rows chhod kar baaki se cache hamesha update hota hai, aur delete hue sawal chalu session se bhi hat jate hain. */
-        const good=qs.filter(valid);
-        if(good.length>0){
-          localStorage.setItem("jkx_qcache_v1",JSON.stringify({ts:Date.now(),qs:good}));
-          const live=new Set(good.map(q=>q.id));
-          if(Array.isArray(QUESTIONS)&&QUESTIONS.some(q=>q.id)){
-            for(let i=QUESTIONS.length-1;i>=0;i--){if(QUESTIONS[i].id&&!live.has(QUESTIONS[i].id))QUESTIONS.splice(i,1)}
-            for(let i=QS.length-1;i>=0;i--){if(QS[i].id&&!live.has(QS[i].id))QS.splice(i,1)}
-            const have=new Set(QUESTIONS.map(q=>q.id).filter(Boolean)),byId=new Map(QUESTIONS.filter(q=>q.id).map(q=>[q.id,q]));let added=0;
-            good.forEach(r=>{if(have.has(r.id)){const o=byId.get(r.id);if(o&&r.created_at)o.created_at=r.created_at;return}const q={id:r.id,subject:r.subject,chapter:chAlias(r.chapter),question:r.question,exams:r.exams,options:r.options,answer:r.answer,explanation:r.explanation||"",created_at:r.created_at};QUESTIONS.push(q);if(SUBJECTS.some(z=>z.name===q.subject&&z.chapters.includes(q.chapter)))QS.push(q);added++});
-            /* NEW badge time-based hai (created_at); data aate hi home tiles dobara bana do */
-            if(window.nmBump)nmBump();if(window.wnSoon)wnSoon();if(document.querySelector(".tiles2")&&window.newRefresh)newRefresh();
-          }
+        if(meta&&Date.now()-meta.full<FULL_EVERY&&QUESTIONS.some(q=>q.id)){
+          try{await deltaSync(meta);return}catch(e){S.deltaErr=String(e&&e.message||e)}
         }
-      }catch(e){}
-    },1500);
+        await fullSync();
+      }catch(e){S.state="error";S.err=String(e&&e.message||e)}
+    })();
   });
 })();
 </script>
@@ -2354,19 +2614,21 @@ splash();
     const el=document.getElementById("acct");if(!el)return;
     const s=load();
     if(s){
-      el.innerHTML='<b>👤 अकाउंट</b><p style="margin:8px 0;font-size:13px;color:var(--mute)">लॉगिन: '+esc(s.email)+'</p>'+
-        '<div id="syncChip" style="margin:0 0 8px;padding:8px 10px;border:1px solid rgba(128,128,128,.35);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer"></div>'+
-        '<button class="btn ghost" id="acOut" style="width:100%">लॉगआउट</button>';
+      const kv=(ic,c,l,v)=>'<div class="pf-kv"><span class="pf-k" style="--c:'+c+'">'+pfIco(ic)+'</span><span class="pf-x"><small>'+l+'</small>'+v+'</span></div>';
+      el.innerHTML='<section class="pf-c"><div class="pf-h"><span class="pf-hi">'+pfIco("user")+'</span><b>Account Details</b></div>'+
+        kv("mail","#60a5fa","Email",'<em class="pfx">'+esc(s.email)+'</em>')+
+        kv("sync","#22c55e","Sync Status",'<em id="syncChip" style="cursor:pointer"></em>')+
+        kv("clock","#a78bfa","Last Sync",'<em id="pfLast">—</em>')+'</section>'+
+        '<button class="pf-out" id="acOut">'+pfIco("out")+'Logout</button>';
       document.getElementById("acOut").onclick=()=>{signOut();loginScreen()};
       if(window.JKSync)JKSync.paint();
       return;
     }
-    const inp='display:block;width:100%;box-sizing:border-box;padding:10px 12px;margin:8px 0;border-radius:8px;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;font:inherit';
-    el.innerHTML='<b>👤 अकाउंट (वैकल्पिक)</b><p style="margin:6px 0 0;font-size:12px;color:var(--mute)">लॉगिन के बिना भी ऐप पूरा चलता है।</p>'+
-      '<input id="acE" type="email" placeholder="Email" autocomplete="username" style="'+inp+'">'+
-      '<input id="acP" type="password" placeholder="Password (कम से कम 8 अक्षर)" autocomplete="current-password" style="'+inp+'">'+
-      '<div style="display:flex;gap:8px"><button class="btn" id="acIn" style="flex:1">लॉगिन</button><button class="btn ghost" id="acUp" style="flex:1">साइनअप</button></div>'+
-      '<div id="acM" style="font-size:13px;margin-top:8px;min-height:18px"></div>';
+    el.innerHTML='<section class="pf-c"><div class="pf-h"><span class="pf-hi">'+pfIco("user")+'</span><b>अकाउंट (वैकल्पिक)</b></div><div class="pfm" style="margin:0 0 4px">लॉगिन के बिना भी ऐप पूरा चलता है।</div>'+
+      '<input class="pf-in" id="acE" type="email" placeholder="Email" autocomplete="username">'+
+      '<input class="pf-in" id="acP" type="password" placeholder="Password (कम से कम 8 अक्षर)" autocomplete="current-password">'+
+      '<div class="pf-2"><button class="btn" id="acIn" style="flex:1">लॉगिन</button><button class="btn ghost" id="acUp" style="flex:1">साइनअप</button></div>'+
+      '<div id="acM" style="font-size:13px;margin-top:8px;min-height:18px"></div></section>';
     const m=document.getElementById("acM");
     const go=async kind=>{
       const email=document.getElementById("acE").value.trim(),password=document.getElementById("acP").value;
@@ -2487,14 +2749,17 @@ splash();
 
   /* ---------- profile screen: upar ka card ---------- */
   function inner(p){
-    return avatar(p)+'<div class="pfx"><b>'+smE(p.display_name)+(p.verified?'<span class="vtk" title="Verified">✔</span>':'')+'</b><small class="pfun">@'+smE(p.username)+'</small>'+
-      (p.exam?'<span class="pfchip">'+smE(p.exam)+'</span>':'')+(p.bio?'<div class="pfbio">'+smE(p.bio)+'</div>':'<small>तैयारी जारी है 💪</small>')+'</div><span class="go">›</span>';
+    return '<div class="pf-id"><button class="pf-av" onclick="profileEdit()" aria-label="Edit profile photo">'+avatar(p)+'<span class="pf-cam">'+pfIco("camera")+'</span></button>'+
+      '<div class="pf-nm pfx"><h2>'+smE(p.display_name)+(p.verified?'<span class="pf-vf" title="Verified">'+PF_VF+'</span>':'')+'</h2><div class="pf-un">@'+smE(p.username)+'</div>'+
+      (p.exam?'<span class="pf-chip">'+pfIco("cap")+'<span>'+smE(p.exam)+'</span></span>':'')+'</div></div>'+
+      '<div class="pf-bio pfx">'+(p.bio?smE(p.bio):'तैयारी जारी है 💪')+'</div>'+
+      '<button class="pf-edit" onclick="profileEdit()">'+pfIco("pencil")+'Edit Profile</button>';
   }
   window.pfHello=function(){
     if(!window.JKAuth||!JKAuth.isLoggedIn())
-      return'<div class="card hello"><span class="av">👤</span><div><b>JAKHAR विद्यार्थी</b><br><small>लॉगिन करके अपनी प्रोफ़ाइल बनाएँ</small></div></div>';
+      return'<div class="pf-c pf-hero"><div class="pf-id"><span class="pf-av"><span class="pfa">👤</span></span><div class="pf-nm"><h2>JAKHAR विद्यार्थी</h2><div class="pf-un" style="color:var(--mute)">लॉगिन करके अपनी प्रोफ़ाइल बनाएँ</div></div></div></div>';
     const p=get()||{display_name:DEF_NAME,username:"…",exam:"",bio:"",avatar_url:null};
-    return'<div class="card hello pfc" id="pfCard" onclick="profileEdit()">'+inner(p)+'</div>';
+    return'<div class="pf-c pf-hero" id="pfCard">'+inner(p)+'</div>';
   };
   window.pfRefresh=async function(){
     if(!window.JKAuth||!JKAuth.isLoggedIn())return;
@@ -2519,7 +2784,7 @@ splash();
   function draw(p){
     const inList=!p.exam||PF_EXAMS.includes(p.exam);
     const opts='<option value="">— चुनें —</option>'+PF_EXAMS.map(e=>'<option value="'+smE(e)+'"'+(e===p.exam?" selected":"")+'>'+smE(e)+'</option>').join("")+'<option value="__o"'+(inList?"":" selected")+'>अन्य (खुद लिखें)</option>';
-    view(EDIT_HDR()+`<main class="pg pfe">
+    view(EDIT_HDR()+`<main class="pg pf pfe">
       <div class="card pfp"><div id="pfAv">${avatar(p,1)}</div>
         <div class="pfb2"><button class="btn" id="pfPick">📷 फ़ोटो बदलें</button><button class="btn ghost" id="pfDel" style="${p.avatar_url?"":"display:none"}">हटाएँ</button></div>
         <input type="file" id="pfF" accept="image/*" style="display:none"><div class="pfm" id="pfPm">फ़ोटो अपने-आप छोटी (256×256) करके सेव होती है।</div></div>
@@ -2800,12 +3065,14 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
   function setState(s){state=s;paint()}
   function fmt(t){try{return new Date(t).toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit"})}catch(e){return ""}}
   function paint(){
-    const el=document.getElementById("syncChip");if(!el)return;
-    const m=meta();let t,c;
+    const el=document.getElementById("syncChip");const pl=document.getElementById("pfLast");
+    const m=meta();if(pl){pl.textContent=m.lastSync?new Date(m.lastSync).toLocaleString("en-IN",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}):"Not synced yet"}
+    if(!el)return;let t,c;
     if(state==="syncing"){t="Syncing...";c="#1457d9"}
     else if(state==="offline"){t="Offline - net aane par sync hoga";c="#b26a00"}
     else if(state==="failed"){t="Sync Failed - tap karke dobara try karein";c="#c62828"}
     else{t=m.lastSync?"Synced - "+fmt(m.lastSync):(m.pending?"Sync baaki hai":"Sync ke liye taiyar");c="#16803a"}
+    if(document.documentElement.classList.contains("dark"))c={"#1457d9":"#7fb0ff","#b26a00":"#fbbf24","#c62828":"#f87171","#16803a":"#4ade80"}[c]||c;
     el.textContent=t;el.style.color=c;el.onclick=()=>{retryN=0;run()};
   }
   window.addEventListener("online",()=>{retryN=0;run()});

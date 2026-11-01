@@ -572,7 +572,7 @@ $("aSub").onchange = fillChapters;
 $("saveAdd").onclick = saveNew;
 
 async function patchQ(id, body) {
-  const r = await api("/rest/v1/questions?id=eq." + id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(body) });
+  const r = await api("/rest/v1/questions?id=eq." + id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(Object.assign({}, body, { updated_at: new Date().toISOString() })) });   /* updated_at: app ko edit turant mile (delta sync) */
   if (!r || !r.length) throw new Error("Koi row update nahi hui (admin permission check karo).");
   return r[0];
 }
@@ -1921,11 +1921,11 @@ function renderDash() {
   const t = $("qsearch").value.trim().toLowerCase(); CHROWS = [];
   let html = subOrder(Object.keys(chap)).map(s => {
     const subHit = t && s.toLowerCase().includes(t), k = subCol(s);
-    const chs = chapOrder(s, Object.keys(chap[s])).filter(c => !t || subHit || c.toLowerCase().includes(t));
+    const appList = APP_CHAPTERS[s] || [], chs = chapOrder(s, [...new Set(appList.concat(Object.keys(chap[s])))]).filter(c => !t || subHit || c.toLowerCase().includes(t));
     if (!chs.length) return "";
     return '<details class="sub" data-s="' + esc(s) + '" style="--ac:' + k + ';--acbg:' + k + '14"' + (t || OPENS.has(s) ? " open" : "") + '><summary>' + esc(s) + ' <span class="meta">' + subj[s].t + ' sawal · ' + chs.length + ' chapter</span></summary>' +
-      chs.map((c, n) => { CHROWS.push({ s, c }); const x = chap[s][c], vi = CHROWS.length - 1, on = VER.has(s + "||" + c);
-        return '<div class="srow chrow" data-ci="' + vi + '"><div class="cn"><span class="cno">' + (n + 1) + '</span>' + esc(c) + '</div><div class="cm"><span class="meta"><span class="cnt">' + x.t + ' sawal</span> ' + x.a + ' active ›</span>' +
+      chs.map((c, n) => { CHROWS.push({ s, c }); const x = chap[s][c] || { t: 0, a: 0 }, ai = appList.indexOf(c), vi = CHROWS.length - 1, on = VER.has(s + "||" + c);
+        return '<div class="srow chrow" data-ci="' + vi + '"><div class="cn"><span class="cno">' + (ai >= 0 ? ai + 1 : '+') + '</span>' + esc(c) + '</div><div class="cm"><span class="meta"><span class="cnt">' + x.t + ' sawal</span> ' + x.a + ' active ›</span>' +
           '<span class="cbs"><button type="button" class="cbtn xl" data-cx="' + vi + '">📊 Excel</button><button type="button" class="cbtn vw" data-cw="' + vi + '">🌐 Table</button><button type="button" class="cbtn" data-cv="' + vi + '">⬇ CSV</button><button type="button" class="vbtn' + (on ? ' on' : '') + '" data-vi="' + vi + '">' + (on ? '✔ Verified' : 'Verify') + '</button></span></div></div>'; }).join("") + '</details>';
   }).join("");
   if (t.length >= 2) {
