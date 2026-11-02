@@ -332,6 +332,12 @@ button.bpub{background:#7c3aed;color:#fff}
       <div class="meta" style="margin-bottom:8px">Galti se upload ho gaya? Poora batch ek saath Hide ya Delete kar sakte ho. Delete se pehle us batch ki Excel table (template jaisi) apne-aap download hoti hai.</div>
       <div id="batchList" class="meta">—</div>
     </div>
+
+    <div class="sc2 c-blue">
+      <div class="sch">📄 PYQ Papers (RSSB)</div>
+      <div class="meta" style="margin-bottom:8px">PYQ CSV import karne par yahan paper banta hai (pehli baar <b>DRAFT</b> — students ko tab dikhega jab <b>Publish</b> dabaoge). Time / marks / negative marking ⚙ Settings se set karo.</div>
+      <div id="pyqList" class="meta">—</div>
+    </div>
       
     </div>
 
@@ -591,6 +597,7 @@ async function openPanel() {
   try { loadDv(); } catch (e) { console.error(e); }
 }
 
+let HAS_PQ = false;   /* pyq_migration.sql chali hai (paper_id/paper_qno columns) */
 let HAS_QB = true;   /* qbank_setup.sql chali hai ya nahi (difficulty/q_type/import_batch columns) */
 let LOAD_ERR = "", QLOADING = false;
 async function fetchAllQ(filt) {
@@ -614,6 +621,9 @@ async function fetchAllQ(filt) {
     }
     return out.sort((x, y) => String(y.created_at || "").localeCompare(String(x.created_at || "")) || (String(x.id) < String(y.id) ? -1 : 1));
   };
+  try { const r = await run(",difficulty,q_type,import_batch,paper_id,paper_qno"); HAS_QB = true; HAS_PQ = true; return r; }
+  catch (e0) { if (!/column|schema cache|does not exist/i.test(e0.message)) throw e0; }
+  HAS_PQ = false;
   try { const r = await run(",difficulty,q_type,import_batch"); HAS_QB = true; return r; }
   catch (e) {
     if (!/column|schema cache|does not exist/i.test(e.message)) throw e;
@@ -676,7 +686,7 @@ async function loadQSmart(force) {
   let db = null;
   try { db = await qcOpen(); } catch (e) { db = null; }
   if (!db) { const r = await fetchAllQ(); QINFO.txt = "Poora load: " + r.length + " sawal (cache is browser me nahi chal raha)"; return r; }
-  const key = SB_URL + "|" + (window.IS_ADMIN ? 1 : 0);
+  const key = SB_URL + "|" + (window.IS_ADMIN ? 1 : 0) + "|pq1";
   let meta = null, cached = [];
   try { meta = await qcMeta(db); if (!force && meta && meta.key === key) cached = await qcAll(db); } catch (e) { cached = []; }
   const full = async why => {
@@ -728,7 +738,7 @@ async function loadQuestions() {
   try {
     const _f = QFORCE; QFORCE = false;
     ALL = (await loadQSmart(_f)).map(q => (q && CHAPTER_ALIAS[q.chapter]) ? { ...q, chapter: CHAPTER_ALIAS[q.chapter] } : q);
-    SEL.clear(); render(); fillSubjects(); renderBatches(); qInfoShow();
+    SEL.clear(); render(); fillSubjects(); renderBatches(); loadPapers(); qInfoShow();
   } catch (e) {
     LOAD_ERR = e.message;
     $("list").innerHTML = '<div class="msg">Load error: ' + esc(e.message) + '</div>';
@@ -772,7 +782,15 @@ function render() {
 const CHAPTER_ALIAS={"राजस्थान की नहरें":"प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ","प्रमुख बाँध, सिंचाई परियोजनाएँ व जल संसाधन योजनाएँ":"प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ","क्षेत्रीय विकास कार्यक्रम":"क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ","राजस्थान में जनजातियाँ":"क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ","राजस्थान में सहकारिता":"सहकारिता एवं प्रमुख अनुसंधान केंद्र","राजस्थान के प्रमुख अनुसंधान केंद्र":"सहकारिता एवं प्रमुख अनुसंधान केंद्र"};
 const chAlias=c=>CHAPTER_ALIAS[c]||c;
 /* Part 1: DB me purane chapter naam rahe to bhi yahan naye naam me dikhenge (list/dashboard/template). */
-const APP_CHAPTERS = {"राजस्थान का इतिहास": ["राजस्थान के इतिहास के स्रोत", "राजस्थान की प्रमुख प्राचीन सभ्यताएँ एवं पुरास्थल", "राजस्थान का पौराणिक, ऐतिहासिक स्वरूप व जनपद युग", "राजपूतों की उत्पत्ति", "प्रतिहार वंश (गुर्जर प्रतिहार)", "चौहान राजवंश", "मेवाड़ का गुहिल राजवंश", "आमेर का कछवाहा राजवंश", "मारवाड़ का राठौड़ राजवंश", "बीकानेर का राठौड़ राजवंश", "जाट राजवंश", "राजस्थान के अन्य महत्त्वपूर्ण राजवंश", "राजस्थान में मध्यकालीन प्रशासन व सामंती व्यवस्था", "राजस्थान में मराठा हस्तक्षेप एवं उसका प्रभाव", "राजस्थान में अंग्रेजी प्रभुत्व और उसके प्रभाव", "राजस्थान में 1857 की क्रांति", "1857 की क्रांति के बाद सुधारों और राजनीतिक चेतना का काल", "राजस्थान के जनजाति एवं किसान आन्दोलन", "राजस्थान में सामाजिक संगठन", "राजस्थान में राजनीतिक संस्थाएँ एवं समाचार-पत्र", "राजस्थान में प्रजामण्डल व स्वतंत्रता आंदोलन", "राजस्थान का एकीकरण", "राजस्थान के प्रमुख ऐतिहासिक व्यक्तित्व एवं स्वतंत्रता सेनानी", "राजस्थान की इतिहास प्रसिद्ध महिलाएँ"], "राजस्थान का भूगोल": ["राजस्थान: सामान्य परिचय", "राजस्थान का भौतिक विभाजन", "राजस्थान: प्राचीन नाम व भौगोलिक उपनाम", "राजस्थान में जल संरक्षण एवं जल प्रबंधन", "राजस्थान की जलवायु", "राजस्थान में मिट्टी, अपरदन व मरुस्थलीकरण", "राजस्थान में सूखा, अकाल, आपदा व आपदा प्रबंधन", "राजस्थान की वन सम्पदा एवं पर्यावरण", "जैव विविधता, वन्य जीव एवं अभयारण्य", "राजस्थान में पशुपालन", "राजस्थान में कृषि एवं प्रमुख फसलें", "राजस्थान में अपवाह तंत्र व नदियाँ", "राजस्थान की झीलें व बावड़ियाँ", "प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ", "राजस्थान के उद्योग", "राजस्थान के खनिज संसाधन", "राजस्थान में ऊर्जा संसाधन", "राजस्थान में पर्यटन", "राजस्थान में परिवहन के साधन", "राजस्थान की जनगणना-2011", "क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ", "सहकारिता एवं प्रमुख अनुसंधान केंद्र"], "राजस्थान की कला एवं संस्कृति": ["दुर्ग", "महल, पैलेस व स्मारक", "हवेलियाँ", "छतरियाँ", "जल स्थापत्य", "लोकदेवता", "लोकदेवियाँ", "सम्प्रदाय व संत", "मुस्लिम पीर, मस्जिदें, दरगाह, मीनार व मकबरें", "मंदिर, मूर्तिकला व पैनोरमा", "त्योहार व मेले", "चित्रकला शैलियाँ", "हस्तकलाएँ", "लोक नृत्य", "प्रमुख लोक नाट्य", "लोकगायन शैलियाँ, संगीत घराने व संगीतज्ञ", "लोकगीत", "लोक वाद्ययंत्र", "आभूषण", "वेशभूषा व पहनावा", "प्रथाएँ व रीति-रिवाज", "जनजातियाँ", "भाषा व बोलियाँ", "साहित्यकार व कृतियाँ", "संत साहित्य व लौकिक साहित्य", "अन्य साहित्यकार व कृतियाँ", "साहित्यिक एवं सांस्कृतिक संस्थाएँ", "प्रमुख संग्रहालय", "शब्दावली", "डाकटिकट"], "सामान्य विज्ञान": ["दैनिक विज्ञान का आधारभूत ज्ञान", "मात्रक और विमाएँ", "द्रव्य के सामान्य गुण", "ठोसों के यांत्रिक गुण", "विराम तथा गति", "बल, गति और ऊर्जा", "कार्य, शक्ति व ऊर्जा", "गुरुत्वाकर्षण", "ताप एवं ऊष्मा", "प्रकाश", "ध्वनि एवं तरंग गति", "विद्युत", "आधुनिक भौतिकी", "ऊर्जा के विभिन्न स्रोत", "अणु एवं परमाणु", "परमाणु संरचना", "तत्त्व, यौगिक एवं मिश्रण", "तत्व एवं अभिक्रियाएँ", "रासायनिक अभिक्रियाएँ एवं उत्प्रेरक", "अम्ल, क्षार एवं लवण, pH स्केल", "धातु, अधातु एवं इनके प्रमुख यौगिक", "कार्बन एवं उसके यौगिक", "ईंधन", "पर्यावरण रसायन", "दैनिक जीवन में रसायन", "कोशिका", "ऊतक", "जीवों का वर्गीकरण", "जंतु जगत का वर्गीकरण", "मानव शरीर", "भोजन एवं पोषक पदार्थ", "मानव रोग: कारण एवं निवारण", "जन स्वास्थ्य", "पादप शरीर क्रिया विज्ञान", "पादपों में संरचनात्मक संगठन एवं पोषण", "पादप हार्मोन एवं पादप रोग", "आनुवंशिकता", "जैव प्रौद्योगिकी", "पादपों एवं जन्तुओं का आर्थिक महत्त्व", "पारिस्थितिकी तंत्र", "जैव-रासायनिक चक्रण", "जैव-अपशिष्ट प्रबंधन", "बायोमास", "सौर मण्डल", "उपग्रह एवं अंतरिक्ष प्रौद्योगिकी", "रक्षा प्रौद्योगिकी एवं परमाणु ऊर्जा कार्यक्रम", "नैनो-प्रौद्योगिकी", "सूचना एवं संचार प्रौद्योगिकी", "विज्ञान एवं प्रौद्योगिकी में भारतीयों का योगदान"]};
+const APP_CHAPTERS = {"राजस्थान का इतिहास": ["राजस्थान के इतिहास के स्रोत", "राजस्थान की प्रमुख प्राचीन सभ्यताएँ एवं पुरास्थल", "राजस्थान का पौराणिक, ऐतिहासिक स्वरूप व जनपद युग", "राजपूतों की उत्पत्ति", "प्रतिहार वंश (गुर्जर प्रतिहार)", "चौहान राजवंश", "मेवाड़ का गुहिल राजवंश", "आमेर का कछवाहा राजवंश", "मारवाड़ का राठौड़ राजवंश", "बीकानेर का राठौड़ राजवंश", "जाट राजवंश", "राजस्थान के अन्य महत्त्वपूर्ण राजवंश", "राजस्थान में मध्यकालीन प्रशासन व सामंती व्यवस्था", "राजस्थान में मराठा हस्तक्षेप एवं उसका प्रभाव", "राजस्थान में अंग्रेजी प्रभुत्व और उसके प्रभाव", "राजस्थान में 1857 की क्रांति", "1857 की क्रांति के बाद सुधारों और राजनीतिक चेतना का काल", "राजस्थान के जनजाति एवं किसान आन्दोलन", "राजस्थान में सामाजिक संगठन", "राजस्थान में राजनीतिक संस्थाएँ एवं समाचार-पत्र", "राजस्थान में प्रजामण्डल व स्वतंत्रता आंदोलन", "राजस्थान का एकीकरण", "राजस्थान के प्रमुख ऐतिहासिक व्यक्तित्व एवं स्वतंत्रता सेनानी", "राजस्थान की इतिहास प्रसिद्ध महिलाएँ"], "राजस्थान का भूगोल": ["राजस्थान: सामान्य परिचय", "राजस्थान का भौतिक विभाजन", "राजस्थान: प्राचीन नाम व भौगोलिक उपनाम", "राजस्थान में जल संरक्षण एवं जल प्रबंधन", "राजस्थान की जलवायु", "राजस्थान में मिट्टी, अपरदन व मरुस्थलीकरण", "राजस्थान में सूखा, अकाल, आपदा व आपदा प्रबंधन", "राजस्थान की वन सम्पदा एवं पर्यावरण", "जैव विविधता, वन्य जीव एवं अभयारण्य", "राजस्थान में पशुपालन", "राजस्थान में कृषि एवं प्रमुख फसलें", "राजस्थान में अपवाह तंत्र व नदियाँ", "राजस्थान की झीलें व बावड़ियाँ", "प्रमुख बाँध, नहरें व सिंचाई परियोजनाएँ", "राजस्थान के उद्योग", "राजस्थान के खनिज संसाधन", "राजस्थान में ऊर्जा संसाधन", "राजस्थान में पर्यटन", "राजस्थान में परिवहन के साधन", "राजस्थान की जनगणना-2011", "क्षेत्रीय विकास कार्यक्रम एवं जनजातियाँ", "सहकारिता एवं प्रमुख अनुसंधान केंद्र"], "राजस्थान की कला एवं संस्कृति": ["दुर्ग", "महल, पैलेस व स्मारक", "हवेलियाँ", "छतरियाँ", "जल स्थापत्य", "लोकदेवता", "लोकदेवियाँ", "सम्प्रदाय व संत", "मुस्लिम पीर, मस्जिदें, दरगाह, मीनार व मकबरें", "मंदिर, मूर्तिकला व पैनोरमा", "त्योहार व मेले", "चित्रकला शैलियाँ", "हस्तकलाएँ", "लोक नृत्य", "प्रमुख लोक नाट्य", "लोकगायन शैलियाँ, संगीत घराने व संगीतज्ञ", "लोकगीत", "लोक वाद्ययंत्र", "आभूषण", "वेशभूषा व पहनावा", "प्रथाएँ व रीति-रिवाज", "जनजातियाँ", "भाषा व बोलियाँ", "साहित्यकार व कृतियाँ", "संत साहित्य व लौकिक साहित्य", "अन्य साहित्यकार व कृतियाँ", "साहित्यिक एवं सांस्कृतिक संस्थाएँ", "प्रमुख संग्रहालय", "शब्दावली", "डाकटिकट"], "सामान्य विज्ञान": ["दैनिक विज्ञान का आधारभूत ज्ञान", "मात्रक और विमाएँ", "द्रव्य के सामान्य गुण", "ठोसों के यांत्रिक गुण", "विराम तथा गति", "बल, गति और ऊर्जा", "कार्य, शक्ति व ऊर्जा", "गुरुत्वाकर्षण", "ताप एवं ऊष्मा", "प्रकाश", "ध्वनि एवं तरंग गति", "विद्युत", "आधुनिक भौतिकी", "ऊर्जा के विभिन्न स्रोत", "अणु एवं परमाणु", "परमाणु संरचना", "तत्त्व, यौगिक एवं मिश्रण", "तत्व एवं अभिक्रियाएँ", "रासायनिक अभिक्रियाएँ एवं उत्प्रेरक", "अम्ल, क्षार एवं लवण, pH स्केल", "धातु, अधातु एवं इनके प्रमुख यौगिक", "कार्बन एवं उसके यौगिक", "ईंधन", "पर्यावरण रसायन", "दैनिक जीवन में रसायन", "कोशिका", "ऊतक", "जीवों का वर्गीकरण", "जंतु जगत का वर्गीकरण", "मानव शरीर", "भोजन एवं पोषक पदार्थ", "मानव रोग: कारण एवं निवारण", "जन स्वास्थ्य", "पादप शरीर क्रिया विज्ञान", "पादपों में संरचनात्मक संगठन एवं पोषण", "पादप हार्मोन एवं पादप रोग", "आनुवंशिकता", "जैव प्रौद्योगिकी", "पादपों एवं जन्तुओं का आर्थिक महत्त्व", "पारिस्थितिकी तंत्र", "जैव-रासायनिक चक्रण", "जैव-अपशिष्ट प्रबंधन", "बायोमास", "सौर मण्डल", "उपग्रह एवं अंतरिक्ष प्रौद्योगिकी", "रक्षा प्रौद्योगिकी एवं परमाणु ऊर्जा कार्यक्रम", "नैनो-प्रौद्योगिकी", "सूचना एवं संचार प्रौद्योगिकी", "विज्ञान एवं प्रौद्योगिकी में भारतीयों का योगदान"],
+  "भारत का इतिहास": ["हड़प्पा सभ्यता", "वैदिक संस्कृति", "महाजनपद काल", "बौद्ध एवं जैन धर्म का उदय", "मौर्य युग", "मौर्योत्तर काल", "गुप्त साम्राज्य", "हर्ष और उसका साम्राज्य", "पूर्व मध्य काल", "दिल्ली सल्तनत", "मुगल साम्राज्य", "भक्ति व सूफी आंदोलन", "सामाजिक एवं धार्मिक सुधार आंदोलन", "अंग्रेजों के आगमन से कांग्रेस की स्थापना तक महत्त्वपूर्ण घटनाक्रम", "1857 की क्रांति"],
+  "भारत का भूगोल": ["भारत का सामान्य परिचय", "भौतिक स्वरूप : पर्वत, पठार, मरूस्थल एवं मैदान", "अपवाह तंत्र", "भारत की झीलें", "भारत की सिंचाई एवं बहुउद्देश्यीय परियोजनाएं", "भारत की जलवायु", "भारत : मृदा संसाधन", "भारत में खनिज व ऊर्जा संसाधन", "भारत में उद्योग", "भारत में कृषि", "भारत की प्राकृतिक वनस्पतियाँ", "वन एवं वन्य जीव संरक्षण", "पारिस्थितिक तन्त्र : परिभाषा, संरचना, कार्यप्रणालियाँ एवं संरक्षण", "वायुमण्डल : संघटन एवं संरचना"],
+  "हिंदी": ["राजभाषा हिन्दी-संवैधानिक स्थिति", "वर्णमाला (ध्वनि) एवं लिपि", "शब्दकोश देखना", "संधि और संधि-विच्छेद", "उपसर्ग", "प्रत्यय", "समास एवं समास-विग्रह", "पर्यायवाची शब्द", "अनेकार्थक शब्द", "विपरीतार्थक (विलोम) शब्द", "वाक्यांश हेतु सार्थक शब्द", "शब्द-युग्म", "शब्द विचार (तत्सम, तद्भव, देशज एवं विदेशी शब्द)", "संज्ञा", "सर्वनाम", "विशेषण", "क्रिया एवं पक्ष", "वाच्य एवं वृत्ति", "शब्द विकारक (लिंग, वचन, काल)", "कारक (परसर्ग सहित)", "अव्यय (अविकारी शब्द)", "वाक्य रचना एवं पदबंध", "विराम चिह्न", "शब्द-शुद्धि", "वाक्य-शुद्धि", "मुहावरे और लोकोक्तियाँ", "पत्र-प्रारूप", "पारिभाषिक (तकनीकी) शब्द", "वाक्य अनुवाद (अँग्रेजी से हिन्दी और हिन्दी से अँग्रेजी में रूपान्तरण)", "अपठित गद्य", "अपठित पद्य", "शब्द-शक्ति"],
+  "इंग्लिश": ["Verb(Basic)", "Tense", "Passive Voice", "Narration", "Question Tag", "Subject Verb Agreement", "Conditional Sentences", "Verb(Advance)", "Verb as a Noun & Gerund", "Infinitive", "Participle", "Inversion", "Mood", "Noun", "Pronoun", "Adjective", "Conjunction", "Article", "Preposition", "Adverb", "Parallelism", "Superfluous Expressions", "Phrasal Verb", "Sentence Improvement", "Word Often Confused & Misused", "Vocabularies", "Synonyms", "Antonyms", "One Word Substitution (Meanings)", "One Word Substitution (Practice Set)", "Idioms and Phrases (Meanings)", "Idioms and Phrases (In Sentences)", "Idioms and Phrases (Practice Set)", "Spellings"],
+  "कंप्यूटर": ["कम्प्यूटर का परिचय", "हार्डवेयर", "मैमोरी", "सॉफ्टवेयर", "ऑपरेटिंग सिस्टम", "फाइल सिस्टम", "संख्या प्रणाली", "एम.एस. वर्ड", "एम.एस. एक्सल", "एम.एस. पावरपॉइंट"]
+};
+/* Part 1D: chapter ka English naam (PDF ke English half / display ke liye). English subject ke chapters English me hi hain. */
+const CHAPTER_EN = {"हड़प्पा सभ्यता": "Harappan Civilization", "वैदिक संस्कृति": "Vedic Culture", "महाजनपद काल": "Mahajanapada Period", "बौद्ध एवं जैन धर्म का उदय": "Rise of Buddhism and Jainism", "मौर्य युग": "Mauryan Age", "मौर्योत्तर काल": "Post-Mauryan Period", "गुप्त साम्राज्य": "Gupta Empire", "हर्ष और उसका साम्राज्य": "Harsha and His Empire", "पूर्व मध्य काल": "Early Medieval Period", "दिल्ली सल्तनत": "Delhi Sultanate", "मुगल साम्राज्य": "Mughal Empire", "भक्ति व सूफी आंदोलन": "Bhakti and Sufi Movements", "सामाजिक एवं धार्मिक सुधार आंदोलन": "Social and Religious Reform Movements", "अंग्रेजों के आगमन से कांग्रेस की स्थापना तक महत्त्वपूर्ण घटनाक्रम": "Key Events from the Arrival of the British to the Founding of the Congress", "1857 की क्रांति": "Revolt of 1857", "भारत का सामान्य परिचय": "General Introduction to India", "भौतिक स्वरूप : पर्वत, पठार, मरूस्थल एवं मैदान": "Physical Features: Mountains, Plateaus, Deserts and Plains", "अपवाह तंत्र": "Drainage System", "भारत की झीलें": "Lakes of India", "भारत की सिंचाई एवं बहुउद्देश्यीय परियोजनाएं": "Irrigation and Multipurpose Projects of India", "भारत की जलवायु": "Climate of India", "भारत : मृदा संसाधन": "India: Soil Resources", "भारत में खनिज व ऊर्जा संसाधन": "Minerals and Energy Resources in India", "भारत में उद्योग": "Industries in India", "भारत में कृषि": "Agriculture in India", "भारत की प्राकृतिक वनस्पतियाँ": "Natural Vegetation of India", "वन एवं वन्य जीव संरक्षण": "Forest and Wildlife Conservation", "पारिस्थितिक तन्त्र : परिभाषा, संरचना, कार्यप्रणालियाँ एवं संरक्षण": "Ecosystem: Definition, Structure, Functions and Conservation", "वायुमण्डल : संघटन एवं संरचना": "Atmosphere: Composition and Structure", "राजभाषा हिन्दी-संवैधानिक स्थिति": "Official Language Hindi: Constitutional Position", "वर्णमाला (ध्वनि) एवं लिपि": "Alphabet (Sounds) and Script", "शब्दकोश देखना": "Using a Dictionary", "संधि और संधि-विच्छेद": "Sandhi and Sandhi-Viched", "उपसर्ग": "Prefixes (Upsarg)", "प्रत्यय": "Suffixes (Pratyay)", "समास एवं समास-विग्रह": "Samas and Samas-Vigraha", "पर्यायवाची शब्द": "Synonyms (Hindi)", "अनेकार्थक शब्द": "Words with Multiple Meanings", "विपरीतार्थक (विलोम) शब्द": "Antonyms (Hindi)", "वाक्यांश हेतु सार्थक शब्द": "One Word for a Phrase (Hindi)", "शब्द-युग्म": "Word Pairs", "शब्द विचार (तत्सम, तद्भव, देशज एवं विदेशी शब्द)": "Word Origins (Tatsam, Tadbhav, Deshaj and Foreign Words)", "संज्ञा": "Noun (Hindi)", "सर्वनाम": "Pronoun (Hindi)", "विशेषण": "Adjective (Hindi)", "क्रिया एवं पक्ष": "Verb and Aspect (Hindi)", "वाच्य एवं वृत्ति": "Voice and Mood (Hindi)", "शब्द विकारक (लिंग, वचन, काल)": "Word Inflection (Gender, Number, Tense)", "कारक (परसर्ग सहित)": "Case (with Postpositions)", "अव्यय (अविकारी शब्द)": "Indeclinables (Avyay)", "वाक्य रचना एवं पदबंध": "Sentence Structure and Phrases", "विराम चिह्न": "Punctuation Marks", "शब्द-शुद्धि": "Word Correction", "वाक्य-शुद्धि": "Sentence Correction", "मुहावरे और लोकोक्तियाँ": "Idioms and Proverbs (Hindi)", "पत्र-प्रारूप": "Letter Formats", "पारिभाषिक (तकनीकी) शब्द": "Technical Terms", "वाक्य अनुवाद (अँग्रेजी से हिन्दी और हिन्दी से अँग्रेजी में रूपान्तरण)": "Sentence Translation (English to Hindi and Hindi to English)", "अपठित गद्य": "Unseen Prose", "अपठित पद्य": "Unseen Poetry", "शब्द-शक्ति": "Shabd Shakti (Powers of Words)", "कम्प्यूटर का परिचय": "Introduction to Computers", "हार्डवेयर": "Hardware", "मैमोरी": "Memory", "सॉफ्टवेयर": "Software", "ऑपरेटिंग सिस्टम": "Operating System", "फाइल सिस्टम": "File System", "संख्या प्रणाली": "Number System", "एम.एस. वर्ड": "MS Word", "एम.एस. एक्सल": "MS Excel", "एम.एस. पावरपॉइंट": "MS PowerPoint"};
 function fillSubjects() {
   const m = {};
   ALL.forEach(q => { (m[q.subject] = m[q.subject] || new Set()).add(q.chapter); });
@@ -903,13 +921,15 @@ function bulkCheck() {
   const rows = parseCSV($("bkText").value);
   if (rows.length < 2) { msg.textContent = "Pehli line header ki aur uske neeche kam se kam ek sawal chahiye."; return; }
   const hdr = rows[0].map(x => x.trim().toLowerCase());
-  const need = ["subject","chapter","question","option1","option2","option3","option4","answer"];
+  const PQ = hdr.includes("paper_title");   /* Part 1B: PYQ Paper CSV */
+  const need = ["subject","chapter","question","option1","option2","option3","option4","answer"].concat(PQ ? ["paper_title","exam","qno"] : []);
   const miss = need.filter(n => !hdr.includes(n));
   if (miss.length) { msg.textContent = "Header me ye column nahi mile: " + miss.join(", ") + "\n(Template se naam copy karo)"; return; }
   const ix = n => hdr.indexOf(n);
   BULKMERGE = {}; SIM = []; renderSim();
   const fpMap = new Map(); ALL.forEach(q => { const f = qFingerprint(q.question, q.options, q.q_type); if (!fpMap.has(f)) fpMap.set(f, q); });
   const seen = new Set(), errs = [], w2 = []; let fixc = 0, dupc = 0, unl = 0;
+  const pqSeen = new Set(), pqMeta = new Map(); let pqLinked = 0;
   const amap = { A:0, B:1, C:2, D:3, "1":0, "2":1, "3":2, "4":3 };
   rows.slice(1).forEach((r, k) => {
     const g = n => ix(n) >= 0 ? (r[ix(n)] || "").trim() : "";
@@ -928,26 +948,45 @@ function bulkCheck() {
     const type = (tyi && tyi !== "?") ? tyi : detectType(question, options), diff = (dfi && dfi !== "?") ? dfi : "";
     let fp = ""; if (!e.length && question) fp = qFingerprint(question, options, type);
     if (fp && seen.has(fp)) e.push("ye sawal file me dobara hai (same sawal)");
+    let pq = null;
+    if (PQ) {
+      const pt = g("paper_title"), pex = g("exam"), yrS = g("year"), psh = g("shift"), qnS = g("qno"), qn = /^\d+$/.test(qnS) ? parseInt(qnS, 10) : NaN;
+      const yr = yrS === "" ? null : (/^(19|20)\d\d$/.test(yrS) ? parseInt(yrS, 10) : NaN);
+      if (!pt) e.push("paper_title khaali");
+      if (!pex) e.push("exam khaali");
+      if (!(qn >= 1 && qn <= 500)) e.push("qno 1 se 500 ke beech ka number hona chahiye");
+      if (yr !== null && isNaN(yr)) e.push("year 4-digit number (jaise 2025) ya khaali hona chahiye");
+      if (pt && qn >= 1) { const key = pt + "||" + qn; if (pqSeen.has(key)) e.push("paper_title + qno dobara hai (qno " + qn + ")"); else pqSeen.add(key); }
+      if (pt) { const cur = pex + "|" + (yr === null ? "" : yr) + "|" + psh, was = pqMeta.get(pt); if (was === undefined) pqMeta.set(pt, cur); else if (was !== cur) e.push("is paper_title ki exam/year/shift pichli rows se alag hai"); }
+      pq = { title: pt, exam: pex, year: yr, shift: psh, qno: qn };
+    }
     if (e.length) { errs.push("Line " + (k + 2) + ": " + e.join(", ")); return; }
     seen.add(fp);
     const old = fpMap.get(fp);
-    if (old) {   /* D5: duplicate -> naya row nahi, purane ke exams me jod do */
+    if (old && !PQ) {   /* D5: duplicate -> naya row nahi, purane ke exams me jod do */
       dupc++; const add = exl.filter(x => !(old.exams || []).includes(x));
       if (add.length) BULKMERGE[old.id] = [...new Set([...(BULKMERGE[old.id] || old.exams || []), ...add])];
       return;
     }
     if (fx.n.length) fixc++; if (!diff) unl++;
     const row = { subject, chapter, question, options, answer: a, explanation: g("explanation"), exams: exl, difficulty: diff || null, q_type: type };
-    const sm = bestSim(row, ALL.concat(BULK)); if (sm) SIM.push({ row, old: sm.old, score: sm.score, choice: "both" });
+    if (pq) { row.__pyq = pq; row.exams = [pq.exam + (pq.year ? " " + pq.year : "")]; if (old) { row.__old = old.id; pqLinked++; } }
+    const sm = (pq && old) ? null : bestSim(row, ALL.concat(BULK)); if (sm) SIM.push({ row, old: sm.old, score: sm.score, choice: "both" });
     BULK.push(row);
   });
   msg.style.color = errs.length ? "var(--bad)" : "var(--ok)";
   msg.textContent = "Sahi (nayi): " + BULK.length + "   Galat: " + errs.length + (SIM.length ? "\n🔍 Milte-julte: " + SIM.length + " (neeche dekh kar chuno)" : "") + (dupc ? "\n♻ Duplicate: " + dupc + " (pehle se bank me — naya row nahi banega, exams merge honge: " + Object.keys(BULKMERGE).length + " sawal)" : "") + (unl ? "\n🏷 Bina difficulty: " + unl + " (upload ho jayenge, baad me label kar sakte ho)" : "") + (w2.length ? "\n⚠ " + w2.slice(0, 5).join("\n⚠ ") : "") + (fixc ? "\n🛠 Auto-fix: " + fixc + " sawal me table / assertion formatting sudhaari gayi (neeche preview dekho)" : "") + (errs.length ? "\n\n" + errs.slice(0, 15).join("\n") + (errs.length > 15 ? "\n...aur " + (errs.length - 15) + " line" : "") : "");
   renderSim();
   $("bkGo").disabled = BULK.length === 0 && !Object.keys(BULKMERGE).length;
+  if (PQ) {   /* Part 1B: PYQ summary — upload Part 1C me */
+    const by = new Map(); BULK.forEach(r => { const p = r.__pyq, o = by.get(p.title) || by.set(p.title, { n: 0, lo: 1e9, hi: 0 }).get(p.title); o.n++; o.lo = Math.min(o.lo, p.qno); o.hi = Math.max(o.hi, p.qno); });
+    msg.textContent += "\n📄 PYQ Paper:" + [...by].map(([t, o]) => "\n   • " + t + " — " + o.n + " sawal (qno " + o.lo + "–" + o.hi + ")").join("") + (pqLinked ? "\n♻ " + pqLinked + " sawal pehle se bank me hain — upload par naya row nahi banega, paper se jod diye jayenge" : "") + "\n👉 Import karne par paper pehli baar DRAFT banega (students ko nahi dikhega) — 'PYQ Papers' list se Publish karo." + (HAS_PQ ? "" : "\n⚠ paper_id column nahi mila — pehle pyq_migration.sql chalao, phir 'Poora reload'.");
+    $("bkGo").disabled = BULK.length === 0 || !HAS_PQ;
+  }
   qPreview("bkPrev", BULK);
 }
 async function bulkGo() {
+  if (BULK.some(q => q.__pyq)) return pyqGo();
   const skip = new Set(), repl = [];
   SIM.forEach(x => {
     if (x.choice === "skip") { skip.add(x.row); if (x.old.id) { const add = (x.row.exams || []).filter(e => !(x.old.exams || []).includes(e)); if (add.length) BULKMERGE[x.old.id] = [...new Set([...(BULKMERGE[x.old.id] || x.old.exams || []), ...add])]; } }
@@ -1133,10 +1172,12 @@ function dlFile(name, text, mime) {
 const TPL_COLS = {
   bulk: ["subject", "chapter", "question", "option1", "option2", "option3", "option4", "answer", "explanation", "exams", "difficulty", "q_type"],
   fst:  ["question", "option1", "option2", "option3", "option4", "answer", "explanation", "chapter", "exams", "difficulty", "q_type"],
-  fmk:  ["question", "option1", "option2", "option3", "option4", "answer", "explanation", "subject", "chapter", "exams", "difficulty", "q_type"]
+  fmk:  ["question", "option1", "option2", "option3", "option4", "answer", "explanation", "subject", "chapter", "exams", "difficulty", "q_type"],
+  /* Part 1B: RSSB PYQ Paper — Hindi only; exams column nahi (app khud exam+year se banata hai) */
+  pyq:  ["paper_title", "exam", "year", "shift", "qno", "subject", "chapter", "question", "option1", "option2", "option3", "option4", "answer", "explanation", "difficulty", "q_type"]
 };
-const TPL_FILE = { bulk: "jakhar_questions_template.csv", fst: "jakhar_full_subject_test_template.csv", fmk: "jakhar_full_mock_test_template.csv" };
-const TPL_TITLE = { bulk: "Chapter-wise questions", fst: "Full Subject Test", fmk: "Full Mock Test" };
+const TPL_FILE = { bulk: "jakhar_questions_template.csv", fst: "jakhar_full_subject_test_template.csv", fmk: "jakhar_full_mock_test_template.csv", pyq: "jakhar_pyq_paper_template.csv" };
+const TPL_TITLE = { bulk: "Chapter-wise questions", fst: "Full Subject Test", fmk: "Full Mock Test", pyq: "PYQ Paper (RSSB)" };
 /* 6 example types: simple, statement, assertion-reason, match (table), table-based, multi-line options */
 const TPL_EX = [
   { t: "सरल MCQ",
@@ -1237,9 +1278,11 @@ function tplRow(kind, ex) {
   const v = {
     subject: kind === "bulk" ? (document.getElementById("aSub") && document.getElementById("aSub").value) || "विषय" : "",
     chapter: kind === "bulk" ? (document.getElementById("aChap") && document.getElementById("aChap").value) || "चैप्टर" : "",
-    question: ex.q, option1: ex.o[0], option2: ex.o[1], option3: ex.o[2], option4: ex.o[3], answer: ex.a, explanation: (kind === "bulk" && ex.eb) ? ex.eb : ex.e, exams: ex.x, difficulty: ex.d || "", q_type: ex.t || ""
+    paper_title: kind === "pyq" ? "Example Exam 2025 – Shift 1" : "", exam: kind === "pyq" ? "Example Exam" : "", year: kind === "pyq" ? "2025" : "", shift: kind === "pyq" ? "Shift 1" : "", qno: kind === "pyq" ? String(TPL_EX.indexOf(ex) + 1) : "",
+    question: ex.q, option1: ex.o[0], option2: ex.o[1], option3: ex.o[2], option4: ex.o[3], answer: ex.a, explanation: ((kind === "bulk" || kind === "pyq") && ex.eb) ? ex.eb : ex.e, exams: ex.x, difficulty: ex.d || "", q_type: ex.t || ""
   };
-  return TPL_COLS[kind].map(c => c === "answer" ? String(v[c]) : csvCell(v[c])).join(",");
+  if (kind === "pyq") { v.subject = "विषय"; v.chapter = "चैप्टर"; }
+  return TPL_COLS[kind].map(c => (c === "answer" || c === "qno" || c === "year") ? String(v[c]) : csvCell(v[c])).join(",");
 }
 function tplCsv(kind) {
   const info = aiPrompt(kind, true).split("\n").filter(l => l.trim() !== "").map(l => csvCell("# " + l)).join("\n");
@@ -1247,7 +1290,48 @@ function tplCsv(kind) {
 }
 function tplDownload(kind) { dlFile(TPL_FILE[kind], tplCsv(kind), "text/csv"); }
 
+/* Part 1B: PYQ Paper AI prompt — bulk prompt ke common rules (CSV format, table, kathan, option, explanation) reuse; baaki rules paper ke hisab se alag */
+function _bulkRules() {
+  const m = {};
+  aiPrompt("bulk").split("\n").forEach(l => { const k = l.match(/^(\d+A?)\. /); if (k && !m[k[1]]) m[k[1]] = l.replace(/^\d+A?\.\s*/, ""); });
+  return m;
+}
+function aiPromptPyq(inFile) {
+  const R = _bulkRules(), cols = TPL_COLS.pyq.join(",");
+  const own = [
+    "PAPER DETAILS: paper ka paper_title, exam, year, shift main bataunga (jaise paper_title = \"Mahila Supervisor 2025 – Shift 1\", exam = \"Mahila Supervisor\", year = 2025, shift = \"Shift 1\"). Ye 4 columns HAR row me bilkul wahi likho jo main bataunga (har row me repeat). year sirf number (2025); shift na ho to \"\". paper_title ek paper ke saare parts me EXACT same rakho — isi title se parts jud kar ek paper banta hai.",
+    "qno: PDF me sawal ka ASLI number (1, 2, 3 ...) likho, sirf number. Number kabhi mat badlo/reset karo; next part me jahan se chhoda wahin se aage (31, 32 ...).",
+    "LANGUAGE: PDF bilingual hai (pehle Hindi, phir wahi sawal English me). Sirf HINDI wala version lo; English me dohraye sawal SKIP karo. Jo sawal sirf English me hain (jaise English section) unhe jaisa hai waisa (English me) rakho. English translation CSV me mat likho — app khud banata hai.",
+    "ORIGINAL JAISA: ye asli exam paper hai — sawalon ka order (qno order) badalna mana hai, aur sawal / options / kathan KABHI reshuffle mat karo, wording ya spelling mat badlo, kuch jodo ya hatao mat. Sirf formatting (neeche ke rules) theek karo.",
+    "SUBJECT + CHAPTER: paper MIXED subjects ka hai. Har sawal ke topic ke hisab se subject aur chapter neeche di CHAPTER LIST me se EXACT naam (word-to-word) likho. Kisi sawal ke liye list me bilkul fit chapter na ho to sabse nazdeeki chapter chuno aur uska qno CSV ke bahar report me likho.",
+    "answer: paper ke saath di official ANSWER KEY se sahi option ka number 1-4 (option1=1 ... option4=4; key me A/B/C/D ho to A=1, B=2, C=3, D=4) likho. Key na mile ya kisi sawal ka answer pakka na ho to answer khaali chhod do — andaza mat lagao.",
+    R["1"], R["2"], R["4"], R["5"], R["6"], R["7"], R["11"],
+    "exams column is CSV me NAHI hai — mat banao (app exam + year se khud bana leta hai).",
+    "EXPLANATION HAR ROW ME ZAROOR LIKHO (khaali mat chhodo): RSSB paper ki PDF me aam taur par explanation nahi hoti, isliye explanation tum khud likho — bilkul usi style/detail me jaisa neeche rule me bataya hai (wahi style jo Chapter-wise template me hai). Sahi answer official answer key wala hi maano; explanation usi answer ko support kare.",
+    (R["9"] || "").replace("(rule 15 dekho)", "(neeche wala EXPLANATION rule dekho)"), R["15"], R["15A"],
+    "difficulty: easy | moderate | hard. " + DIFF_RUBRIC,
+    R["17"],
+    "Chitra / diagram / figure wale sawal jo text me nahi aa sakte, ya jinki 'Question dropped / Deleted / Cancelled' likha ho, unhe CSV me mat rakho (qno me gap rahe to theek hai) — CSV ke bahar report me qno ke saath batao.",
+    "GALTI REPORT: PDF me sawal/option/answer key me kuch galat lage to apne hisaab se sahi karke CSV me do, aur CSV ke BAHAR end me list do: qno, dikkat kya thi, tumne kya badla.",
+    "SAWAL KITNE: main bolunga ki kitne sawal banane hain (jaise 'pehle 30 sawal'). Utne hi banao, na kam na zyada; count na bataya ho to ek baar puchh lo. Ek row = ek sawal; adhura/padhne me na aane wala sawal skip karke report me batao.",
+    "PARTS + MERGE: main 'next part' bolunga to agle qno se aage banao (repeat/chhoota nahi). Har part complete hone par sirf naye rows ki alag file mat do — pichli CSV me naye rows jodkar EK FINAL CSV do (header sirf ek baar, '#' lines nahi, same column order). Limit lagne par main pichli CSV dusre chat me dunga — usi me naye rows jod kar final CSV wapas do."
+  ].filter(Boolean);
+  const out = [
+    "Tum ek exam-paper formatter ho. Main tumhe RSSB (Rajasthan Staff Selection Board) ke ek poore question paper ki PDF dunga (bilingual, mixed subjects). Tumhe use Jakhar Academy App ke CSV format me badalna hai (" + TPL_TITLE.pyq + ").",
+    "",
+    "OUTPUT: sirf ek CSV (ek hi code block). Aage-peeche koi explanation mat likho.",
+    "HEADER (pehli line, bilkul yahi, isi order me): " + cols,
+    "",
+    "RULES:"
+  ].concat(own.map((t, i) => (i + 1) + ". " + t), [""]);
+  const cl = chapListLines("pyq");
+  if (cl.length) out.push("CHAPTER LIST (STRICT: subject/chapter ke naam sirf isi list se lo, EXACT word-to-word — alag likha to upload reject ho jayega):", ...cl, "");
+  if (inFile) out.push("⚠ EXAMPLE: is file me '#' wali lines ke neeche header aur 6 example rows hain. Ye SIRF FORMAT samjhane ke liye hain — inhe apne output me SHAMIL MAT KARO aur upload bhi mat karo. Apne output me '#' wali lines mat likho.", "Ab main paper ki PDF dunga — isi format me CSV banao.");
+  else out.push("⚠ EXAMPLE (sirf format samjhane ke liye — inhe apne output me SHAMIL MAT KARO):", cols, TPL_EX.map(ex => tplRow("pyq", ex)).join("\n"), "", "Ab main paper ki PDF dunga — isi format me CSV banao.", "");
+  return out.join("\n");
+}
 function aiPrompt(kind, inFile) {
+  if (kind === "pyq") return aiPromptPyq(inFile);
   const cols = TPL_COLS[kind].join(",");
   const kindNote = {
     bulk: "subject aur chapter: main jo naam bataunga use neeche di gayi CHAPTER LIST me se dhoondho aur list wala naam EXACT, word-to-word, bilkul waisa hi likho jaisa list me hai (spelling/matra/space/chinh kuch mat badlo, apna ya chhota naam mat banao). Agar mere bataye naam me thodi galti/alag spelling ho to topic dekhkar list ka sabse sahi chapter khud chuno. Har row me subject aur chapter list se hi aane chahiye.",
@@ -1370,7 +1454,7 @@ function qPreview(id, rows) {
 function bulkTemplate() { tplDownload("bulk"); }
 $("toggleBulk").onclick = () => { $("bulkBox").classList.toggle("hide"); $("toggleBulk").classList.toggle("open", !$("bulkBox").classList.contains("hide")); };
 $("bkFile").onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $("bkText").value = r.result; bulkCheck(); }; r.readAsText(f, "utf-8"); };
-$("bkCheck").onclick = bulkCheck; $("bkGo").onclick = bulkGo; $("bkTools").innerHTML = tplButtons("bulk");
+$("bkCheck").onclick = bulkCheck; $("bkGo").onclick = bulkGo; $("bkTools").innerHTML = tplButtons("bulk") + '<div class="meta" style="margin:12px 0 4px;font-weight:600">📄 RSSB PYQ Paper (poora paper, mixed subjects)</div>' + tplButtons("pyq");
 
 let MATS = [];
 const PUB = SB_URL + "/storage/v1/object/public/study-material/";
@@ -2497,6 +2581,132 @@ document.addEventListener("click", async e => {
       if (!confirm(todo.length + " sawal " + (show ? "Show" : "Hide") + " honge" + (skip ? " (" + skip + " pehle se " + (show ? "live" : "hidden") + " hain, unhe chhua nahi jayega)" : "") + ". Karein?")) return;
       /* sirf wahi rows badlo jo abhi ulti state me hain -> doobara/duplicate update nahi */
       await api("/rest/v1/questions?import_batch=eq." + encodeURIComponent(id) + "&is_active=eq." + (show ? "false" : "true"), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ is_active: show, updated_at: new Date().toISOString() }) });
+    }
+    await loadQuestions();
+  } catch (er) { alert("Fail: " + er.message); }
+});
+
+/* ===================== Part 1C: PYQ Papers — upload + paper manager (Supabase: pyq_papers, questions.paper_id/paper_qno) ===================== */
+let PAPERS = [];
+async function pqCountQ(pid) {
+  try {
+    const r = await fetch(SB_URL + "/rest/v1/questions?select=id&limit=1&paper_id=eq." + encodeURIComponent(pid), { cache: "no-store", headers: { apikey: SB_KEY, Authorization: "Bearer " + (TOKEN || SB_KEY), Prefer: "count=exact" } });
+    const m = /\/(\d+)\s*$/.exec(r.headers.get("content-range") || ""); return m ? +m[1] : null;
+  } catch (e) { return null; }
+}
+const pqCanLink = (r, pid) => { const o = ALL.find(x => x.id === r.__old); return !!o && !o.paper_id; };
+async function pyqGo() {
+  const msg = $("bkMsg"), rows = BULK.filter(q => q.__pyq), E = encodeURIComponent;
+  if (!HAS_PQ) { msg.style.color = "var(--bad)"; msg.textContent = "Pehle pyq_migration.sql Supabase SQL Editor me chalao (paper_id column nahi mila), phir 'Poora reload' karke dobara try karo."; return; }
+  const by = new Map(); rows.forEach(r => { (by.get(r.__pyq.title) || by.set(r.__pyq.title, []).get(r.__pyq.title)).push(r); });
+  msg.style.color = ""; msg.textContent = "Paper ki details check ho rahi hain..."; $("bkGo").disabled = true; $("bkCheck").disabled = true;
+  const free = () => { $("bkGo").disabled = false; $("bkCheck").disabled = false; };
+  const plan = [];
+  try {
+    for (const [title, rs] of by) {
+      const ex = await api("/rest/v1/pyq_papers?select=*&title=eq." + E(title)), paper = (ex && ex[0]) || null, have = new Map();
+      if (paper) { const q = await api("/rest/v1/questions?select=id,paper_qno&paper_id=eq." + E(paper.id) + "&limit=1000") || []; q.forEach(x => have.set(x.paper_qno, x.id)); }
+      plan.push({ title, p: rs[0].__pyq, rs, paper, have, rep: rs.filter(r => have.has(r.__pyq.qno)).length, lnk: rs.filter(r => !have.has(r.__pyq.qno) && r.__old && pqCanLink(r)).length });
+    }
+  } catch (e) { msg.style.color = "var(--bad)"; msg.textContent = "Paper check fail: " + e.message + (/pyq_papers|relation|schema cache/i.test(e.message) ? "\npyq_migration.sql chalaya hai?" : ""); free(); return; }
+  const body = plan.map(x => "• " + x.title + ": " + x.rs.length + " sawal — " + (x.rs.length - x.rep - x.lnk) + " naye, " + x.lnk + " purane sawal paper se jodenge, " + x.rep + " replace (same qno)" + (x.paper ? "" : " · NAYA paper (DRAFT)")).join("\n");
+  if (!await askConfirm({ title: "PYQ Paper import karein?", body: body + (plan.some(x => x.rep) ? "\n\n⚠ Jin qno ka sawal paper me pehle se hai, unka text naye CSV se REPLACE hoga." : "") })) { free(); msg.textContent = ""; return; }
+  const active = $("bkAct").checked; let nIns = 0, nLnk = 0, nRep = 0;
+  const _d = new Date(), _p = n => String(n).padStart(2, "0");
+  const batchId = "b" + _d.getFullYear() + _p(_d.getMonth() + 1) + _p(_d.getDate()) + _p(_d.getHours()) + _p(_d.getMinutes()) + "_" + Math.random().toString(36).slice(2, 5);
+  try {
+    for (const pl of plan) {
+      let paper = pl.paper;
+      if (!paper) {
+        const r = await api("/rest/v1/pyq_papers", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ exam: pl.p.exam, title: pl.title, year: pl.p.year, shift: pl.p.shift || null, is_active: false }) });
+        paper = r && r[0]; if (!paper) throw new Error("Paper nahi bana (admin permission check karo)");
+      }
+      const pid = String(paper.id), now = new Date().toISOString(), news = [];
+      for (const r of pl.rs) {
+        const qn = r.__pyq.qno, exId = pl.have.get(qn);
+        const base = { subject: r.subject, chapter: r.chapter, question: r.question, options: r.options, answer: r.answer, explanation: r.explanation, exams: r.exams, difficulty: r.difficulty, q_type: r.q_type, updated_at: now };
+        if (exId) { await api("/rest/v1/questions?id=eq." + E(exId), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify(base) }); nRep++; }
+        else if (r.__old && pqCanLink(r)) { await api("/rest/v1/questions?id=eq." + E(r.__old), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ paper_id: pid, paper_qno: qn, updated_at: now }) }); nLnk++; }
+        else news.push({ ...base, is_active: active, import_batch: batchId, paper_id: pid, paper_qno: qn });
+        msg.textContent = "Import ho raha hai... " + pl.title + " (" + (nRep + nLnk + nIns) + " done)";
+      }
+      for (let i = 0; i < news.length; i += 50) {
+        const chunk = news.slice(i, i + 50);
+        await api("/rest/v1/questions", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify(chunk) });
+        nIns += chunk.length; msg.textContent = "Import ho raha hai... " + pl.title + " (" + (nRep + nLnk + nIns) + " done)";
+      }
+      const cnt = await pqCountQ(pid), upd = { updated_at: now }; if (cnt !== null) upd.q_count = cnt;
+      await api("/rest/v1/pyq_papers?id=eq." + E(pid), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify(upd) });
+    }
+    msg.style.color = "var(--ok)";
+    msg.textContent = "PYQ import ho gaya: " + nIns + " naye, " + nLnk + " purane jude, " + nRep + " replace.\nPaper 'PYQ Papers' list me hai (naya paper DRAFT rehta hai — ⚙ Settings se time/marks set karke Publish karo). Ab ek Backup le lo.";
+    BULKMERGE = {}; SIM = []; renderSim(); BULK = []; $("bkText").value = ""; $("bkFile").value = ""; qPreview("bkPrev", []);
+    await loadQuestions();
+  } catch (e) {
+    msg.style.color = "var(--bad)"; msg.textContent = "PYQ import beech me ruka (" + (nIns + nLnk + nRep) + " ho chuke): " + e.message + "\nSahi hai — wahi CSV dobara Jaanch + Import karo: jo ho chuke wo replace honge, naye ban jayenge (duplicate nahi banenge).";
+    try { await loadQuestions(); } catch (_) {}
+  }
+  $("bkCheck").disabled = false;
+}
+async function loadPapers() {
+  const box = $("pyqList"); if (!box) return;
+  if (!HAS_PQ) { box.innerHTML = '<span style="color:var(--bad)">Pehle pyq_migration.sql Supabase SQL Editor me ek baar chalao, phir yahan papers dikhenge.</span>'; return; }
+  try { PAPERS = await api("/rest/v1/pyq_papers?select=*&order=created_at.desc&limit=200") || []; }
+  catch (e) { box.innerHTML = '<span style="color:var(--bad)">Papers load nahi hue: ' + esc(e.message) + '</span>'; return; }
+  renderPapers();
+}
+const paperQs = id => ALL.filter(q => String(q.paper_id) === String(id)).sort((a, b) => (a.paper_qno || 0) - (b.paper_qno || 0));
+function renderPapers() {
+  const box = $("pyqList"); if (!box) return;
+  if (!PAPERS.length) { box.textContent = "Abhi koi PYQ paper nahi (PYQ CSV import karoge to yahan dikhega)."; return; }
+  box.innerHTML = '<div class="meta" style="margin-bottom:6px">Kul <b>' + PAPERS.length + '</b> paper</div>' + PAPERS.map(p => {
+    const qs = paperQs(p.id), act = qs.filter(q => q.is_active).length, hid = qs.length - act, nos = qs.map(q => q.paper_qno).filter(n => n > 0);
+    const lo = nos.length ? nos[0] : 0, hi = nos.length ? nos[nos.length - 1] : 0, set = new Set(nos), gaps = [];
+    for (let n = lo; n <= hi && gaps.length < 12; n++) if (!set.has(n)) gaps.push(n);
+    const st = p.is_active ? '<span class="tag on">✅ PUBLISHED</span>' : '<span class="tag hid">📝 DRAFT (students ko nahi dikh raha)</span>';
+    const warn = [];
+    if (!qs.length) warn.push("sawal nahi mile"); else if (p.q_count !== qs.length) warn.push("q_count " + p.q_count + " ≠ " + qs.length);
+    if (gaps.length) warn.push("qno gap: " + gaps.join(", ") + (gaps.length >= 12 ? "…" : ""));
+    return '<div class="card" style="margin:8px 0"><div class="q" style="margin:0">' + esc(p.title) + '</div>' +
+      '<div style="margin:6px 0">' + st + '</div>' +
+      '<div class="meta">' + esc([p.exam, p.year, p.shift].filter(Boolean).join(" · ")) + ' · ' + qs.length + ' sawal' + (lo ? ' (qno ' + lo + '–' + hi + ')' : '') + ' · ' + act + ' live' + (hid ? ' / ' + hid + ' hidden' : '') + '</div>' +
+      '<div class="meta">⏱ ' + p.duration_min + ' min · ✔ ' + p.marks_per_q + ' marks/sawal · ➖ negative ' + p.neg_marking + '</div>' +
+      (warn.length ? '<div class="meta" style="color:var(--bad)">⚠ ' + esc(warn.join(" · ")) + '</div>' : '') +
+      '<div class="row" style="margin-top:8px"><button class="' + (p.is_active ? "sec" : "bgo") + '" data-pp="' + (p.is_active ? "unpub" : "pub") + '" data-id="' + p.id + '">' + (p.is_active ? "Unpublish" : "✅ Publish") + '</button><button class="sec" data-pp="set" data-id="' + p.id + '">⚙ Settings</button><button class="sec" data-pp="' + (act ? "hideq" : "showq") + '" data-id="' + p.id + '"' + (qs.length ? "" : " disabled") + '>' + (act ? "Sawal Hide" : "Sawal Show") + '</button></div>' +
+      '<div class="row" style="margin-top:6px"><button class="sec" data-pp="xlsx" data-id="' + p.id + '"' + (qs.length ? "" : " disabled") + '>📊 Excel</button><button class="sec" data-pp="csv" data-id="' + p.id + '"' + (qs.length ? "" : " disabled") + '>⬇ CSV</button><button class="danger" data-pp="unlink" data-id="' + p.id + '">🗑 Paper hatao</button><button class="danger" data-pp="delall" data-id="' + p.id + '">🗑 Paper + sawal</button></div></div>';
+  }).join("");
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-pp]"); if (!b || b.disabled) return;
+  const id = b.dataset.id, act = b.dataset.pp, p = PAPERS.find(x => String(x.id) === id), E = encodeURIComponent; if (!p) return;
+  const qs = paperQs(id), now = () => new Date().toISOString(), safe = p.title.replace(/[^\wऀ-ॿ-]+/g, "_").slice(0, 60);
+  try {
+    if (act === "xlsx") { dlQTable("pyq_" + safe + ".xlsx", qs); return; }
+    if (act === "csv") { dlQCsv("pyq_" + safe + ".csv", qs); return; }
+    if (act === "pub" || act === "unpub") {
+      const on = act === "pub";
+      if (on && (!qs.length || p.duration_min === 60 && Number(p.neg_marking) === 0) && !confirm("Dhyan: " + (!qs.length ? "is paper me sawal nahi dikh rahe. " : "time 60 min aur negative marking 0 (default) hai — ⚙ Settings se sahi set kiya? ") + "Phir bhi Publish karein?")) return;
+      if (!on && !confirm("Paper students ko dikhna band ho jayega. Karein?")) return;
+      await api("/rest/v1/pyq_papers?id=eq." + E(id), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ is_active: on, updated_at: now() }) });
+    } else if (act === "set") {
+      const v = prompt("Time (minute), marks per sawal, negative marking — comma se likho\n(jaise: 150, 1, 0.33)", p.duration_min + ", " + p.marks_per_q + ", " + p.neg_marking); if (v === null) return;
+      const n = v.split(/[,;\s]+/).filter(Boolean).map(Number);
+      if (n.length !== 3 || n.some(x => !isFinite(x) || x < 0) || n[0] < 1 || n[1] <= 0) { alert("3 sahi number chahiye: time(min) , marks , negative"); return; }
+      await api("/rest/v1/pyq_papers?id=eq." + E(id), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ duration_min: Math.round(n[0]), marks_per_q: n[1], neg_marking: n[2], updated_at: now() }) });
+    } else if (act === "hideq" || act === "showq") {
+      const show = act === "showq", todo = qs.filter(q => !!q.is_active !== show);
+      if (!todo.length) { alert("Sab sawal pehle se " + (show ? "LIVE" : "HIDDEN") + " hain."); return; }
+      if (!confirm("Paper ke " + todo.length + " sawal " + (show ? "Show" : "Hide") + " honge (chapter-wise me bhi). Karein?")) return;
+      await api("/rest/v1/questions?paper_id=eq." + E(id) + "&is_active=eq." + (show ? "false" : "true"), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ is_active: show, updated_at: now() }) });
+    } else if (act === "unlink") {
+      if (!confirm("Paper \"" + p.title + "\" hat jayega, par uske " + qs.length + " sawal chapters me bane rahenge. Karein?")) return;
+      await api("/rest/v1/questions?paper_id=eq." + E(id), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ paper_id: null, paper_qno: null, updated_at: now() }) });
+      await api("/rest/v1/pyq_papers?id=eq." + E(id), { method: "DELETE", headers: { Prefer: "return=minimal" } });
+    } else if (act === "delall") {
+      if (!await askConfirm({ title: "Paper + uske " + qs.length + " sawal DELETE karein?", body: "Paper aur uske saare " + qs.length + " sawal chapters se bhi hamesha ke liye hat jayenge (jo purane sawal is paper se jude the wo bhi).\n\nSirf paper hatana hai to '🗑 Paper hatao' use karo.\n\nDelete se pehle Excel table download hogi.", danger: true, requireText: "DELETE" })) return;
+      if (qs.length) dlQTable("deleted_pyq_" + safe + ".xlsx", qs);
+      await api("/rest/v1/questions?paper_id=eq." + E(id), { method: "DELETE", headers: { Prefer: "return=minimal" } });
+      await api("/rest/v1/pyq_papers?id=eq." + E(id), { method: "DELETE", headers: { Prefer: "return=minimal" } });
     }
     await loadQuestions();
   } catch (er) { alert("Fail: " + er.message); }
