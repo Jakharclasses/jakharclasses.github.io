@@ -185,6 +185,29 @@ button.bpub{background:#7c3aed;color:#fff}
 .tgh small{margin-left:auto;font-weight:500;color:var(--mut);font-size:12px}
 .qpv .po.ok{background:rgba(22,163,74,.10)}.qpv .pl{background:rgba(124,58,237,.16)}
 .qpv{border-top:4px solid #7c3aed}
+
+/* ===== Sawal Jodo / Import + CSV upload + Tagging: saaf, rang-birangi layout ===== */
+.sc2 button.tgl{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;background:var(--c,#1457d9);color:#fff;border:0;border-radius:12px;padding:13px 14px;font-size:15px;font-weight:700;text-align:left}
+.sc2 button.tgl::after{content:"▾";font-size:18px;transition:transform .2s}
+.sc2 button.tgl.open::after{transform:rotate(180deg)}
+.stp{--c:#1457d9;border:1px solid color-mix(in srgb,var(--c) 30%,var(--bd));border-left:5px solid var(--c);background:color-mix(in srgb,var(--c) 7%,var(--card));border-radius:12px;padding:10px 12px 12px;margin:12px 0 0}
+.stp .sch{margin-bottom:8px;font-size:14.5px;color:color-mix(in srgb,var(--c) 75%,var(--tx))}
+.stp .scn{background:var(--c)}
+.stp.s-blue{--c:#1457d9}.stp.s-green{--c:#16a34a}.stp.s-amber{--c:#d97706}.stp.s-violet{--c:#7c3aed}.stp.s-pink{--c:#db2777}.stp.s-teal{--c:#0d9488}
+.optgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.optgrid input{margin:0}
+@media (max-width:430px){.optgrid{grid-template-columns:1fr}}
+.stp input,.stp select,.stp textarea{margin-bottom:8px}
+.stp label.ck{display:flex;gap:8px;align-items:center;font-size:14px;margin:4px 0 10px}.stp label.ck input{width:auto;margin:0}
+.tplbox{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+.tplbox button{width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:0;border-radius:12px;padding:11px 12px;color:#fff;text-align:left;font-weight:700;font-size:14px}
+.tplbox button small{font-weight:500;font-size:11.5px;opacity:.92}
+.tplbox .t1{background:linear-gradient(135deg,#1457d9,#0891b2)}.tplbox .t2{background:linear-gradient(135deg,#7c3aed,#db2777)}
+.dlrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+.dlrow button{width:100%;border:0;border-radius:12px;padding:11px 6px;color:#fff;font-weight:700;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.dlrow button small{font-weight:500;font-size:11px;opacity:.92}
+.dlrow .x{background:#16a34a}.dlrow .w{background:#1457d9}.dlrow .c{background:#d97706}
+.fillcols{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px}.fillcols .tag{background:rgba(250,204,21,.25);border-color:#ca8a04;font-weight:700}
+@media (max-width:430px){.tplbox{grid-template-columns:1fr}}
 @media (max-width:430px){.sc2{padding:10px 11px 12px}.tboxes{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -261,41 +284,51 @@ button.bpub{background:#7c3aed;color:#fff}
 
     <div class="pane hide" data-pane="q">
       <button class="sec bk" data-go="dash">← Dashboard</button>
-    <div class="card">
-      <button class="sec" id="toggleAdd" style="width:100%">+ Naya sawal jodo</button>
-      <div id="addBox" class="hide" style="margin-top:12px">
-        <select id="aSub" style="margin-bottom:10px"></select>
-        <select id="aChap" style="margin-bottom:10px"></select>
-        <textarea id="aQ" rows="3" placeholder="Sawal"></textarea>
-        <input id="aO0" placeholder="Option 1"><input id="aO1" placeholder="Option 2">
-        <input id="aO2" placeholder="Option 3"><input id="aO3" placeholder="Option 4">
-        <select id="aAns" style="margin-bottom:10px">
-          <option value="0">Sahi jawab: Option 1</option><option value="1">Sahi jawab: Option 2</option>
-          <option value="2">Sahi jawab: Option 3</option><option value="3">Sahi jawab: Option 4</option>
-        </select>
-        <textarea id="aExp" rows="3" placeholder="Explanation"></textarea>
-        <input id="aEx" placeholder="Exams (comma se alag), jaise: RPSC RAS 2021, Patwari 2021">
-        <label style="display:block;margin-bottom:10px;font-size:14px"><input id="aAct" type="checkbox" style="width:auto;margin:0 6px 0 0"> Turant active karo (live app me dikhe)</label>
-        <button id="saveAdd">Save sawal</button>
+    <div class="pghead c-blue"><b>📘 Sawal Jodo / Import</b><span>Ek-ek sawal haath se jodo, ya CSV se poora chapter ek saath upload karo.</span></div>
+
+    <div class="sc2 c-blue">
+      <button class="tgl" id="toggleAdd" type="button">➕ Naya sawal jodo (ek-ek karke)</button>
+      <div id="addBox" class="hide" style="margin-top:4px">
+        <div class="stp s-blue"><div class="sch"><span class="scn">1</span>Subject aur chapter</div>
+          <select id="aSub"></select>
+          <select id="aChap" style="margin-bottom:0"></select></div>
+        <div class="stp s-teal"><div class="sch"><span class="scn">2</span>Sawal</div>
+          <textarea id="aQ" rows="3" placeholder="Sawal likho" style="margin-bottom:0"></textarea></div>
+        <div class="stp s-amber"><div class="sch"><span class="scn">3</span>Options aur sahi jawab</div>
+          <div class="optgrid"><input id="aO0" placeholder="Option 1"><input id="aO1" placeholder="Option 2"><input id="aO2" placeholder="Option 3"><input id="aO3" placeholder="Option 4"></div>
+          <select id="aAns" style="margin-top:8px;margin-bottom:0">
+            <option value="0">✅ Sahi jawab: Option 1</option><option value="1">✅ Sahi jawab: Option 2</option>
+            <option value="2">✅ Sahi jawab: Option 3</option><option value="3">✅ Sahi jawab: Option 4</option>
+          </select></div>
+        <div class="stp s-violet"><div class="sch"><span class="scn">4</span>Explanation aur exams</div>
+          <textarea id="aExp" rows="3" placeholder="Explanation"></textarea>
+          <input id="aEx" placeholder="Exams (comma se alag), jaise: RPSC RAS 2021, Patwari 2021" style="margin-bottom:0"></div>
+        <label class="ck" style="margin-top:12px"><input id="aAct" type="checkbox"> Turant active karo (live app me dikhe)</label>
+        <button id="saveAdd" style="background:#16a34a">💾 Save sawal</button>
         <div id="addMsg" class="msg"></div>
       </div>
     </div>
-    <div class="card">
-      <button class="sec" id="toggleBulk" style="width:100%">📥 Ek saath kai sawal jodo (CSV)</button>
-      <div id="bulkBox" class="hide" style="margin-top:12px">
-        <div class="meta" style="margin-bottom:8px">Sheets/Excel me sawal likho (columns: subject, chapter, question, option1, option2, option3, option4, answer, explanation, exams), "CSV" me save karke yahan chuno. Answer 1-4 ya A-D likho. Line todne ke liye <b>&lt;br&gt;</b>, table ke liye <b>&lt;table class="qt"&gt;</b> use karo. Template me 6 prakar ke example hain (kathan, assertion-reason, table, sumelan...). <b>AI se CSV banwana ho to</b> neeche wala <b>AI Prompt copy karo</b> button dabao aur AI ko prompt + apni PDF/photo do.</div>
-        <div id="bkTools"></div>
-        <input id="bkFile" type="file" accept=".csv,.txt,text/csv,text/plain">
-        <textarea id="bkText" rows="4" placeholder="Ya yahan CSV text paste karo"></textarea>
-        <label style="display:block;margin-bottom:10px;font-size:14px"><input id="bkAct" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Import ke baad turant active karo (live app me dikhe)</label>
-        <div class="row"><button id="bkCheck" class="sec">1. Jaanch karo</button><button id="bkGo" disabled>2. Import karo</button></div>
-        <div id="bkMsg" class="msg" style="white-space:pre-wrap"></div>
-        <div id="bkSim"></div>
-        <div id="bkPrev"></div>
+
+    <div class="sc2 c-green">
+      <button class="tgl" id="toggleBulk" type="button">📥 Ek saath kai sawal jodo (CSV)</button>
+      <div id="bulkBox" class="hide" style="margin-top:4px">
+        <div class="meta hint" style="margin:12px 0 0">CSV columns: <b>subject, chapter, question, option1-4, answer, explanation, exams</b>. Answer 1-4 ya A-D. Line todne ke liye <b>&lt;br&gt;</b>, table ke liye <b>&lt;table class="qt"&gt;</b>. Template me 6 prakar ke example hain.</div>
+        <div class="stp s-blue"><div class="sch"><span class="scn">1</span>Template ya AI Prompt lo</div>
+          <div id="bkTools"></div></div>
+        <div class="stp s-amber"><div class="sch"><span class="scn">2</span>CSV file chuno ya paste karo</div>
+          <input id="bkFile" type="file" accept=".csv,.txt,text/csv,text/plain">
+          <textarea id="bkText" rows="4" placeholder="Ya yahan CSV text paste karo" style="margin-bottom:0"></textarea></div>
+        <div class="stp s-green"><div class="sch"><span class="scn">3</span>Jaanch aur import</div>
+          <label class="ck"><input id="bkAct" type="checkbox" checked> Import ke baad turant active karo (live app me dikhe)</label>
+          <div class="row"><button id="bkCheck" class="sec bchk">1. Jaanch karo</button><button id="bkGo" class="bgo" disabled>2. Import karo</button></div>
+          <div id="bkMsg" class="msg" style="white-space:pre-wrap"></div>
+          <div id="bkSim"></div>
+          <div id="bkPrev"></div></div>
       </div>
     </div>
-    <div class="card">
-      <div class="q">🕘 Recent uploads (batch)</div>
+
+    <div class="sc2 c-amber">
+      <div class="sch">🕘 Recent uploads (batch)</div>
       <div class="meta" style="margin-bottom:8px">Galti se upload ho gaya? Poora batch ek saath Hide ya Delete kar sakte ho. Delete se pehle us batch ki JSON backup apne-aap download hoti hai.</div>
       <div id="batchList" class="meta">—</div>
     </div>
@@ -650,7 +683,7 @@ async function saveNew() {
   } catch (e) { msg.textContent = "Save fail: " + e.message; }
   $("saveAdd").disabled = false;
 }
-$("toggleAdd").onclick = () => $("addBox").classList.toggle("hide");
+$("toggleAdd").onclick = () => { $("addBox").classList.toggle("hide"); $("toggleAdd").classList.toggle("open", !$("addBox").classList.contains("hide")); };
 $("aSub").onchange = fillChapters;
 $("saveAdd").onclick = saveNew;
 
@@ -1167,9 +1200,9 @@ async function copyPrompt(kind, btn) {
 }
 function promptTxt(kind) { dlFile("jakhar_ai_prompt_" + kind + ".txt", aiPrompt(kind), "text/plain"); }
 function tplButtons(kind) {
-  return '<div class="row" style="margin-bottom:10px">' +
-    '<button class="sec" data-tpl="' + kind + '">⬇ Template (CSV + AI instructions)</button>' +
-    '<button class="sec" data-aip="' + kind + '">🤖 Sirf prompt copy karo</button>' +
+  return '<div class="tplbox">' +
+    '<button type="button" class="t1" data-tpl="' + kind + '">⬇ Template<small>CSV + AI instructions + 6 example</small></button>' +
+    '<button type="button" class="t2" data-aip="' + kind + '">🤖 AI Prompt copy<small>Prompt + apni PDF/photo AI ko do</small></button>' +
     '</div>';
 }
 document.addEventListener("click", e => {
@@ -1213,7 +1246,7 @@ function qPreview(id, rows) {
     }).join("");
 }
 function bulkTemplate() { tplDownload("bulk"); }
-$("toggleBulk").onclick = () => $("bulkBox").classList.toggle("hide");
+$("toggleBulk").onclick = () => { $("bulkBox").classList.toggle("hide"); $("toggleBulk").classList.toggle("open", !$("bulkBox").classList.contains("hide")); };
 $("bkFile").onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $("bkText").value = r.result; bulkCheck(); }; r.readAsText(f, "utf-8"); };
 $("bkCheck").onclick = bulkCheck; $("bkGo").onclick = bulkGo; $("bkTools").innerHTML = tplButtons("bulk");
 
@@ -2751,7 +2784,8 @@ function mountTag() {
   if (!HAS_QB) { p.innerHTML = '<button class="sec bk" data-go="dash">← Dashboard</button><div class="card"><span style="color:var(--bad)">Pehle qbank_setup.sql Supabase SQL Editor me ek baar chalao (difficulty / q_type columns chahiye), phir yahan aao.</span></div>'; return; }
   const subs = [...new Set(ALL.map(q => q.subject))].sort();
   p.innerHTML = `<button class="sec bk" data-go="dash">← Dashboard</button>
-  <div class="card"><div class="q">🏷️ Question Tagging</div><div id="tgStats" class="meta" style="margin:6px 0"></div>
+  <div class="pghead c-pink"><b>🏷️ Question Tagging</b><span>Difficulty aur type lagao — haath se, auto, ya AI ki madad se.</span></div>
+  <div class="sc2 c-pink"><div class="sch">🔎 Filter</div><div id="tgStats" class="meta" style="margin:6px 0"></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
       <select id="tgSub"><option value="">Sab subjects</option>${subs.map(s => `<option>${esc(s)}</option>`).join("")}</select>
       <select id="tgChap"><option value="">Sab chapters</option></select>
@@ -2759,23 +2793,36 @@ function mountTag() {
     </div>
     <div class="meta" style="margin-top:6px">Dikh rahe: <b id="tgCnt">0</b> (pehle 150 list me) · Chune hue: <b id="tgSelN">0</b></div>
   </div>
-  <div class="card"><div class="q">1️⃣ Bulk tag (chune hue / filter ke sab sawal)</div>
+  <div class="sc2 c-blue"><div class="sch">1️⃣ Bulk tag <small>chune hue / filter ke sab</small></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0">
       <select id="tgD"><option value="">Difficulty: na badlo</option><option>easy</option><option>moderate</option><option>hard</option></select>
       <select id="tgT"><option value="">Type: na badlo</option>${Q_TYPES.map(t => `<option>${t}</option>`).join("")}</select>
     </div>
     <button class="sec" id="tgSelAll">Filter ke sab chuno</button> <button class="sec" id="tgSelNone">Chunav hatao</button>
     <button class="pri" id="tgApply">Chune hue par lagao</button></div>
-  <div class="card"><div class="q">2️⃣ Type auto-tag (detectType)</div>
+  <div class="sc2 c-teal"><div class="sch">2️⃣ Type auto-tag <small>detectType</small></div>
     <div class="meta">Jin sawalon me q_type khali hai unka type pattern se anumaan; pehle preview.</div>
     <div id="tgAutoPrev" class="meta" style="margin:6px 0"></div>
     <button class="sec" id="tgAutoBtn">Preview dekho</button> <button class="pri" id="tgAutoApply" disabled>Apply karo</button></div>
-  <div class="card"><div class="q">3️⃣ Difficulty — AI sahayata (CSV)</div>
-    <div class="meta">Step 1: untagged sawal CSV export → Claude chat me do. Step 2: Claude jo <code>id,difficulty</code> (optional <code>q_type</code>) CSV de, use neeche import karo.</div>
-    <button class="sec" id="tgExp">⬇️ Untagged CSV (filter ke)</button> <button class="sec" id="tgRub">📋 Rubric copy</button>
-    <div style="margin-top:8px"><input type="file" id="tgFile" accept=".csv,.txt"></div>
-    <div id="tgImpPrev" class="meta" style="margin:6px 0"></div>
-    <button class="pri" id="tgImpApply" disabled>Tags import karo</button></div>
+  <div class="sc2 c-pink"><div class="sch">3️⃣ Difficulty — AI sahayata <small>table form me</small></div>
+    <div class="stp s-blue"><div class="sch"><span class="scn">1</span>Untagged sawal ki table download karo</div>
+      <div class="meta">Template jaisi table: <b>id, subject, chapter, question, option1-4, answer, explanation, exams</b> + 2 khali column jo AI bharega:</div>
+      <div class="fillcols"><span class="tag">difficulty</span><span class="tag">q_type</span></div>
+      <div class="chips" style="margin:8px 0 0"><span class="meta">Ek file me:</span>
+        <select id="tgChunk" style="width:auto;margin:0"><option value="0">Sab sawal</option><option value="100">100</option><option value="200">200</option><option value="300" selected>300</option></select>
+        <select id="tgPart" style="width:auto;margin:0"></select></div>
+      <div class="dlrow">
+        <button type="button" class="x" id="tgXlsx">📊 Excel<small>.xlsx · asli table</small></button>
+        <button type="button" class="w" id="tgView">🌐 Table dekho<small>browser me</small></button>
+        <button type="button" class="c" id="tgExp">⬇ CSV<small>template columns</small></button></div>
+      <div class="meta">💡 AI (ChatGPT/Claude) ko <b>Excel (.xlsx)</b> file do — wo seedhi rows-columns me padhta hai. CSV paragraph jaisi dikhe to Excel use karo.</div></div>
+    <div class="stp s-violet"><div class="sch"><span class="scn">2</span>AI ko file + rubric do</div>
+      <button class="sec" id="tgRub" style="width:100%">📋 Rubric / Prompt copy karo</button>
+      <div class="meta" style="margin-top:6px">AI se bolo: sirf <code>id,difficulty,q_type</code> ki CSV table wapas de.</div></div>
+    <div class="stp s-green"><div class="sch"><span class="scn">3</span>AI ki CSV yahan import karo</div>
+      <input type="file" id="tgFile" accept=".csv,.txt">
+      <div id="tgImpPrev" class="meta" style="margin:6px 0"></div>
+      <button class="pri" id="tgImpApply" disabled style="width:100%">✅ Tags import karo</button></div></div>
   <div id="tgMsg" class="meta"></div>
   <div class="card"><div id="tgList"></div></div>`;
   $("tgSub").onchange = () => { const s = $("tgSub").value; $("tgChap").innerHTML = '<option value="">Sab chapters</option>' + [...new Set(ALL.filter(q => !s || q.subject === s).map(q => q.chapter))].sort().map(c => `<option>${esc(c)}</option>`).join(""); TG.sel.clear(); tgRender(); };
@@ -2783,8 +2830,8 @@ function mountTag() {
   $("tgSelAll").onclick = () => { TG.rows.forEach(q => TG.sel.add(q.id)); tgRender(); };
   $("tgSelNone").onclick = () => { TG.sel.clear(); tgRender(); };
   $("tgApply").onclick = tgBulk; $("tgAutoBtn").onclick = tgAutoPrev; $("tgAutoApply").onclick = tgAutoApply;
-  $("tgExp").onclick = tgExport; $("tgFile").onchange = tgImport; $("tgImpApply").onclick = tgImpApply;
-  $("tgRub").onclick = () => { navigator.clipboard && navigator.clipboard.writeText("Har sawal ko easy/moderate/hard me tag karo. Rubric: " + DIFF_RUBRIC + "\nOutput sirf CSV: id,difficulty (optional q_type: " + Q_TYPES.join("/") + ")").then(() => tgMsg("Rubric copy ho gaya — CSV ke saath Claude ko paste karo.", 1)); };
+  $("tgExp").onclick = tgExport; $("tgXlsx").onclick = tgXlsx; $("tgView").onclick = tgView; $("tgChunk").onchange = () => { $("tgPart").value = 0; tgPartFill(); };  $("tgFile").onchange = tgImport; $("tgImpApply").onclick = tgImpApply;
+  $("tgRub").onclick = () => { navigator.clipboard && navigator.clipboard.writeText("Mai tumhe sawalon ki table (Excel/CSV) de raha hu. Har row (sawal) ko easy/moderate/hard me tag karo. Rubric: " + DIFF_RUBRIC + "\nOutput: sirf ek CSV TABLE (ek hi code block), header: id,difficulty,q_type — har sawal ki ek row, id bilkul wahi jo di gayi hai. q_type in me se ek: " + Q_TYPES.join("/") + ". Aur koi column ya explanation mat likho.").then(() => tgMsg("Rubric copy ho gaya — CSV ke saath Claude ko paste karo.", 1)); };
   tgRender();
 }
 function tgRender() {
@@ -2792,7 +2839,7 @@ function tgRender() {
   TG.rows = ALL.filter(q => (!s || q.subject === s) && (!c || q.chapter === c) && (f === "a" || (f === "d" ? tgNeedDiff(q) : f === "t" ? tgNeedType(q) : tgNeedDiff(q) || tgNeedType(q))));
   const act = ALL.filter(q => q.is_active !== false);
   $("tgStats").innerHTML = `Kul ${ALL.length} · Difficulty untagged <b>${ALL.filter(tgNeedDiff).length}</b> · Type untagged <b>${ALL.filter(tgNeedType).length}</b> · tagged easy/mod/hard: ${["easy", "moderate", "hard"].map(d => ALL.filter(q => q.difficulty === d).length).join("/")}`;
-  $("tgCnt").textContent = TG.rows.length; $("tgSelN").textContent = TG.sel.size;
+  $("tgCnt").textContent = TG.rows.length; $("tgSelN").textContent = TG.sel.size; tgPartFill();
   $("tgList").innerHTML = TG.rows.slice(0, 150).map(q => `<label style="display:block;padding:6px 0;border-bottom:1px solid var(--line,#e5e7eb)"><input type="checkbox" data-id="${q.id}" ${TG.sel.has(q.id) ? "checked" : ""}> <span class="tag">${q.difficulty || "—"}</span> <span class="tag">${q.q_type || "—"}</span> <span class="meta">${esc(q.chapter || "")}</span><div>${esc(String(q.question || "").replace(/<[^>]*>/g, " ").slice(0, 140))}</div></label>`).join("") || '<div class="meta">Kuch nahi mila.</div>';
   $("tgList").querySelectorAll("input[data-id]").forEach(i => i.onchange = () => { const id = isNaN(i.dataset.id) ? i.dataset.id : Number(i.dataset.id); i.checked ? TG.sel.add(id) : TG.sel.delete(id); $("tgSelN").textContent = TG.sel.size; });
   tgBadge();
@@ -2829,11 +2876,75 @@ async function tgAutoApply() {
   if (!TG_AUTO) return; $("tgAutoApply").disabled = true;
   try { const n = await tgWrite(Object.entries(TG_AUTO).map(([t, ids]) => ({ ids, set: { q_type: t } })), "autotype"); TG_AUTO = null; $("tgAutoPrev").textContent = ""; tgRender(); tgMsg("✅ " + n + " sawalon ka type set hua.", 1); } catch (e) { tgMsg("Error: " + e.message, 0); }
 }
+/* ---- Untagged export: template jaisi TABLE (Excel / browser table / CSV) ---- */
+const TG_HDR = ["id", "subject", "chapter", "question", "option1", "option2", "option3", "option4", "answer", "explanation", "exams", "difficulty", "q_type"];
+function tgRowsPart() {
+  const all = TG.rows, n = +($("tgChunk") ? $("tgChunk").value : 0), p = +($("tgPart") ? $("tgPart").value : 0) || 0;
+  return n ? all.slice(p * n, p * n + n) : all;
+}
+function tgPartFill() {
+  const sel = $("tgPart"); if (!sel) return;
+  const n = +$("tgChunk").value, tot = TG.rows.length, parts = n ? Math.max(1, Math.ceil(tot / n)) : 1, cur = Math.min(+sel.value || 0, parts - 1);
+  sel.innerHTML = Array.from({ length: parts }, (_, i) => `<option value="${i}">${n ? "Part " + (i + 1) + "/" + parts + " (" + (i * n + 1) + "–" + Math.min(tot, i * n + n) + ")" : "Poori file (" + tot + ")"}</option>`).join("");
+  sel.value = cur;
+}
+function tgTable() {
+  const rows = tgRowsPart();
+  const data = rows.map(q => { const o = q.options || [];
+    return [String(q.id), q.subject || "", q.chapter || "", cellTxt(q.question), cellTxt(o[0]), cellTxt(o[1]), cellTxt(o[2]), cellTxt(o[3]),
+      String((q.answer ?? 0) + 1), cellTxt(q.explanation), (q.exams || []).join("; "), q.difficulty || "", q.q_type || ""]; });
+  return { hdr: TG_HDR, data, rows };
+}
+const tgFname = ext => "jakhar_untagged_" + ($("tgPart") && +$("tgChunk").value ? "part" + (+$("tgPart").value + 1) + "_" : "") + new Date().toISOString().slice(0, 10) + "." + ext;
 function tgExport() {
-  const rows = TG.rows; if (!rows.length) return tgMsg("Filter me koi sawal nahi.", 0);
-  const L = [["id", "subject", "chapter", "question", "option1", "option2", "option3", "option4"].join(",")].concat(rows.map(q => [q.id, q.subject, q.chapter, q.question, ...(q.options || []).slice(0, 4)].map(csvCell).join(",")));
-  tgDl("jakhar_untagged_" + new Date().toISOString().slice(0, 10) + ".csv", "\uFEFF" + L.join("\r\n"), "text/csv;charset=utf-8");
-  tgMsg(rows.length + " sawal export (bade ho to 300-300 ke hisse karke Claude ko do).", 1);
+  const T = tgTable(); if (!T.data.length) return tgMsg("Filter me koi sawal nahi.", 0);
+  const L = [T.hdr.join(",")].concat(T.data.map(r => r.map((v, i) => i === 0 || i === 8 ? String(v) : csvCell(v)).join(",")));
+  tgDl(tgFname("csv"), "\uFEFF" + L.join("\r\n"), "text/csv;charset=utf-8");
+  tgMsg(T.data.length + " sawal CSV (table columns ke saath) download hue.", 1);
+}
+function tgXlsx() {
+  const T = tgTable(); if (!T.data.length) return tgMsg("Filter me koi sawal nahi.", 0);
+  const col = i => String.fromCharCode(65 + i), widths = [9, 18, 24, 60, 24, 24, 24, 24, 8, 50, 22, 13, 16], center = new Set([0, 8]);
+  const cell = (v, r, c, st) => '<c r="' + col(c) + r + '" t="inlineStr" s="' + st + '"><is><t xml:space="preserve">' + xmlEsc(String(v).slice(0, 32000)) + '</t></is></c>';
+  let sheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>' +
+    widths.map((w, i) => '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>').join("") + '</cols><sheetData><row r="1" ht="24" customHeight="1">' +
+    T.hdr.map((h, c) => cell(h, 1, c, c >= 11 ? 4 : 1)).join("") + '</row>';
+  T.data.forEach((r, i) => { const n = i + 2; sheet += '<row r="' + n + '">' + r.map((v, c) => cell(v, n, c, c >= 11 ? 3 : center.has(c) ? 2 : 0)).join("") + '</row>'; });
+  sheet += '</sheetData><autoFilter ref="A1:' + col(T.hdr.length - 1) + (T.data.length + 1) + '"/></worksheet>';
+  const bd = '<border><left style="thin"><color rgb="FFB6C2D6"/></left><right style="thin"><color rgb="FFB6C2D6"/></right><top style="thin"><color rgb="FFB6C2D6"/></top><bottom style="thin"><color rgb="FFB6C2D6"/></bottom><diagonal/></border>';
+  const styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FF000000"/><name val="Calibri"/></font></fonts>' +
+    '<fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1457D9"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFEF9C3"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFACC15"/><bgColor indexed="64"/></patternFill></fill></fills>' +
+    '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>' + bd + '</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="5">' +
+    '<xf numFmtId="49" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>' +
+    '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>' +
+    '<xf numFmtId="49" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="top"/></xf>' +
+    '<xf numFmtId="49" fontId="0" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="top"/></xf>' +
+    '<xf numFmtId="0" fontId="2" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  const ct = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>';
+  const files = [
+    { name: "[Content_Types].xml", text: ct },
+    { name: "_rels/.rels", text: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
+    { name: "xl/workbook.xml", text: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Untagged" sheetId="1" r:id="rId1"/></sheets></workbook>' },
+    { name: "xl/_rels/workbook.xml.rels", text: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>' },
+    { name: "xl/styles.xml", text: styles },
+    { name: "xl/worksheets/sheet1.xml", text: sheet }
+  ];
+  saveBlob(zipStore(files), tgFname("xlsx"));
+  tgMsg(T.data.length + " sawal Excel table me download hue.", 1);
+}
+function tgView() {
+  const T = tgTable(); if (!T.data.length) return tgMsg("Filter me koi sawal nahi.", 0);
+  const e = s => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const body = T.data.map(r => "<tr>" + r.map((v, c) => '<td class="c' + c + '">' + e(v).replace(/\n/g, "<br>") + "</td>").join("") + "</tr>").join("");
+  const html = '<!DOCTYPE html><html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Untagged sawal</title><style>' +
+    'body{margin:0;font-family:"Noto Sans Devanagari","Segoe UI",Arial,sans-serif;background:#eef3fb;color:#16202e}h1{font-size:16px;margin:0;padding:12px;background:#db2777;color:#fff}h1 small{display:block;font-weight:400;opacity:.9;font-size:12px}' +
+    '.w{overflow:auto;max-height:calc(100vh - 62px)}table{border-collapse:collapse;min-width:1700px;font-size:13px;background:#fff}th{position:sticky;top:0;background:#1457d9;color:#fff;padding:8px;border:1px solid #0b3a8c;white-space:nowrap}' +
+    'th.f{background:#facc15;color:#000}td{border:1px solid #c7d2e5;padding:7px 8px;vertical-align:top;min-width:90px}tr:nth-child(even) td{background:#f4f8ff}td.c0,td.c8{text-align:center;font-weight:700;min-width:50px}td.c3{min-width:320px}td.c9{min-width:300px}td.c11,td.c12{background:#fef9c3!important;min-width:90px}</style></head><body>' +
+    '<h1>Untagged sawal<small>' + T.data.length + ' sawal · peele column (difficulty, q_type) AI se bharwane hain · left/right scroll karo</small></h1><div class="w"><table><thead><tr>' +
+    T.hdr.map((h, i) => '<th' + (i >= 11 ? ' class="f"' : "") + ">" + e(h) + "</th>").join("") + "</tr></thead><tbody>" + body + "</tbody></table></div></body></html>";
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" }), url = URL.createObjectURL(blob);
+  if (!window.open(url, "_blank")) saveBlob(blob, tgFname("html"));
 }
 async function tgImport(e) {
   const f = e.target.files[0]; if (!f) return; TG.imp = null; $("tgImpApply").disabled = true;
