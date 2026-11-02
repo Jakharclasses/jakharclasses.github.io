@@ -329,7 +329,7 @@ button.bpub{background:#7c3aed;color:#fff}
 
     <div class="sc2 c-amber">
       <div class="sch">🕘 Recent uploads (batch)</div>
-      <div class="meta" style="margin-bottom:8px">Galti se upload ho gaya? Poora batch ek saath Hide ya Delete kar sakte ho. Delete se pehle us batch ki JSON backup apne-aap download hoti hai.</div>
+      <div class="meta" style="margin-bottom:8px">Galti se upload ho gaya? Poora batch ek saath Hide ya Delete kar sakte ho. Delete se pehle us batch ki Excel table (template jaisi) apne-aap download hoti hai.</div>
       <div id="batchList" class="meta">—</div>
     </div>
       
@@ -591,27 +591,44 @@ async function openPanel() {
 }
 
 let HAS_QB = true;   /* qbank_setup.sql chali hai ya nahi (difficulty/q_type/import_batch columns) */
+let LOAD_ERR = "", QLOADING = false;
 async function fetchAllQ() {
   const base = "/rest/v1/questions?select=id,subject,chapter,question,options,answer,explanation,exams,is_active,created_at";
+  /* keyset pagination (id se) — bade offset par Supabase timeout deta tha; har page 3 baar retry */
   const run = async cols => {
-    let out = [], off = 0;
+    let out = [], last = null, lim = 500;
     for (;;) {
-      const part = await api(base + cols + "&order=created_at.desc,id.asc&limit=1000&offset=" + off) || [];
-      out = out.concat(part); if (part.length < 1000) break; off += 1000;
+      let part = null, err = null, reqLim = lim;
+      for (let t = 0; t < 3 && part === null; t++) {
+        reqLim = lim;
+        try { part = await api(base + cols + "&order=id.asc&limit=" + lim + (last ? "&id=gt." + encodeURIComponent(last) : "")) || []; }
+        catch (e) { err = e; if (/column|schema cache|does not exist/i.test(e.message)) throw e; lim = Math.max(100, Math.floor(lim / 2)); await new Promise(r => setTimeout(r, 700 * (t + 1))); }
+      }
+      if (part === null) throw err;
+      out = out.concat(part);
+      const c = $("cQ"); if (c) c.textContent = "Load: " + out.length + "…";
+      if (part.length < reqLim) break;
+      last = part[part.length - 1].id;
     }
-    return out;
+    return out.sort((x, y) => String(y.created_at || "").localeCompare(String(x.created_at || "")) || (String(x.id) < String(y.id) ? -1 : 1));
   };
   try { const r = await run(",difficulty,q_type,import_batch"); HAS_QB = true; return r; }
-  catch (e) { HAS_QB = false; return await run(""); }
+  catch (e) {
+    if (!/column|schema cache|does not exist/i.test(e.message)) throw e;
+    HAS_QB = false; return await run("");
+  }
 }
 async function loadQuestions() {
   $("list").innerHTML = '<div class="meta">Load ho raha hai...</div>';
+  QLOADING = true; LOAD_ERR = "";
   try {
     ALL = (await fetchAllQ()).map(q => (q && CHAPTER_ALIAS[q.chapter]) ? { ...q, chapter: CHAPTER_ALIAS[q.chapter] } : q);
     SEL.clear(); render(); fillSubjects(); renderBatches();
   } catch (e) {
+    LOAD_ERR = e.message;
     $("list").innerHTML = '<div class="msg">Load error: ' + esc(e.message) + '</div>';
   }
+  QLOADING = false;
 }
 
 function chapRows() {
@@ -839,7 +856,7 @@ async function bulkGo() {
   const _d = new Date(), _p = n => String(n).padStart(2, "0");
   const batchId = "b" + _d.getFullYear() + _p(_d.getMonth() + 1) + _p(_d.getDate()) + _p(_d.getHours()) + _p(_d.getMinutes()) + "_" + Math.random().toString(36).slice(2, 5);
   try {
-    if (repl.length) dlJson("replaced_questions_" + Date.now() + ".json", repl);
+    if (repl.length) dlQTable("replaced_questions_" + Date.now() + ".xlsx", repl);
     for (let i = 0; i < LIST.length; i += 50) {
       const chunk = LIST.slice(i, i + 50).map(q => { const r = { ...q, is_active: active }; if (HAS_QB) r.import_batch = batchId; else { delete r.difficulty; delete r.q_type; } return r; });
       await api("/rest/v1/questions", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify(chunk) });
@@ -2079,7 +2096,12 @@ $("dashTree").addEventListener("click", e => {
   const q = e.target.closest(".qrow"); if (q) { const x = ALL.find(z => z.id === q.dataset.qid); if (x) openChapter(x.subject, x.chapter, x.question); }
 });
 ["renderMats", "renderDv"].forEach(n => { const f = window[n]; window[n] = function () { const r = f.apply(this, arguments); renderDash(); return r; }; });
-{ const _ql = window.loadQuestions; window.loadQuestions = async function () { const r = await _ql.apply(this, arguments); await loadVer(); renderDash(); return r; }; }
+{ const _ql = window.loadQuestions; window.loadQuestions = async function () {
+  const had = ALL.length, r = await _ql.apply(this, arguments); await loadVer(); renderDash();
+  const bn = $("adminState"); if (bn) { let e = $("qLoadErr"); if (LOAD_ERR) { if (!e) { e = document.createElement("div"); e.id = "qLoadErr"; e.className = "msg"; bn.appendChild(e); } e.innerHTML = "⚠ Sawal load nahi hue: " + esc(LOAD_ERR) + ' <button class="sec" id="qRetry" style="margin-top:6px">↻ Dobara try karo</button>'; } else if (e) e.remove(); }
+  if (!had && ALL.length) { if (CURTAB === "tag") mountTag(); else if (CURTAB === "eng") mountEng(); else if (CURTAB === "mkb") mountMk(); else if (CURTAB === "chap") render(); }
+  return r; }; }
+document.addEventListener("click", e => { if (e.target.id === "qRetry") loadQuestions(); });
 { const _op = window.openPanel; window.openPanel = async function () { showTab("dash"); $("logoutBtn").classList.remove("hide"); return _op.apply(this, arguments); }; }
 { const _lo = window.logout; window.logout = function () { const r = _lo.apply(this, arguments); CUR = null; showTab("dash"); MATS = []; $("logoutBtn").classList.add("hide"); return r; }; $("logoutBtn").onclick = window.logout; }
 
@@ -2237,9 +2259,9 @@ document.addEventListener("click", async e => {
   const b = e.target.closest("[data-dp]"); if (!b) return;
   const keep = ALL.find(q => q.id === (b.dataset.dp === "mergeB" ? b.dataset.a : b.dataset.b)), drop = ALL.find(q => q.id === (b.dataset.dp === "mergeB" ? b.dataset.b : b.dataset.a));
   if (!keep || !drop) return;
-  if (!await askConfirm({ title: "Duplicate sawal hatayein?", body: "Ek sawal hamesha ke liye hatega (backup download hogi) aur uske exams dusre me jud jayenge.", danger: true })) return;
+  if (!await askConfirm({ title: "Duplicate sawal hatayein?", body: "Ek sawal hamesha ke liye hatega (Excel table download hogi) aur uske exams dusre me jud jayenge.", danger: true })) return;
   try {
-    dlJson("merged_dup_" + Date.now() + ".json", [drop]);
+    dlQTable("merged_dup_" + Date.now() + ".xlsx", [drop]);
     const ex = [...new Set([...(keep.exams || []), ...(drop.exams || [])])];
     if (ex.length !== (keep.exams || []).length) await patchQ(keep.id, { exams: ex, updated_at: new Date().toISOString() });
     await bulkDeleteIds([drop.id]); await loadQuestions(); findDups();
@@ -2255,6 +2277,43 @@ function updSelBar() {
     '<button class="sec" data-sel="all">Sab chuno (jo dikh rahe)</button><button class="sec" data-sel="none">Chuno hatao</button>' +
     '<button class="sec" data-sel="hide">Hide</button><button class="sec" data-sel="show">Show</button>' +
     '<button class="danger" data-sel="del">🗑 Delete</button></div>';
+}
+
+/* Template jaisi TABLE: rows = questions rows (DB). Columns = bulk template columns; HTML (<br>, <table>) raw rakha taaki dobara upload ho sake */
+function qTableData(rows) {
+  const hdr = TPL_COLS.bulk.slice();
+  const data = rows.map(q => { const o = q.options || [];
+    return [q.subject || "", q.chapter || "", q.question || "", o[0] || "", o[1] || "", o[2] || "", o[3] || "", (q.answer ?? 0) + 1, q.explanation || "", (q.exams || []).join("; "), q.difficulty || "", q.q_type || ""]; });
+  return { hdr, data };
+}
+function qTableXlsx(rows, sheetName) {
+  const T = qTableData(rows), col = i => String.fromCharCode(65 + i), widths = [20, 28, 60, 26, 26, 26, 26, 8, 60, 22, 12, 16], center = new Set([7, 10, 11]);
+  const cell = (v, r, c, st) => typeof v === "number" ? '<c r="' + col(c) + r + '" s="' + st + '"><v>' + v + '</v></c>' : '<c r="' + col(c) + r + '" t="inlineStr" s="' + st + '"><is><t xml:space="preserve">' + xmlEsc(String(v).slice(0, 32000)) + '</t></is></c>';
+  let sheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>' +
+    widths.map((w, i) => '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>').join("") + '</cols><sheetData><row r="1" ht="24" customHeight="1">' + T.hdr.map((h, c) => cell(h, 1, c, 1)).join("") + '</row>';
+  T.data.forEach((r, i) => { const n = i + 2; sheet += '<row r="' + n + '">' + r.map((v, c) => cell(v, n, c, center.has(c) ? 2 : 0)).join("") + '</row>'; });
+  sheet += '</sheetData><autoFilter ref="A1:' + col(T.hdr.length - 1) + (T.data.length + 1) + '"/></worksheet>';
+  const bd = '<border><left style="thin"><color rgb="FFB6C2D6"/></left><right style="thin"><color rgb="FFB6C2D6"/></right><top style="thin"><color rgb="FFB6C2D6"/></top><bottom style="thin"><color rgb="FFB6C2D6"/></bottom><diagonal/></border>';
+  const styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts>' +
+    '<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1457D9"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>' + bd + '</borders>' +
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3">' +
+    '<xf numFmtId="49" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>' +
+    '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>' +
+    '<xf numFmtId="49" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="top"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  const sn = xmlEsc(String(sheetName || "Sawal").replace(/[\\\/?*\[\]:]/g, " ").slice(0, 28) || "Sawal");
+  return zipStore([
+    { name: "[Content_Types].xml", text: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>' },
+    { name: "_rels/.rels", text: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
+    { name: "xl/workbook.xml", text: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="' + sn + '" sheetId="1" r:id="rId1"/></sheets></workbook>' },
+    { name: "xl/_rels/workbook.xml.rels", text: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>' },
+    { name: "xl/styles.xml", text: styles },
+    { name: "xl/worksheets/sheet1.xml", text: sheet }]);
+}
+function dlQTable(name, rows) { saveBlob(qTableXlsx(rows, name.replace(/\.xlsx$/i, "")), name); }
+function dlQCsv(name, rows) {
+  const T = qTableData(rows);
+  const L = [T.hdr.join(",")].concat(T.data.map(r => r.map((v, i) => i === 7 ? String(v) : csvCell(v)).join(",")));
+  dlFile(name, L.join("\r\n"), "text/csv");
 }
 function dlJson(name, data) {
   const a = document.createElement("a");
@@ -2285,8 +2344,8 @@ document.addEventListener("click", async e => {
       if (!confirm(ids.length + " sawal " + (a === "hide" ? "Hide" : "Show") + " karein?")) return;
       for (let i = 0; i < ids.length; i += 100) await api("/rest/v1/questions?" + inList(ids.slice(i, i + 100)), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ is_active: a === "show", updated_at: new Date().toISOString() }) });
     } else if (a === "del") {
-      if (!await askConfirm({ title: ids.length + " sawal DELETE karein?", body: "Ye sawal hamesha ke liye hat jayenge.\n\nDhyan: students ka in sawalon ka progress bhi bekaar ho jayega. Agar sirf chhupana hai to Hide use karo.\n\nDelete se pehle in sawalon ki JSON backup download hogi.", danger: true, requireText: "DELETE" })) return;
-      dlJson("deleted_questions_" + Date.now() + ".json", ALL.filter(q => SEL.has(q.id)));
+      if (!await askConfirm({ title: ids.length + " sawal DELETE karein?", body: "Ye sawal hamesha ke liye hat jayenge.\n\nDhyan: students ka in sawalon ka progress bhi bekaar ho jayega. Agar sirf chhupana hai to Hide use karo.\n\nDelete se pehle in sawalon ki Excel table (template jaisi) download hogi.", danger: true, requireText: "DELETE" })) return;
+      dlQTable("deleted_questions_" + Date.now() + ".xlsx", ALL.filter(q => SEL.has(q.id)));
       const n = await bulkDeleteIds(ids);
       if (n !== ids.length) alert("Dhyan: " + ids.length + " me se " + n + " hi delete hue (admin permission check karo).");
     }
@@ -2303,28 +2362,36 @@ function renderBatches() {
   if (!HAS_QB) { box.innerHTML = '<span style="color:var(--bad)">Pehle qbank_setup.sql Supabase SQL Editor me ek baar chalao, phir yahan batch dikhenge.</span>'; return; }
   const g = batchGroups();
   if (!g.length) { box.textContent = "Abhi koi batch nahi (ab se jo CSV import karoge wo yahan dikhega)."; return; }
-  box.innerHTML = g.slice(0, 15).map(([id, qs]) => {
+  box.innerHTML = '<div class="meta" style="margin-bottom:6px">Kul <b>' + g.length + '</b> batch · sabse naya sabse upar</div>' + g.map(([id, qs]) => {
     const places = [...new Set(qs.map(q => q.subject + " › " + q.chapter))];
     const t = id.slice(1, 13), when = t.slice(6, 8) + "-" + t.slice(4, 6) + "-" + t.slice(0, 4) + " " + t.slice(8, 10) + ":" + t.slice(10, 12);
-    const hid = qs.filter(q => !q.is_active).length;
-    return '<div class="card" style="margin:8px 0"><div class="q" style="margin:0">' + when + ' · ' + qs.length + ' sawal' + (hid ? ' (' + hid + ' hidden)' : '') + '</div>' +
+    const act = qs.filter(q => q.is_active).length, hid = qs.length - act;
+    const st = hid === 0 ? '<span class="tag on">✅ Sab ' + act + ' LIVE (app me dikh rahe)</span>' : act === 0 ? '<span class="tag hid">🙈 Sab ' + hid + ' HIDDEN</span>' : '<span class="tag on">' + act + ' live</span><span class="tag hid">' + hid + ' hidden</span>';
+    return '<div class="card" style="margin:8px 0"><div class="q" style="margin:0">' + when + ' · ' + qs.length + ' sawal</div>' +
+      '<div style="margin:6px 0">' + st + '</div>' +
       '<div class="meta">' + esc(places.slice(0, 3).join(" | ")) + (places.length > 3 ? " ...+" + (places.length - 3) : "") + '</div>' +
-      '<div class="row" style="margin-top:8px"><button class="sec" data-bt="hide" data-id="' + id + '">Hide batch</button><button class="sec" data-bt="show" data-id="' + id + '">Show batch</button><button class="danger" data-bt="del" data-id="' + id + '">🗑 Delete batch</button></div></div>';
+      '<div class="row" style="margin-top:8px"><button class="sec" data-bt="hide" data-id="' + id + '"' + (act === 0 ? " disabled" : "") + '>Hide batch' + (act && hid ? " (" + act + ")" : "") + '</button><button class="sec" data-bt="show" data-id="' + id + '"' + (hid === 0 ? " disabled" : "") + '>' + (hid === 0 ? "✓ Already shown" : "Show batch" + (act ? " (" + hid + " baaki)" : "")) + '</button><button class="danger" data-bt="del" data-id="' + id + '">🗑 Delete batch</button></div>' +
+      '<div class="row" style="margin-top:6px"><button class="sec" data-bt="xlsx" data-id="' + id + '">📊 Excel table</button><button class="sec" data-bt="csv" data-id="' + id + '">⬇ CSV</button></div></div>';
   }).join("");
 }
 document.addEventListener("click", async e => {
-  const b = e.target.closest("[data-bt]"); if (!b) return;
+  const b = e.target.closest("[data-bt]"); if (!b || b.disabled) return;
   const id = b.dataset.id, qs = ALL.filter(q => q.import_batch === id), act = b.dataset.bt;
   if (!qs.length) return;
   try {
+    if (act === "xlsx") { dlQTable("batch_" + id + ".xlsx", qs); return; }
+    if (act === "csv") { dlQCsv("batch_" + id + ".csv", qs); return; }
     if (act === "del") {
-      if (!await askConfirm({ title: "Batch ke " + qs.length + " sawal DELETE karein?", body: "Is batch ke " + qs.length + " sawal hamesha ke liye hat jayenge.\n\nPehle in sawalon ki JSON backup download hogi.", danger: true, requireText: "DELETE" })) return;
-      dlJson("deleted_batch_" + id + ".json", qs);
+      if (!await askConfirm({ title: "Batch ke " + qs.length + " sawal DELETE karein?", body: "Is batch ke " + qs.length + " sawal hamesha ke liye hat jayenge.\n\nPehle in sawalon ki Excel table (template jaisi) download hogi.", danger: true, requireText: "DELETE" })) return;
+      dlQTable("deleted_batch_" + id + ".xlsx", qs);
       const r = await api("/rest/v1/questions?import_batch=eq." + encodeURIComponent(id), { method: "DELETE", headers: { Prefer: "return=representation" } });
       if (!r || r.length !== qs.length) alert("Dhyan: " + qs.length + " me se " + (r ? r.length : 0) + " hi delete hue.");
     } else {
-      if (!confirm(qs.length + " sawal " + (act === "hide" ? "Hide" : "Show") + " karein?")) return;
-      await api("/rest/v1/questions?import_batch=eq." + encodeURIComponent(id), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ is_active: act === "show", updated_at: new Date().toISOString() }) });
+      const show = act === "show", todo = qs.filter(q => !!q.is_active !== show), skip = qs.length - todo.length;
+      if (!todo.length) { alert("Is batch ke sab " + qs.length + " sawal pehle se " + (show ? "LIVE" : "HIDDEN") + " hain — kuch badalna nahi."); return; }
+      if (!confirm(todo.length + " sawal " + (show ? "Show" : "Hide") + " honge" + (skip ? " (" + skip + " pehle se " + (show ? "live" : "hidden") + " hain, unhe chhua nahi jayega)" : "") + ". Karein?")) return;
+      /* sirf wahi rows badlo jo abhi ulti state me hain -> doobara/duplicate update nahi */
+      await api("/rest/v1/questions?import_batch=eq." + encodeURIComponent(id) + "&is_active=eq." + (show ? "false" : "true"), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ is_active: show, updated_at: new Date().toISOString() }) });
     }
     await loadQuestions();
   } catch (er) { alert("Fail: " + er.message); }
@@ -2773,6 +2840,12 @@ function tgDl(name, text, mime) {
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: mime || "application/json" }));
   a.download = name; document.body.appendChild(a); a.click(); a.remove();
 }
+async function copyText(t, ok, fail) {
+  try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(t); return ok(); } } catch (e) {}
+  try { const ta = document.createElement("textarea"); ta.value = t; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;font-size:16px";
+    document.body.appendChild(ta); ta.focus(); ta.select(); ta.setSelectionRange(0, t.length); const r = document.execCommand("copy"); ta.remove(); if (r) return ok(); } catch (e) {}
+  fail();
+}
 function tgBadge() {
   const b = $("cTag"); if (!b) return;
   if (!HAS_QB) { b.textContent = "qbank_setup.sql chalao"; return; }
@@ -2781,6 +2854,7 @@ function tgBadge() {
 }
 function mountTag() {
   const p = document.querySelector('[data-pane="tag"]');
+  if (!ALL.length) { p.innerHTML = '<button class="sec bk" data-go="dash">← Dashboard</button><div class="card">' + (QLOADING ? "⏳ Sawal abhi load ho rahe hain… load hote hi ye page apne-aap bhar jayega." : '<span style="color:var(--bad)">Sawal load nahi hue' + (LOAD_ERR ? ": " + esc(LOAD_ERR) : "") + '</span><br><button class="sec" id="qRetry" style="margin-top:8px">↻ Dobara try karo</button>') + "</div>"; return; }
   if (!HAS_QB) { p.innerHTML = '<button class="sec bk" data-go="dash">← Dashboard</button><div class="card"><span style="color:var(--bad)">Pehle qbank_setup.sql Supabase SQL Editor me ek baar chalao (difficulty / q_type columns chahiye), phir yahan aao.</span></div>'; return; }
   const subs = [...new Set(ALL.map(q => q.subject))].sort();
   p.innerHTML = `<button class="sec bk" data-go="dash">← Dashboard</button>
@@ -2831,7 +2905,7 @@ function mountTag() {
   $("tgSelNone").onclick = () => { TG.sel.clear(); tgRender(); };
   $("tgApply").onclick = tgBulk; $("tgAutoBtn").onclick = tgAutoPrev; $("tgAutoApply").onclick = tgAutoApply;
   $("tgExp").onclick = tgExport; $("tgXlsx").onclick = tgXlsx; $("tgView").onclick = tgView; $("tgChunk").onchange = () => { $("tgPart").value = 0; tgPartFill(); };  $("tgFile").onchange = tgImport; $("tgImpApply").onclick = tgImpApply;
-  $("tgRub").onclick = () => { navigator.clipboard && navigator.clipboard.writeText("Mai tumhe sawalon ki table (Excel/CSV) de raha hu. Har row (sawal) ko easy/moderate/hard me tag karo. Rubric: " + DIFF_RUBRIC + "\nOutput: sirf ek CSV TABLE (ek hi code block), header: id,difficulty,q_type — har sawal ki ek row, id bilkul wahi jo di gayi hai. q_type in me se ek: " + Q_TYPES.join("/") + ". Aur koi column ya explanation mat likho.").then(() => tgMsg("Rubric copy ho gaya — CSV ke saath Claude ko paste karo.", 1)); };
+  $("tgRub").onclick = async () => { const t = "Mai tumhe sawalon ki table (Excel/CSV) de raha hu. Har row (sawal) ko easy/moderate/hard me tag karo. Rubric: " + DIFF_RUBRIC + "\nOutput: sirf ek CSV TABLE (ek hi code block), header: id,difficulty,q_type — har sawal ki ek row, id bilkul wahi jo di gayi hai. q_type in me se ek: " + Q_TYPES.join("/") + ". Aur koi column ya explanation mat likho."; await copyText(t, () => tgMsg("Rubric copy ho gaya — CSV ke saath Claude ko paste karo.", 1), () => { tgDl("jakhar_ai_rubric_prompt.txt", t, "text/plain;charset=utf-8"); tgMsg("Copy block hua — isliye prompt .txt file me download kar diya. Usse khol kar copy karo.", 0); }); };
   tgRender();
 }
 function tgRender() {
