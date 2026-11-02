@@ -116,6 +116,76 @@
 #acBox .aco{background:#1457d9;color:#fff}
 #acBox.dng .aco{background:#c62828}
 #acBox .aco:disabled{opacity:.4;cursor:not-allowed}
+
+/* ===== Rang-birangi, vyavasthit sections (Test Builder / Mock Builder / CSV upload) ===== */
+.c-blue{--c:#1457d9}.c-amber{--c:#d97706}.c-green{--c:#16a34a}.c-violet{--c:#7c3aed}.c-pink{--c:#db2777}.c-teal{--c:#0d9488}.c-red{--c:#dc2626}
+.pghead{background:linear-gradient(135deg,var(--c,#1457d9),color-mix(in srgb,var(--c,#1457d9) 55%,#000));color:#fff;border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.pghead b{display:block;font-size:17px}.pghead span{display:block;font-size:13px;opacity:.92;margin-top:3px;line-height:1.45}
+.sc2{background:color-mix(in srgb,var(--c,#1457d9) 6%,var(--card));border:1px solid color-mix(in srgb,var(--c,#1457d9) 30%,var(--bd));border-top:4px solid var(--c,#1457d9);border-radius:14px;padding:12px 14px 14px;margin-bottom:12px}
+.sch{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-weight:700;font-size:15px;margin:0 0 10px;color:color-mix(in srgb,var(--c,#1457d9) 72%,var(--tx))}
+.sch small{margin-left:auto;font-size:12px;font-weight:600;color:var(--mut)}
+.scn{flex:none;min-width:26px;height:26px;padding:0 4px;border-radius:50%;background:var(--c,#1457d9);color:#fff;display:inline-grid;place-items:center;font-size:13px;font-weight:700}
+.lbl{font-size:12.5px;font-weight:700;color:color-mix(in srgb,var(--c,#1457d9) 60%,var(--mut));margin:10px 0 5px}
+.sc2 select{margin-bottom:8px}
+.sc2 button.sec{background:var(--card)}
+.fr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.fr>*{margin-bottom:0!important}
+.chips{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.chips>*{margin-bottom:0!important}
+button.chip{border-radius:99px;padding:6px 14px;font-weight:700;font-size:13px}
+.sc2 [data-lv="easy"]{border-color:#16a34a;color:color-mix(in srgb,#16a34a 70%,var(--tx))}
+.sc2 [data-lv="moderate"]{border-color:#d97706;color:color-mix(in srgb,#d97706 70%,var(--tx))}
+.sc2 [data-lv="hard"]{border-color:#dc2626;color:color-mix(in srgb,#dc2626 70%,var(--tx))}
+.sc2 [data-n]{border-color:var(--c,#1457d9);color:color-mix(in srgb,var(--c,#1457d9) 70%,var(--tx))}
+.num{width:84px}.num-s{width:66px}.num-w{width:120px}
+#egE,#mkE{border:2px solid #16a34a;background:rgba(22,163,74,.10)}
+#egM,#mkM{border:2px solid #d97706;background:rgba(217,119,6,.10)}
+#egH,#mkH{border:2px solid #dc2626;background:rgba(220,38,38,.10)}
+.tboxes{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.tbox{--c:#1457d9;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1.5px solid var(--c,#1457d9);border-radius:10px;padding:6px 8px 6px 10px;background:color-mix(in srgb,var(--c,#1457d9) 10%,var(--card));font-size:13px;font-weight:700;color:color-mix(in srgb,var(--c,#1457d9) 70%,var(--tx))}
+.tbox input{width:58px;margin:0;padding:6px 8px}
+.t-statement{--c:#1457d9}.t-match{--c:#7c3aed}.t-assertion_reason{--c:#db2777}.t-table{--c:#0d9488}
+.hint{background:color-mix(in srgb,var(--c,#1457d9) 10%,transparent);border-left:4px solid var(--c,#1457d9);border-radius:8px;padding:8px 10px;line-height:1.55}
+.sc2 input[type=file]{border:2px dashed color-mix(in srgb,var(--c,#1457d9) 60%,var(--bd));background:color-mix(in srgb,var(--c,#1457d9) 8%,var(--card));padding:16px 12px;border-radius:12px;cursor:pointer}
+.sc2 input[type=file]::file-selector-button{background:var(--c,#1457d9);color:#fff;border:0;border-radius:8px;padding:8px 14px;margin-right:12px;font:inherit;font-weight:700;cursor:pointer}
+.exbox{background:var(--card);border-color:color-mix(in srgb,var(--c,#1457d9) 35%,var(--bd))!important}
+.exopt{padding:6px 8px;border-radius:8px}
+.exopt:has(input:checked){background:color-mix(in srgb,var(--c,#7c3aed) 16%,transparent);font-weight:700}
+button.bchk{background:transparent;border:2px solid #d97706;color:color-mix(in srgb,#d97706 75%,var(--tx))}
+button.bgo{background:#16a34a;color:#fff}
+button.bgo:disabled{background:#16a34a}
+button.bpub{background:#7c3aed;color:#fff}
+.sc2 button.pri,button.pri{background:var(--c,#db2777);color:#fff;border:0;width:auto;font-weight:700}
+.trow{border:1px solid var(--bd);border-left:5px solid var(--c,#1457d9);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:color-mix(in srgb,var(--c,#1457d9) 7%,var(--card))}
+.srow.trow:last-child{border:1px solid var(--bd);border-left:5px solid var(--c,#1457d9)}
+.trow.live{--c:#16a34a}.trow.off{--c:#dc2626}
+.trow .q{margin:0}
+.tag.on{background:rgba(22,163,74,.14);font-weight:700}
+.tag.hid{background:rgba(220,38,38,.12);font-weight:700}
+.tag.d-easy{color:color-mix(in srgb,#16a34a 70%,var(--tx));border-color:#16a34a;background:rgba(22,163,74,.12)}
+.tag.d-moderate{color:color-mix(in srgb,#d97706 70%,var(--tx));border-color:#d97706;background:rgba(217,119,6,.12)}
+.tag.d-hard{color:color-mix(in srgb,#dc2626 70%,var(--tx));border-color:#dc2626;background:rgba(220,38,38,.12)}
+.tag.tg-type{color:color-mix(in srgb,#7c3aed 70%,var(--tx));border-color:#7c3aed;background:rgba(124,58,237,.10)}
+.egi{padding:8px 10px;margin:6px 0;border-radius:10px;border:1px solid var(--bd);border-left:4px solid #94a3b8;background:var(--card);overflow-wrap:anywhere}
+.egi:has(.d-easy){border-left-color:#16a34a}.egi:has(.d-moderate){border-left-color:#d97706}.egi:has(.d-hard){border-left-color:#dc2626}
+.egi button{padding:3px 9px;font-size:12px}
+.savebox{background:color-mix(in srgb,#16a34a 9%,var(--card));border:1.5px dashed #16a34a;border-radius:12px;padding:10px;margin:10px 0}
+.mkrow{display:flex;gap:6px;align-items:center;margin:6px 0;padding:6px;border-left:4px solid var(--c,#1457d9);border-radius:10px;background:color-mix(in srgb,var(--c,#1457d9) 9%,var(--card))}
+.mkrow select,.mkrow input,.mkrow button{margin:0}
+.mkres{padding:4px 10px;margin:4px 0;border-radius:8px;border-left:4px solid #16a34a;background:rgba(22,163,74,.09);color:var(--tx)}
+.mkres.bad{border-left-color:#dc2626;background:rgba(220,38,38,.09)}
+#egBank table{border-collapse:separate!important;border-spacing:0 3px}
+#egBank th,#egBank td{padding:5px 8px;font-size:12.5px}
+#egBank th{background:rgba(20,87,217,.14)}
+#egBank th:nth-child(3),#egBank td:nth-child(3){color:color-mix(in srgb,#16a34a 70%,var(--tx))}
+#egBank th:nth-child(4),#egBank td:nth-child(4){color:color-mix(in srgb,#d97706 70%,var(--tx))}
+#egBank th:nth-child(5),#egBank td:nth-child(5){color:color-mix(in srgb,#dc2626 70%,var(--tx))}
+#egBank th:nth-child(3){background:rgba(22,163,74,.18)}#egBank th:nth-child(4){background:rgba(217,119,6,.18)}#egBank th:nth-child(5){background:rgba(220,38,38,.18)}
+#egBank th:nth-child(7){background:rgba(13,148,136,.2)}#egBank td:nth-child(7){font-weight:700;color:color-mix(in srgb,#0d9488 75%,var(--tx))}
+#egBank td{border-bottom:1px solid var(--bd)}#egBank td:nth-child(2){font-weight:700}
+.tgh{grid-column:1/-1;--c:#1457d9;display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;padding:6px 10px;margin-top:4px;border-left:5px solid var(--c,#1457d9);border-radius:8px;background:color-mix(in srgb,var(--c,#1457d9) 12%,transparent);color:color-mix(in srgb,var(--c,#1457d9) 75%,var(--tx))}
+.tgh small{margin-left:auto;font-weight:500;color:var(--mut);font-size:12px}
+.qpv .po.ok{background:rgba(22,163,74,.10)}.qpv .pl{background:rgba(124,58,237,.16)}
+.qpv{border-top:4px solid #7c3aed}
+@media (max-width:430px){.sc2{padding:10px 11px 12px}.tboxes{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -124,9 +194,11 @@
 
   <!-- LOGIN -->
   <div id="loginBox" class="card">
-    <input id="em" type="email" placeholder="Admin email" autocomplete="username">
-    <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
-    <button id="loginBtn">Login</button>
+    <form id="loginForm" method="post" action="#" onsubmit="event.preventDefault();">
+    <input id="em" name="username" type="email" placeholder="Admin email" autocomplete="username">
+    <input id="pw" name="password" type="password" placeholder="Password" autocomplete="current-password">
+    <button id="loginBtn" type="submit">Login</button>
+    </form>
     <div id="loginMsg" class="msg"></div>
   </div>
 
@@ -135,18 +207,26 @@
     <div id="adminState" class="card"></div>
     <div class="pane" data-pane="dash">
       <div class="tiles">
+        <div class="tgh" style="--c:#1457d9">📘 Sawal<small>bank · tagging</small></div>
         <button data-go="q" style="background:linear-gradient(135deg,#0b3a8c,#1457d9)"><span>📘</span><b>Sawal Jodo / Import</b><small id="cQ"></small></button>
+        <button data-go="tag" style="background:linear-gradient(135deg,#be185d,#f59e0b)"><span>🏷️</span><b>Question Tagging</b><small id="cTag">Difficulty · Type</small></button>
+        <div class="tgh" style="--c:#0d9488">🧪 Tests<small>banao · upload karo</small></div>
+        <button data-go="eng" style="background:linear-gradient(135deg,#0891b2,#7c3aed)"><span>🧪</span><b>Test Builder</b><small>Question Bank se Full Subject Test</small></button>
+        <button data-go="mkb" style="background:linear-gradient(135deg,#7c3aed,#db2777)"><span>🎯</span><b>Mock Builder</b><small>Sections · Draft · Refill</small></button>
         <button data-go="fst" style="background:#16a34a"><span>📚</span><b>Full Subject Test</b><small id="cFst">CSV upload · subject wise</small></button>
         <button data-go="fmk" style="background:#7c3aed"><span>🎯</span><b>Full Mock Test</b><small id="cFmk">CSV upload · exam wise</small></button>
+        <div class="tgh" style="--c:#16a34a">📚 Study content<small>PDF · notes · video</small></div>
         <button data-go="pdf" style="background:#16a34a"><span>📄</span><b>PDFs</b><small id="cP"></small></button>
         <button data-go="mat" style="background:#7c3aed"><span>📚</span><b>Study Material</b><small id="cM"></small></button>
         <button data-go="yt" style="background:#e11d1d"><span>▶️</span><b>YouTube Video Links</b><small id="cY"></small></button>
         <button data-go="dv" style="background:linear-gradient(135deg,#0f766e,#14b8a6)"><span>📑</span><b>Lab Assistant Geography</b><small id="cD"></small></button>
+        <div class="tgh" style="--c:#db2777">👥 Students aur app<small>notification · reports · community</small></div>
         <button data-go="ntf" style="background:#0ea5e9"><span>🔔</span><b>Notifications</b><small>App ki bell me dikhao</small></button>
         <button data-go="rem" style="background:#db2777"><span>💬</span><b>Admin Remarks</b><small>Mistake Analysis me</small></button>
         <button data-go="dgn" style="background:#0f766e;position:relative"><span>🩺</span><b>Student Reports</b><small>Login / app problem ki jaanch</small><span id="dgBadge" style="display:none;position:absolute;top:8px;right:8px;background:#ef4444;color:#fff;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px"></span></button>
         <button data-go="com" style="background:linear-gradient(135deg,#7c3aed,#db2777)"><span>🛡️</span><b>Community Moderation</b><small id="cCom">Reports · Users · Blue Tick</small></button>
         <button data-go="usr" style="background:#475569"><span>👥</span><b>Login Data</b><small>Users · Performance</small></button>
+        <div class="tgh" style="--c:#d97706">💾 Data</div>
         <button data-go="d" style="background:#f59e0b"><span>💾</span><b>Backup / Export</b><small>JSON · CSV</small></button>
       </div>
       <div class="sh">📊 Sawal ka hisaab</div>
@@ -222,6 +302,9 @@
       
     </div>
 
+    <div class="pane hide" data-pane="tag"></div>
+    <div class="pane hide" data-pane="eng"></div>
+    <div class="pane hide" data-pane="mkb"></div>
     <div class="pane hide" data-pane="fst"></div>
     <div class="pane hide" data-pane="fmk"></div>
     <div class="pane hide" data-pane="com"></div>
@@ -1675,7 +1758,7 @@ function exShortA(e) {
 function examsOfA(t) { const a = []; (t.exams || []).forEach(e => { if (e && !a.includes(e)) a.push(e); }); if (t.exam && !a.includes(t.exam)) a.unshift(t.exam); return a; }
 function exBoxHtml(kind) {
   const all = T_EXAMS.flatMap(g => g.list);
-  return '<div class="meta" style="margin-bottom:6px">Exams chuno (ek ya zyada):</div><div id="' + kind + 'Ex" class="exbox">' +
+  return '<div class="lbl" style="margin-top:0">Exams chuno (ek ya zyada):</div><div id="' + kind + 'Ex" class="exbox" style="--c:#7c3aed">' +
     all.map(e => '<label class="exopt"><input type="checkbox" value="' + esc(e) + '"> ' + esc(exShortA(e)) + (exShortA(e) !== e ? ' <small>(' + esc(e) + ')</small>' : '') + '</label>').join("") +
     '</div><div id="' + kind + 'ExN" class="meta" style="margin:6px 0 0">Koi exam chuna nahi</div>';
 }
@@ -1713,26 +1796,32 @@ function mountTestPane(kind) {
       : '<option value="">— Exam chuno —</option>' + T_EXAMS.filter(g => g.list.length).map(g => '<optgroup label="' + esc(g.group) + '">' + g.list.map(s => '<option>' + esc(s) + '</option>').join("") + '</optgroup>').join("");
     pane.innerHTML = `
       <button class="sec bk" data-go="dash">← Dashboard</button>
-      <div class="card">
-        <div class="q">${isSub ? "📚 Full Subject Test — CSV upload" : "🎯 Full Mock Test — CSV upload"}</div>
-        <div class="meta" style="margin:4px 0 10px">${isSub ? "Jis subject ko chunoge, upload hue sawal usi subject ke test me jayenge." : "Ek ya zyada exams chuno (3-4 bhi ho sakte hain) — ek hi test sabhi chune hue exams me dikhega, duplicate test nahi banega."}</div>
+      <div class="pghead ${isSub ? "c-green" : "c-violet"}"><b>${isSub ? "📚 Full Subject Test — CSV upload" : "🎯 Full Mock Test — CSV upload"}</b><span>${isSub ? "Jis subject ko chunoge, upload hue sawal usi subject ke test me jayenge." : "Ek ya zyada exams chuno (3-4 bhi ho sakte hain) — ek hi test sabhi chune hue exams me dikhega, duplicate test nahi banega."}</span></div>
+      <div class="sc2 c-blue">
+        <div class="sch"><span class="scn">1</span>${isSub ? "Subject aur test ka naam" : "Exam aur test ka naam"}</div>
         ${isSub ? `<select id="${kind}Sel">${opts}</select>` : exBoxHtml(kind)}
-        <input id="${kind}Title" placeholder="Test ka naam (title) — jaise: Full Test 1" style="margin-top:10px">
-        <div class="row" style="margin-bottom:10px">
-          <div style="flex:1;min-width:120px"><div class="meta">Time limit (minute, khali = koi limit nahi)</div><input id="${kind}Dur" type="number" min="1" step="1" placeholder="jaise 60" style="margin:0"></div>
-          <div style="flex:1;min-width:120px"><div class="meta">Har sawal ke marks</div><input id="${kind}Mk" type="number" min="0.25" step="0.25" value="1" style="margin:0"></div>
-          <div style="flex:1;min-width:140px"><div class="meta">Negative marking</div><select id="${kind}Neg">${T_NEG.map(o => '<option value="' + o[0] + '">' + esc(o[1]) + '</option>').join("")}</select></div>
+        <input id="${kind}Title" placeholder="Test ka naam (title) — jaise: Full Test 1" style="margin-top:10px;margin-bottom:0">
+      </div>
+      <div class="sc2 c-amber">
+        <div class="sch"><span class="scn">2</span>Time aur marks</div>
+        <div class="row">
+          <div style="flex:1;min-width:120px"><div class="lbl" style="margin-top:0">⏱️ Time limit (minute)</div><input id="${kind}Dur" type="number" min="1" step="1" placeholder="khali = koi limit nahi" style="margin:0"></div>
+          <div style="flex:1;min-width:120px"><div class="lbl" style="margin-top:0">🎯 Har sawal ke marks</div><input id="${kind}Mk" type="number" min="0.25" step="0.25" value="1" style="margin:0"></div>
+          <div style="flex:1;min-width:140px"><div class="lbl" style="margin-top:0">➖ Negative marking</div><select id="${kind}Neg" style="margin:0">${T_NEG.map(o => '<option value="' + o[0] + '">' + esc(o[1]) + '</option>').join("")}</select></div>
         </div>
-        <div class="meta" style="margin-bottom:8px">CSV columns: question, option1, option2, option3, option4, answer, explanation (+ optional: chapter, ${isSub ? "exams" : "subject, exams"}). Answer 1-4 ya A-D. Line todne ke liye &lt;br&gt;, table ke liye &lt;table class="qt"&gt;. Template me 6 prakar ke example hain; AI se CSV banwana ho to <b>AI Prompt copy karo</b>.</div>
+      </div>
+      <div class="sc2 c-green">
+        <div class="sch"><span class="scn">3</span>CSV upload karo</div>
+        <div class="meta hint" style="margin-bottom:10px">CSV columns: <b>question, option1, option2, option3, option4, answer, explanation</b> (+ optional: chapter, ${isSub ? "exams" : "subject, exams"}). Answer 1-4 ya A-D. Line todne ke liye &lt;br&gt;, table ke liye &lt;table class="qt"&gt;. Template me 6 prakar ke example hain; AI se CSV banwana ho to <b>AI Prompt copy karo</b>.</div>
         ${tplButtons(kind)}
         <input id="${kind}File" type="file" accept=".csv,.txt,text/csv,text/plain">
         <textarea id="${kind}Text" rows="4" placeholder="Ya yahan CSV text paste karo"></textarea>
         <label style="display:block;margin-bottom:10px;font-size:14px"><input id="${kind}Act" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Upload ke baad turant active karo (app me dikhe)</label>
-        <div class="row"><button id="${kind}Chk" class="sec">1. Jaanch karo</button><button id="${kind}Go" disabled>2. Upload karo</button></div>
+        <div class="row"><button id="${kind}Chk" class="sec bchk">1. Jaanch karo</button><button id="${kind}Go" class="bgo" disabled>2. Upload karo</button></div>
         <div id="${kind}Msg" class="msg" style="white-space:pre-wrap"></div>
         <div id="${kind}Prev"></div>
       </div>
-      <div class="card"><div class="q">Upload hue tests</div><div id="${kind}List" class="meta">Load ho raha hai...</div></div>`;
+      <div class="sc2 c-violet"><div class="sch">📋 Upload hue tests</div><div id="${kind}List" class="meta">Load ho raha hai...</div></div>`;
     $(kind + "File").onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $(kind + "Text").value = r.result; testCheck(kind); }; r.readAsText(f, "utf-8"); };
     $(kind + "Chk").onclick = () => testCheck(kind);
     $(kind + "Go").onclick = () => testUpload(kind);
@@ -1753,7 +1842,7 @@ async function testList(kind) {
   }
   const c = $(kind === "fst" ? "cFst" : "cFmk"); if (c) c.textContent = S.tests.length + " test";
   if (!S.tests.length) { box.textContent = "Abhi koi test upload nahi hua."; return; }
-  box.innerHTML = S.tests.map(t => `<div class="srow" style="align-items:center">
+  box.innerHTML = S.tests.map(t => `<div class="srow trow ${t.is_active ? "live" : "off"}" style="align-items:center">
     <div style="min-width:0"><div class="q" style="margin:0">${esc(t.title)} ${t.is_active ? '<span class="tag on">LIVE</span>' : '<span class="tag hid">HIDDEN</span>'}</div>
     <div class="meta">${kind === "fst" ? esc(t.subject) : examsOfA(t).map(e => '<span class="tag on" title="' + esc(e) + '">' + esc(exShortA(e)) + '</span>').join(" ")} · ${t.q_count} sawal · ${t.q_count * t.marks_per_q} marks${t.duration_min ? " · " + t.duration_min + " min" : ""}${t.neg_marking == null ? "" : (t.neg_marking > 0 ? " · neg " + t.neg_marking : " · neg nahi")}</div></div>
     <div class="row" style="flex:none;flex-wrap:nowrap">${kind === "fmk" ? `<button class="sec" onclick="testEditExams('${kind}','${esc(t.id)}')">Exams</button>` : ""}<button class="sec" onclick="testToggle('${kind}','${esc(t.id)}',${t.is_active ? "false" : "true"})">${t.is_active ? "Hide" : "Show"}</button><button class="danger" onclick="testDelete('${kind}','${esc(t.id)}')">Delete</button></div></div>`).join("");
@@ -1861,6 +1950,10 @@ function showTab(n) {
   CURTAB = n;
   document.querySelectorAll(".pane").forEach(p => p.classList.toggle("hide", p.dataset.pane !== n));
   if (n === "dash") renderDash();
+  if (n === "dash" && typeof tgBadge === "function") tgBadge();
+  if (n === "tag") mountTag();
+  if (n === "eng") mountEng();
+  if (n === "mkb") mountMk();
   if (n === "chap") render();
   if (n === "pdf" || n === "yt") mountMatForm(n);
   if (n === "fst" || n === "fmk") mountTestPane(n);
@@ -2636,6 +2729,440 @@ async function comClick(e) {
   });
   var _st=showTab;showTab=function(n){var r=_st.apply(this,arguments);if(n==="dgn")dgLoad();if(n==="dash")dgBadge();return r};
   setInterval(function(){if(!document.hidden)dgBadge()},60000);setTimeout(dgBadge,2500);
+})();
+</script>
+<script>
+/* JK-HANDOFF P9 DONE — Question tagging tools (difficulty / q_type) */
+const TG = { sel: new Set(), rows: [], imp: null };
+const tgMsg = (t, ok) => { const m = $("tgMsg"); m.style.color = ok ? "var(--ok)" : "var(--bad)"; m.textContent = t; };
+const tgNeedDiff = q => !q.difficulty, tgNeedType = q => !q.q_type;
+function tgDl(name, text, mime) {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: mime || "application/json" }));
+  a.download = name; document.body.appendChild(a); a.click(); a.remove();
+}
+function tgBadge() {
+  const b = $("cTag"); if (!b) return;
+  if (!HAS_QB) { b.textContent = "qbank_setup.sql chalao"; return; }
+  const n = ALL.filter(q => q.is_active !== false && tgNeedDiff(q)).length;
+  b.textContent = "Untagged: " + n;
+}
+function mountTag() {
+  const p = document.querySelector('[data-pane="tag"]');
+  if (!HAS_QB) { p.innerHTML = '<button class="sec bk" data-go="dash">← Dashboard</button><div class="card"><span style="color:var(--bad)">Pehle qbank_setup.sql Supabase SQL Editor me ek baar chalao (difficulty / q_type columns chahiye), phir yahan aao.</span></div>'; return; }
+  const subs = [...new Set(ALL.map(q => q.subject))].sort();
+  p.innerHTML = `<button class="sec bk" data-go="dash">← Dashboard</button>
+  <div class="card"><div class="q">🏷️ Question Tagging</div><div id="tgStats" class="meta" style="margin:6px 0"></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <select id="tgSub"><option value="">Sab subjects</option>${subs.map(s => `<option>${esc(s)}</option>`).join("")}</select>
+      <select id="tgChap"><option value="">Sab chapters</option></select>
+      <select id="tgFlt"><option value="d">Difficulty untagged</option><option value="t">Type untagged</option><option value="b">Koi bhi untagged</option><option value="a">Sab sawal</option></select>
+    </div>
+    <div class="meta" style="margin-top:6px">Dikh rahe: <b id="tgCnt">0</b> (pehle 150 list me) · Chune hue: <b id="tgSelN">0</b></div>
+  </div>
+  <div class="card"><div class="q">1️⃣ Bulk tag (chune hue / filter ke sab sawal)</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0">
+      <select id="tgD"><option value="">Difficulty: na badlo</option><option>easy</option><option>moderate</option><option>hard</option></select>
+      <select id="tgT"><option value="">Type: na badlo</option>${Q_TYPES.map(t => `<option>${t}</option>`).join("")}</select>
+    </div>
+    <button class="sec" id="tgSelAll">Filter ke sab chuno</button> <button class="sec" id="tgSelNone">Chunav hatao</button>
+    <button class="pri" id="tgApply">Chune hue par lagao</button></div>
+  <div class="card"><div class="q">2️⃣ Type auto-tag (detectType)</div>
+    <div class="meta">Jin sawalon me q_type khali hai unka type pattern se anumaan; pehle preview.</div>
+    <div id="tgAutoPrev" class="meta" style="margin:6px 0"></div>
+    <button class="sec" id="tgAutoBtn">Preview dekho</button> <button class="pri" id="tgAutoApply" disabled>Apply karo</button></div>
+  <div class="card"><div class="q">3️⃣ Difficulty — AI sahayata (CSV)</div>
+    <div class="meta">Step 1: untagged sawal CSV export → Claude chat me do. Step 2: Claude jo <code>id,difficulty</code> (optional <code>q_type</code>) CSV de, use neeche import karo.</div>
+    <button class="sec" id="tgExp">⬇️ Untagged CSV (filter ke)</button> <button class="sec" id="tgRub">📋 Rubric copy</button>
+    <div style="margin-top:8px"><input type="file" id="tgFile" accept=".csv,.txt"></div>
+    <div id="tgImpPrev" class="meta" style="margin:6px 0"></div>
+    <button class="pri" id="tgImpApply" disabled>Tags import karo</button></div>
+  <div id="tgMsg" class="meta"></div>
+  <div class="card"><div id="tgList"></div></div>`;
+  $("tgSub").onchange = () => { const s = $("tgSub").value; $("tgChap").innerHTML = '<option value="">Sab chapters</option>' + [...new Set(ALL.filter(q => !s || q.subject === s).map(q => q.chapter))].sort().map(c => `<option>${esc(c)}</option>`).join(""); TG.sel.clear(); tgRender(); };
+  $("tgChap").onchange = $("tgFlt").onchange = () => { TG.sel.clear(); tgRender(); };
+  $("tgSelAll").onclick = () => { TG.rows.forEach(q => TG.sel.add(q.id)); tgRender(); };
+  $("tgSelNone").onclick = () => { TG.sel.clear(); tgRender(); };
+  $("tgApply").onclick = tgBulk; $("tgAutoBtn").onclick = tgAutoPrev; $("tgAutoApply").onclick = tgAutoApply;
+  $("tgExp").onclick = tgExport; $("tgFile").onchange = tgImport; $("tgImpApply").onclick = tgImpApply;
+  $("tgRub").onclick = () => { navigator.clipboard && navigator.clipboard.writeText("Har sawal ko easy/moderate/hard me tag karo. Rubric: " + DIFF_RUBRIC + "\nOutput sirf CSV: id,difficulty (optional q_type: " + Q_TYPES.join("/") + ")").then(() => tgMsg("Rubric copy ho gaya — CSV ke saath Claude ko paste karo.", 1)); };
+  tgRender();
+}
+function tgRender() {
+  const s = $("tgSub").value, c = $("tgChap").value, f = $("tgFlt").value;
+  TG.rows = ALL.filter(q => (!s || q.subject === s) && (!c || q.chapter === c) && (f === "a" || (f === "d" ? tgNeedDiff(q) : f === "t" ? tgNeedType(q) : tgNeedDiff(q) || tgNeedType(q))));
+  const act = ALL.filter(q => q.is_active !== false);
+  $("tgStats").innerHTML = `Kul ${ALL.length} · Difficulty untagged <b>${ALL.filter(tgNeedDiff).length}</b> · Type untagged <b>${ALL.filter(tgNeedType).length}</b> · tagged easy/mod/hard: ${["easy", "moderate", "hard"].map(d => ALL.filter(q => q.difficulty === d).length).join("/")}`;
+  $("tgCnt").textContent = TG.rows.length; $("tgSelN").textContent = TG.sel.size;
+  $("tgList").innerHTML = TG.rows.slice(0, 150).map(q => `<label style="display:block;padding:6px 0;border-bottom:1px solid var(--line,#e5e7eb)"><input type="checkbox" data-id="${q.id}" ${TG.sel.has(q.id) ? "checked" : ""}> <span class="tag">${q.difficulty || "—"}</span> <span class="tag">${q.q_type || "—"}</span> <span class="meta">${esc(q.chapter || "")}</span><div>${esc(String(q.question || "").replace(/<[^>]*>/g, " ").slice(0, 140))}</div></label>`).join("") || '<div class="meta">Kuch nahi mila.</div>';
+  $("tgList").querySelectorAll("input[data-id]").forEach(i => i.onchange = () => { const id = isNaN(i.dataset.id) ? i.dataset.id : Number(i.dataset.id); i.checked ? TG.sel.add(id) : TG.sel.delete(id); $("tgSelN").textContent = TG.sel.size; });
+  tgBadge();
+}
+/* sab writes yahin se: pehle backup JSON auto-download, phir 50-50 ke chunk me PATCH. patches = [{ids:[..], set:{..}}] */
+async function tgWrite(patches, tag) {
+  const ids = new Set(); patches.forEach(p => p.ids.forEach(i => ids.add(i)));
+  const old = ALL.filter(q => ids.has(q.id)).map(q => ({ id: q.id, difficulty: q.difficulty ?? null, q_type: q.q_type ?? null }));
+  tgDl("jakhar_tags_backup_" + tag + "_" + new Date().toISOString().slice(0, 16).replace(/[:T]/g, "") + ".json", JSON.stringify(old));
+  let done = 0;
+  for (const p of patches) for (let i = 0; i < p.ids.length; i += 50) {
+    const ch = p.ids.slice(i, i + 50);
+    await api("/rest/v1/questions?id=in.(" + ch.join(",") + ")", { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify(p.set) });
+    ALL.forEach(q => { if (ch.includes(q.id)) Object.assign(q, p.set); });
+    done += ch.length; tgMsg("Ho raha hai… " + done + "/" + ids.size, 1);
+  }
+  return ids.size;
+}
+async function tgBulk() {
+  const set = {}, d = $("tgD").value, t = $("tgT").value; if (d) set.difficulty = d; if (t) set.q_type = t;
+  if (!Object.keys(set).length) return tgMsg("Difficulty ya Type chuno.", 0);
+  if (!TG.sel.size) return tgMsg("Pehle sawal chuno (ya 'Filter ke sab chuno').", 0);
+  if (!confirm(TG.sel.size + " sawalon me " + JSON.stringify(set) + " lagana hai? (backup JSON auto-download hoga)")) return;
+  try { const n = await tgWrite([{ ids: [...TG.sel], set }], "bulk"); TG.sel.clear(); tgRender(); tgMsg("✅ " + n + " sawal update.", 1); } catch (e) { tgMsg("Error: " + e.message, 0); }
+}
+let TG_AUTO = null;
+function tgAutoPrev() {
+  const g = {}; ALL.filter(tgNeedType).forEach(q => { const t = detectType(q.question, q.options); (g[t] = g[t] || []).push(q.id); });
+  TG_AUTO = g; const n = Object.values(g).reduce((a, b) => a + b.length, 0);
+  $("tgAutoPrev").innerHTML = n ? "Anumaan: " + Object.entries(g).map(([t, a]) => `<b>${t}</b> ${a.length}`).join(" · ") : "Koi type-khali sawal nahi.";
+  $("tgAutoApply").disabled = !n;
+}
+async function tgAutoApply() {
+  if (!TG_AUTO) return; $("tgAutoApply").disabled = true;
+  try { const n = await tgWrite(Object.entries(TG_AUTO).map(([t, ids]) => ({ ids, set: { q_type: t } })), "autotype"); TG_AUTO = null; $("tgAutoPrev").textContent = ""; tgRender(); tgMsg("✅ " + n + " sawalon ka type set hua.", 1); } catch (e) { tgMsg("Error: " + e.message, 0); }
+}
+function tgExport() {
+  const rows = TG.rows; if (!rows.length) return tgMsg("Filter me koi sawal nahi.", 0);
+  const L = [["id", "subject", "chapter", "question", "option1", "option2", "option3", "option4"].join(",")].concat(rows.map(q => [q.id, q.subject, q.chapter, q.question, ...(q.options || []).slice(0, 4)].map(csvCell).join(",")));
+  tgDl("jakhar_untagged_" + new Date().toISOString().slice(0, 10) + ".csv", "\uFEFF" + L.join("\r\n"), "text/csv;charset=utf-8");
+  tgMsg(rows.length + " sawal export (bade ho to 300-300 ke hisse karke Claude ko do).", 1);
+}
+async function tgImport(e) {
+  const f = e.target.files[0]; if (!f) return; TG.imp = null; $("tgImpApply").disabled = true;
+  const rows = parseCSV(await f.text()); if (rows.length < 2) return tgMsg("CSV khali hai.", 0);
+  const h = rows[0].map(x => x.trim().toLowerCase()), ci = h.indexOf("id"), di = h.indexOf("difficulty"), ti = h.indexOf("q_type") >= 0 ? h.indexOf("q_type") : h.indexOf("type");
+  if (ci < 0 || (di < 0 && ti < 0)) return tgMsg("Header me 'id' aur 'difficulty' (ya q_type) chahiye.", 0);
+  const byId = new Map(ALL.map(q => [String(q.id), q])), ok = [], bad = []; let same = 0;
+  rows.slice(1).forEach((r, n) => {
+    const q = byId.get((r[ci] || "").trim()); if (!q) return bad.push("line " + (n + 2) + ": id nahi mili");
+    const set = {};
+    if (di >= 0 && r[di] && r[di].trim()) { const d = normDiff(r[di]); if (d === "?") return bad.push("line " + (n + 2) + ": difficulty galat"); if (d !== q.difficulty) set.difficulty = d; }
+    if (ti >= 0 && r[ti] && r[ti].trim()) { const t = normType(r[ti]); if (t === "?") return bad.push("line " + (n + 2) + ": type galat"); if (t !== q.q_type) set.q_type = t; }
+    Object.keys(set).length ? ok.push({ q, set }) : same++;
+  });
+  const conf = ok.filter(x => (x.set.difficulty && x.q.difficulty) || (x.set.q_type && x.q.q_type)).length;
+  TG.imp = ok;
+  $("tgImpPrev").innerHTML = `Update hone wale: <b>${ok.length}</b> (inme ${conf} me purana tag badlega) · pehle se same: ${same} · galat: ${bad.length}${bad.length ? "<br>" + esc(bad.slice(0, 5).join(" | ")) : ""}`;
+  $("tgImpApply").disabled = !ok.length;
+}
+async function tgImpApply() {
+  if (!TG.imp || !TG.imp.length) return; $("tgImpApply").disabled = true;
+  const g = {}; TG.imp.forEach(({ q, set }) => { const k = JSON.stringify(set); (g[k] = g[k] || []).push(q.id); });
+  try { const n = await tgWrite(Object.entries(g).map(([k, ids]) => ({ ids, set: JSON.parse(k) })), "import"); TG.imp = null; $("tgImpPrev").textContent = ""; $("tgFile").value = ""; tgRender(); tgMsg("✅ " + n + " sawalon ke tags import hue (sirf tag columns badle).", 1); } catch (e) { tgMsg("Error: " + e.message, 0); }
+}
+</script>
+<script>
+/* JK-HANDOFF P7 DONE — Test Builder (Question Bank se Full Subject Test) */
+const EG = { pick: [], short: [], pool: [], seed: 0, used: null, bp: null };
+const egMsg = (t, ok) => { const m = $("egMsg"); if (m) { m.style.color = ok ? "var(--ok)" : "var(--bad)"; m.textContent = t; } };
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const EG_LV = { easy: [60, 30, 10], moderate: [25, 50, 25], hard: [10, 40, 50] };
+function lrm(total, pcts) {   /* largest-remainder: yog ThiK total */
+  const s = pcts.reduce((a, b) => a + b, 0) || 1, raw = pcts.map(p => p * total / s), fl = raw.map(Math.floor);
+  let left = total - fl.reduce((a, b) => a + b, 0);
+  raw.map((r, i) => [r - fl[i], i]).sort((a, b) => b[0] - a[0]).slice(0, left).forEach(x => fl[x[1]]++);
+  return fl;
+}
+async function egUsed() {
+  try {
+    const t = await api("/rest/v1/tests?select=id,created_at,questions&order=created_at.desc&limit=200") || [];
+    EG.used = t.map(x => new Set((x.questions || []).map(q => q.qid).filter(Boolean)));
+  } catch (e) { EG.used = []; }
+  egBank();
+}
+function egBank() {
+  const subs = [...new Set(ALL.filter(q => q.is_active !== false).map(q => q.subject))].sort(), u = new Set(); (EG.used || []).forEach(s => s.forEach(i => u.add(i)));
+  $("egBank").innerHTML = '<div style="overflow-x:auto"><table style="width:100%;font-size:12px;border-collapse:collapse"><tr><th align=left>Subject</th><th>Kul</th><th>E</th><th>M</th><th>H</th><th>?</th><th>Unused</th></tr>' + subs.map(s => {
+    const a = ALL.filter(q => q.subject === s && q.is_active !== false), c = d => a.filter(q => q.difficulty === d).length;
+    return `<tr><td>${esc(s)}</td><td align=center>${a.length}</td><td align=center>${c("easy")}</td><td align=center>${c("moderate")}</td><td align=center>${c("hard")}</td><td align=center>${a.filter(q => !q.difficulty).length}</td><td align=center>${a.filter(q => !u.has(q.id)).length}</td></tr>`;
+  }).join("") + "</table></div>";
+}
+function mountEng() {
+  const p = document.querySelector('[data-pane="eng"]'), subs = [...new Set(ALL.filter(q => q.is_active !== false).map(q => q.subject))].sort();
+  p.innerHTML = `<button class="sec bk" data-go="dash">← Dashboard</button>
+  <div class="pghead c-teal"><b>🧪 Test Builder</b><span>Question Bank se Full Subject Test banao: blueprint chuno → Generate → preview dekho → Save.</span></div>
+  <div class="sc2 c-blue"><div class="sch">🗃️ Question Bank <small>E = easy · M = moderate · H = hard · ? = untagged</small></div>${HAS_QB ? "" : '<div style="color:var(--bad)">qbank_setup.sql nahi chali — difficulty/type nahi hain; sab "untagged" maane jayenge.</div>'}<div id="egBank" class="meta">…</div></div>
+  <div class="sc2 c-teal"><div class="sch"><span class="scn">1</span>Subject aur chapters</div>
+   <select id="egSub">${subs.map(s => `<option>${esc(s)}</option>`).join("")}</select>
+   <div class="lbl">Chapters (khali = sab)</div><div id="egChap" class="exbox" style="--c:#0d9488"></div></div>
+  <div class="sc2 c-amber"><div class="sch"><span class="scn">2</span>Kitne sawal aur kaunsa level</div>
+   <div class="lbl" style="margin-top:0">Kul sawal</div><div class="chips">${[25, 50, 75, 100, 150].map(n => `<button class="sec chip" data-n="${n}">${n}</button>`).join(" ")} <input id="egN" type="number" value="50" class="num"></div>
+   <div class="lbl">Level (Easy / Moderate / Hard %)</div><div class="chips">${Object.keys(EG_LV).map(k => `<button class="sec chip" data-lv="${k}">${k}</button>`).join(" ")}</div>
+   <div class="chips" style="margin-top:8px"><input id="egE" type="number" value="25" class="num-s"><input id="egM" type="number" value="50" class="num-s"><input id="egH" type="number" value="25" class="num-s"> <span id="egLvS" class="meta"></span></div></div>
+  <div class="sc2 c-violet"><div class="sch"><span class="scn">3</span>Sawal ke prakar (type)</div>
+   <div class="meta" style="margin-bottom:8px">Type ke minimum sawal (0 = natural)</div>
+   <div class="tboxes">${["statement", "match", "assertion_reason", "table"].map(t => `<label class="tbox t-${t}"><span>${t.replace("_", " ")}</span><input id="egT_${t}" type="number" value="0" min="0"></label>`).join("")}</div></div>
+  <div class="sc2 c-green"><div class="sch"><span class="scn">4</span>Filter aur niyam</div>
+   <div class="lbl" style="margin-top:0">Chapter weighting · ek chapter ka max %</div>
+   <div class="fr"><select id="egW" style="flex:1"><option value="p">Bank ke anupat me</option><option value="e">Barabar</option></select><input id="egCap" type="number" value="30" class="num-s"><b>%</b></div>
+   <div class="lbl">Untagged (difficulty khali) sawal</div>
+   <select id="egU"><option value="m">Moderate maano</option><option value="s">Chhod do</option><option value="f">Sirf kami bharne me</option></select>
+   <div class="lbl">Exam filter</div><select id="egEx"><option value="">Sab</option>${T_EXAMS.flatMap(g => g.list).map(e => `<option>${esc(e)}</option>`).join("")}</select>
+   <div class="lbl">Purane tests ke sawal</div>
+   <select id="egAv" style="margin-bottom:0"><option value="0">Purane tests ke sawal dohrao ok</option><option value="3">Pichhle 3 tests ke na lo</option><option value="10">Pichhle 10 tests ke na lo</option><option value="999">Kisi test ke na lo (unused)</option></select></div>
+  <div class="sc2 c-pink"><div class="sch"><span class="scn">5</span>Generate</div>
+   <div class="fr"><b class="lbl" style="margin:0">Seed</b><input id="egSeed" type="number" class="num-w"><button class="sec" id="egRnd">🎲 naya</button><button class="pri" id="egGen" style="margin-left:auto">⚡ Generate</button></div></div>
+  <div id="egMsg" class="meta"></div><div id="egRes"></div>`;
+  $("egSeed").value = Math.floor(Math.random() * 1e9);
+  const chs = () => { const s = $("egSub").value; $("egChap").innerHTML = [...new Set(ALL.filter(q => q.subject === s).map(q => q.chapter))].sort().map(c => `<label class="exopt"><input type="checkbox" value="${esc(c)}"> ${esc(c)}</label>`).join(""); };
+  $("egSub").onchange = chs; chs();
+  p.querySelectorAll("[data-n]").forEach(b => b.onclick = () => $("egN").value = b.dataset.n);
+  p.querySelectorAll("[data-lv]").forEach(b => b.onclick = () => { const v = EG_LV[b.dataset.lv]; $("egE").value = v[0]; $("egM").value = v[1]; $("egH").value = v[2]; lvS(); });
+  const lvS = () => { const s = +$("egE").value + +$("egM").value + +$("egH").value; $("egLvS").textContent = "योग " + s + "%"; $("egLvS").style.color = s === 100 ? "var(--ok)" : "var(--bad)"; };
+  ["egE", "egM", "egH"].forEach(i => $(i).oninput = lvS); lvS();
+  $("egRnd").onclick = () => $("egSeed").value = Math.floor(Math.random() * 1e9);
+  $("egGen").onclick = egGen; egBank(); if (!EG.used) egUsed();
+}
+function egGen() {
+  const N = +$("egN").value | 0, lv = [+$("egE").value, +$("egM").value, +$("egH").value], sub = $("egSub").value, seed = +$("egSeed").value | 0;
+  if (N < 1) return egMsg("Sawalon ki sankhya daalo.", 0);
+  if (lv.reduce((a, b) => a + b, 0) !== 100) return egMsg("Level % ka yog 100 hona chahiye.", 0);
+  const chaps = [...document.querySelectorAll("#egChap input:checked")].map(i => i.value), ex = $("egEx").value, av = +$("egAv").value, pol = $("egU").value;
+  const avoid = new Set(); (EG.used || []).slice(0, av).forEach(s => s.forEach(i => avoid.add(i)));
+  const rnd = mulberry(seed), seen = new Set(), dn = d => d || (pol === "m" ? "moderate" : "");
+  let pool = ALL.filter(q => q.is_active !== false && q.subject === sub && (!chaps.length || chaps.includes(q.chapter)) && (!ex || (q.exams || []).includes(ex)) && !avoid.has(q.id))
+    .sort((a, b) => String(a.id) < String(b.id) ? -1 : 1).filter(q => { const k = qFingerprint(q.question, q.options, q.q_type); if (seen.has(k)) return false; seen.add(k); return true; });
+  pool = pool.map(q => ({ q, d: dn(q.difficulty), t: q.q_type || detectType(q.question, q.options) }));
+  const take = new Set(), pick = [], D = ["easy", "moderate", "hard"], quota = {}; lrm(N, lv).forEach((n, i) => quota[D[i]] = n);
+  const cap = Math.max(1, Math.ceil(+$("egCap").value / 100 * N)), cc = {}, wmode = $("egW").value;
+  const pull = (cand, d) => {   /* chapter-weighted seeded pick */
+    cand = cand.filter(x => !take.has(x.q.id) && (cc[x.q.chapter] || 0) < cap); if (!cand.length) return null;
+    const bych = {}; cand.forEach(x => (bych[x.q.chapter] = bych[x.q.chapter] || []).push(x));
+    const ks = Object.keys(bych).sort(), w = ks.map(k => wmode === "e" ? 1 : bych[k].length), tot = w.reduce((a, b) => a + b, 0); let r = rnd() * tot, ci = 0;
+    while (ci < ks.length - 1 && r >= w[ci]) { r -= w[ci]; ci++; }
+    const arr = bych[ks[ci]], x = arr[Math.floor(rnd() * arr.length)];
+    take.add(x.q.id); cc[x.q.chapter] = (cc[x.q.chapter] || 0) + 1; x.dd = d; pick.push(x); return x;
+  };
+  ["statement", "match", "assertion_reason", "table"].forEach(t => {   /* minimum type quotas pehle */
+    let m = +$("egT_" + t).value | 0;
+    while (m-- > 0) { const d = D.find(k => quota[k] > 0 && pool.some(x => x.d === k && x.t === t && !take.has(x.q.id))) || D.find(k => quota[k] > 0); if (!d) break;
+      const x = pull(pool.filter(x => x.t === t && (x.d === d || (!x.d && pol === "f" && false))), d) || pull(pool.filter(x => x.t === t && x.d), D.find(k => quota[k] > 0)); if (!x) break; quota[x.dd]--; }
+  });
+  const short = [], near = { easy: ["moderate", "hard"], moderate: ["easy", "hard"], hard: ["moderate", "easy"] };
+  D.forEach(d => { let n = quota[d]; while (n > 0 && pull(pool.filter(x => x.d === d), d)) n--;
+    for (const o of near[d]) while (n > 0 && pull(pool.filter(x => x.d === o), d)) n--;
+    while (n > 0 && pol !== "s" && pull(pool.filter(x => !x.d), d)) n--;
+    if (n > 0) short.push({ subject: sub, difficulty: d, q_type: "any", needed: n }); });
+  for (let i = pick.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pick[i], pick[j]] = [pick[j], pick[i]]; }
+  EG.pick = pick; EG.short = short; EG.pool = pool; EG.seed = seed; EG.bp = { subject: sub, n: N, level: lv, chapters: chaps, exam: ex, seed };
+  egRes();
+}
+function egRes() {
+  const P = EG.pick, c = f => { const m = {}; P.forEach(x => { const k = f(x); m[k] = (m[k] || 0) + 1; }); return Object.entries(m).map(([k, v]) => k + " " + v).join(" · "); };
+  const pc = d => P.length ? Math.round(100 * P.filter(x => (x.q.difficulty || x.d) === d).length / P.length) : 0;
+  $("egRes").innerHTML = `<div class="sc2 c-violet"><div class="sch">👀 Preview: ${P.length} sawal · seed ${EG.seed}</div>
+   <div class="meta">Easy/Mod/Hard ≈ ${pc("easy")}/${pc("moderate")}/${pc("hard")}% · ${esc(c(x => x.t))}<br>Chapters: ${esc(c(x => x.q.chapter))}</div>
+   ${EG.short.length ? `<div style="color:var(--bad);margin:6px 0">⚠ Kami: ${EG.short.map(s => s.difficulty + " −" + s.needed).join(", ")} <button class="sec" id="egGap">⬇️ Gap CSV</button></div>` : ""}
+   <div class="savebox"><input id="egTitle" placeholder="Test ka title" style="width:100%;margin-bottom:6px">
+    Time (min): <input id="egDur" type="number" value="${P.length}" style="width:70px"> Marks/Q: <input id="egMk" type="number" step="0.5" value="1" style="width:60px">
+    <select id="egNeg">${T_NEG.map(o => `<option value="${o[0]}">${esc(o[1])}</option>`).join("")}</select> <label><input type="checkbox" id="egAct" checked> Active</label>
+    <button class="pri" id="egSave" style="--c:#16a34a">💾 Save Test</button></div>
+   <div id="egList">${P.map((x, i) => `<div class="egi"><span class="tag d-${x.q.difficulty || x.dd}">${x.q.difficulty || x.dd + "*"}</span> <span class="tag tg-type">${x.t}</span> <span class="meta">${esc(x.q.chapter || "")}</span>
+    <button class="sec" data-rp="${i}">🔄</button> <button class="sec" data-rm="${i}">❌</button><div>${i + 1}. ${esc(String(x.q.question).replace(/<[^>]*>/g, " ").slice(0, 130))}</div></div>`).join("")}</div></div>`;
+  $("egRes").querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { EG.pick.splice(+b.dataset.rm, 1); egRes(); });
+  $("egRes").querySelectorAll("[data-rp]").forEach(b => b.onclick = () => {
+    const i = +b.dataset.rp, x = EG.pick[i], have = new Set(EG.pick.map(y => y.q.id)), c = EG.pool.filter(y => !have.has(y.q.id) && y.d === x.d);
+    if (!c.length) return egMsg("Is cell me aur sawal nahi.", 0); EG.pick[i] = Object.assign({}, c[Math.floor(Math.random() * c.length)], { dd: x.dd }); egRes();
+  });
+  $("egSave").onclick = egSave; if ($("egGap")) $("egGap").onclick = () => tgDl("jakhar_gap_" + EG.bp.subject + ".csv", "\uFEFF" + ["subject,difficulty,q_type,needed"].concat(EG.short.map(s => [s.subject, s.difficulty, s.q_type, s.needed].map(csvCell).join(","))).join("\r\n"), "text/csv;charset=utf-8");
+}
+async function egSave() {
+  const title = $("egTitle").value.trim(); if (!title) return egMsg("Title daalo.", 0); if (!EG.pick.length) return egMsg("Koi sawal nahi.", 0);
+  const qs = EG.pick.map(x => ({ qid: x.q.id, subject: x.q.subject, chapter: x.q.chapter, question: x.q.question, options: x.q.options, answer: x.q.answer, explanation: x.q.explanation || "", exams: x.q.exams || [], difficulty: x.q.difficulty || null, q_type: x.t }));
+  const neg = $("egNeg").value, body = { kind: "subject", title, subject: EG.bp.subject, exam: null, duration_min: parseInt($("egDur").value, 10) || null, marks_per_q: parseFloat($("egMk").value) || 1, neg_marking: neg === "" ? 0 : parseFloat(neg), questions: qs, q_count: qs.length, is_active: $("egAct").checked };
+  if (!confirm('"' + title + '" — ' + qs.length + " sawal save karein?")) return;
+  const post = b => api("/rest/v1/tests", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(b) });
+  try {
+    let r, note = "";
+    try { r = await post({ ...body, blueprint: EG.bp, seed: EG.seed }); } catch (e1) { if (/blueprint|seed/i.test(e1.message)) { r = await post(body); note = " (blueprint/seed column nahi — baad me SQL chalao; test save ho gaya)"; } else throw e1; }
+    if (!r || !r.length) throw new Error("Save nahi hua (admin permission check karo).");
+    const s = new Set(qs.map(q => q.qid)); (EG.used = EG.used || []).unshift(s); egBank();
+    egMsg("✅ Save ho gaya: " + title + " (" + qs.length + " sawal)." + note, 1);
+  } catch (e) { egMsg("Save fail: " + e.message, 0); }
+}
+</script>
+<script>
+/* JK-HANDOFF P8 DONE — Full Mock Test builder (sections × subjects, multi-exam, draft + gap + refill) */
+const MK = { sec: [{ s: "", n: 25 }], res: null, drafts: [] };
+const mkMsg = (t, ok) => { const m = $("mkMsg"); if (m) { m.style.color = ok ? "var(--ok)" : "var(--bad)"; m.textContent = t; } };
+function mkPool(sub, taken, pol) {
+  const seen = new Set();
+  return ALL.filter(q => q.is_active !== false && q.subject === sub && !taken.has(q.id)).sort((a, b) => String(a.id) < String(b.id) ? -1 : 1)
+    .filter(q => { const k = qFingerprint(q.question, q.options, q.q_type); if (seen.has(k)) return false; seen.add(k); return true; })
+    .map(q => ({ q, d: q.difficulty || (pol === "m" ? "moderate" : ""), t: q.q_type || detectType(q.question, q.options) }));
+}
+/* ek section bharo: level quota -> chapter-anupat random -> paas ki difficulty -> untagged. return {got:[x], need:kami} */
+function mkFill(sub, n, lv, taken, rnd, pol) {
+  const pool = mkPool(sub, taken, pol), D = ["easy", "moderate", "hard"], near = { easy: ["moderate", "hard"], moderate: ["easy", "hard"], hard: ["moderate", "easy"] }, got = [];
+  const pull = f => { const c = pool.filter(x => !taken.has(x.q.id) && f(x)); if (!c.length) return false;
+    const by = {}; c.forEach(x => (by[x.q.chapter] = by[x.q.chapter] || []).push(x)); const ks = Object.keys(by).sort(), w = ks.map(k => by[k].length); let r = rnd() * w.reduce((a, b) => a + b, 0), i = 0;
+    while (i < ks.length - 1 && r >= w[i]) { r -= w[i]; i++; } const a = by[ks[i]], x = a[Math.floor(rnd() * a.length)]; taken.add(x.q.id); got.push(x); return true; };
+  let short = 0; lrm(n, lv).forEach((k, i) => { const d = D[i]; while (k > 0 && pull(x => x.d === d)) k--;
+    for (const o of near[d]) while (k > 0 && pull(x => x.d === o)) k--; while (k > 0 && pol !== "s" && pull(x => !x.d)) k--; short += k; });
+  return { got, need: short };
+}
+function mkSnap(x, i) { const q = x.q; return { qid: q.id, sec: i, subject: q.subject, chapter: q.chapter, question: q.question, options: q.options, answer: q.answer, explanation: q.explanation || "", exams: q.exams || [], difficulty: q.difficulty || null, q_type: x.t }; }
+function mountMk() {
+  const p = document.querySelector('[data-pane="mkb"]'), subs = [...new Set([...T_SUBJECTS, ...ALL.map(q => q.subject)])];
+  MK.subs = subs;
+  p.innerHTML = `<button class="sec bk" data-go="dash">← Dashboard</button>
+  <div class="pghead c-pink"><b>🎯 Mock Test Builder</b><span>Exam ka asli pattern (sawal / time / subject-wise) official notification se dekhkar sections bharo.</span></div>
+  <div class="sc2 c-blue"><div class="sch"><span class="scn">1</span>Exam aur test ka naam</div>
+   <div class="lbl" style="margin-top:0">Exams (ek ya zyada)</div><div id="mkEx" class="exbox" style="--c:#7c3aed">${T_EXAMS.flatMap(g => g.list).map(e => `<label class="exopt"><input type="checkbox" value="${esc(e)}"> ${esc(e)}</label>`).join("")}</div>
+   <input id="mkTitle" placeholder="Test ka title" style="width:100%;margin:10px 0 0"></div>
+  <div class="sc2 c-green"><div class="sch"><span class="scn">2</span>Sections (subject × sawal) <small id="mkTot"></small></div>
+   <div id="mkSec"></div><button class="sec" id="mkAdd" style="margin-top:6px">+ Section jodo</button></div>
+  <div class="sc2 c-amber"><div class="sch"><span class="scn">3</span>Level (E / M / H %) — sab sections par</div>
+   <div class="chips">${Object.keys(EG_LV).map(k => `<button class="sec chip" data-lv="${k}">${k}</button>`).join(" ")}</div>
+   <div class="chips" style="margin-top:8px"><input id="mkE" type="number" value="25" class="num-s"><input id="mkM" type="number" value="50" class="num-s"><input id="mkH" type="number" value="25" class="num-s"></div></div>
+  <div class="sc2 c-teal"><div class="sch"><span class="scn">4</span>Time, marks aur niyam</div>
+   <div class="lbl" style="margin-top:0">Untagged sawal</div>
+   <select id="mkU"><option value="m">Moderate maano</option><option value="s">Chhod do</option><option value="f">Kami bharne me</option></select>
+   <div class="fr"><span class="lbl" style="margin:0">⏱️ Time</span><input id="mkDur" type="number" class="num-s"><span class="lbl" style="margin:0">🎯 Marks/Q</span><input id="mkMk" type="number" step="0.5" value="1" class="num-s"></div>
+   <div class="lbl">Negative marking</div><select id="mkNeg" style="margin-bottom:0">${T_NEG.map(o => `<option value="${o[0]}">${esc(o[1])}</option>`).join("")}</select></div>
+  <div class="sc2 c-pink"><div class="sch"><span class="scn">5</span>Generate</div>
+   <div class="fr"><b class="lbl" style="margin:0">Seed</b><input id="mkSeed" type="number" value="${Math.floor(Math.random() * 1e9)}" class="num-w"><button class="pri" id="mkGen" style="margin-left:auto">⚡ Generate</button></div></div>
+  <div id="mkMsg" class="meta"></div><div id="mkRes"></div>
+  <div class="sc2 c-violet"><div class="sch">📝 Drafts / Mock tests</div><div id="mkDr" class="meta">…</div></div>`;
+  p.querySelectorAll("[data-lv]").forEach(b => b.onclick = () => { const v = EG_LV[b.dataset.lv]; $("mkE").value = v[0]; $("mkM").value = v[1]; $("mkH").value = v[2]; });
+  $("mkAdd").onclick = () => { MK.sec.push({ s: "", n: 10 }); mkSecR(); }; $("mkGen").onclick = mkGen; mkSecR(); mkDrafts();
+}
+function mkSecR() {
+  $("mkSec").innerHTML = MK.sec.map((r, i) => `<div class="mkrow" style="--c:${["#1457d9", "#16a34a", "#d97706", "#7c3aed", "#db2777", "#0d9488"][i % 6]}"><span class="scn">${i + 1}</span><select data-s="${i}" style="flex:1"><option value="">Subject chuno</option>${MK.subs.map(s => `<option ${s === r.s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select><input data-n="${i}" type="number" value="${r.n}" style="width:65px"><button class="danger" data-x="${i}">✕</button></div>`).join("");
+  const tot = () => $("mkTot").textContent = "Kul: " + MK.sec.reduce((a, r) => a + (+r.n || 0), 0) + " sawal"; tot();
+  $("mkSec").querySelectorAll("[data-s]").forEach(e => e.onchange = () => MK.sec[+e.dataset.s].s = e.value);
+  $("mkSec").querySelectorAll("[data-n]").forEach(e => e.oninput = () => { MK.sec[+e.dataset.n].n = +e.value | 0; tot(); if (!$("mkDur").value) $("mkDur").placeholder = MK.sec.reduce((a, r) => a + r.n, 0); });
+  $("mkSec").querySelectorAll("[data-x]").forEach(e => e.onclick = () => { MK.sec.splice(+e.dataset.x, 1); mkSecR(); });
+}
+function mkGen() {
+  const lv = [+$("mkE").value, +$("mkM").value, +$("mkH").value], secs = MK.sec.filter(r => r.s && r.n > 0);
+  if (lv.reduce((a, b) => a + b, 0) !== 100) return mkMsg("Level % ka yog 100 hona chahiye.", 0);
+  if (!secs.length) return mkMsg("Kam se kam ek section (subject + sawal) bharo.", 0);
+  const seed = +$("mkSeed").value | 0, rnd = mulberry(seed), taken = new Set(), pol = $("mkU").value, qs = [], gaps = [];
+  secs.forEach((r, i) => { const f = mkFill(r.s, r.n, lv, taken, rnd, pol); f.got.forEach(x => qs.push(mkSnap(x, i))); if (f.need) gaps.push({ sec: i, subject: r.s, needed: f.need }); });
+  MK.res = { qs, gaps, bp: { sections: secs, level: lv, seed, pol, gaps } }; mkRes();
+}
+function mkRes() {
+  const R = MK.res, bp = R.bp, tot = bp.sections.reduce((a, r) => a + r.n, 0);
+  $("mkRes").innerHTML = `<div class="sc2 c-violet"><div class="sch">📋 Result: ${R.qs.length}/${tot} sawal bhare</div>
+   ${bp.sections.map((r, i) => { const g = R.gaps.find(x => x.sec === i); return `<div class="meta mkres ${g ? "bad" : ""}">${esc(r.s)}: ${r.n - (g ? g.needed : 0)}/${r.n}${g ? ' <b style="color:var(--bad)">· ' + g.needed + " khaali</b>" : " ✓"}</div>`; }).join("")}
+   <div style="margin-top:8px">${R.gaps.length ? '<button class="sec" id="mkGap">⬇️ Gap CSV</button> ' : ""}<button class="pri" id="mkSave" style="--c:#16a34a">💾 ${R.gaps.length ? "Draft save (inactive)" : "Save test"}</button></div></div>`;
+  if ($("mkGap")) $("mkGap").onclick = () => mkGapCsv(R.gaps, bp);
+  $("mkSave").onclick = () => mkSave(R);
+}
+function mkGapCsv(gaps, bp) { tgDl("jakhar_mock_gap.csv", "\uFEFF" + ["subject,difficulty_mix,needed"].concat(gaps.map(g => [g.subject, bp.level.join("/"), g.needed].map(csvCell).join(","))).join("\r\n"), "text/csv;charset=utf-8"); }
+async function mkSave(R) {
+  const title = $("mkTitle").value.trim(), exams = [...document.querySelectorAll("#mkEx input:checked")].map(i => i.value);
+  if (!title) return mkMsg("Title daalo.", 0); if (!exams.length) return mkMsg("Kam se kam ek exam chuno.", 0);
+  const neg = $("mkNeg").value, draft = R.gaps.length > 0;
+  const body = { kind: "mock", title, subject: null, exam: exams[0], exams, duration_min: parseInt($("mkDur").value, 10) || null, marks_per_q: parseFloat($("mkMk").value) || 1, neg_marking: neg === "" ? 0 : parseFloat(neg), questions: R.qs, q_count: R.qs.length, is_active: !draft, blueprint: R.bp, seed: R.bp.seed };
+  const post = b => api("/rest/v1/tests", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(b) });
+  if (!confirm('"' + title + '" — ' + R.qs.length + " sawal, " + (draft ? "DRAFT (app me nahi dikhega)" : "active") + ". Save?")) return;
+  try {
+    let r, note = "", b = { ...body };
+    for (let k = 0; k < 3; k++) { try { r = await post(b); break; } catch (e) { const m = e.message;
+      if (/blueprint|seed/i.test(m) && "blueprint" in b) { delete b.blueprint; delete b.seed; note += " ⚠ blueprint/seed column nahi — Refill kaam nahi karega, SQL chalao."; if (draft) b.is_active = false; }
+      else if (/exams/i.test(m) && "exams" in b) { delete b.exams; note += " ⚠ 'exams' column nahi — sirf pehla exam save hua."; } else throw e; } }
+    if (!r || !r.length) throw new Error("Save nahi hua (admin permission check karo).");
+    mkMsg("✅ " + (draft ? "Draft" : "Test") + " save: " + title + "." + note, 1); mkDrafts();
+  } catch (e) { mkMsg("Save fail: " + e.message, 0); }
+}
+async function mkDrafts() {
+  const box = $("mkDr"); if (!box) return;
+  try { MK.drafts = await api("/rest/v1/tests?select=id,title,is_active,q_count,exams,blueprint,questions&kind=eq.mock&order=created_at.desc&limit=30") || []; }
+  catch (e) { box.textContent = "Drafts list nahi mili (" + e.message + ") — blueprint column chahiye."; return; }
+  box.innerHTML = MK.drafts.filter(t => t.blueprint && t.blueprint.sections).map(t => { const tot = t.blueprint.sections.reduce((a, r) => a + r.n, 0);
+    return `<div class="trow ${t.is_active ? "live" : "off"}"><b>${esc(t.title)}</b> <span class="tag ${t.is_active ? "on" : "hid"}">${t.is_active ? "LIVE" : "DRAFT"}</span><div class="meta">${t.q_count}/${tot} sawal</div>
+     ${t.q_count < tot ? `<button class="sec" data-rf="${t.id}">🔁 Refill</button> ` : ""}${t.is_active ? "" : `<button class="pri bpub" data-pb="${t.id}">🚀 Publish</button>`}</div>`; }).join("") || "Koi mock builder-draft nahi.";
+  box.querySelectorAll("[data-rf]").forEach(b => b.onclick = () => mkRefill(b.dataset.rf));
+  box.querySelectorAll("[data-pb]").forEach(b => b.onclick = () => mkPublish(b.dataset.pb));
+}
+async function mkRefill(id) {   /* sirf khaali slots bharo; pehle chune sawal nahi badalte */
+  const t = MK.drafts.find(x => String(x.id) === String(id)), bp = t.blueprint, qs = t.questions || [], taken = new Set(qs.map(q => q.qid)), rnd = mulberry((bp.seed | 0) + qs.length + 7), add = [];
+  bp.sections.forEach((r, i) => { const have = qs.filter(q => q.sec === i).length; if (have >= r.n) return; const f = mkFill(r.s, r.n - have, bp.level, taken, rnd, bp.pol || "m"); f.got.forEach(x => add.push(mkSnap(x, i))); });
+  if (!add.length) return mkMsg("Bank me abhi naye sawal nahi mile — pehle sawal jodo.", 0);
+  const all = qs.concat(add).sort((a, b) => a.sec - b.sec), tot = bp.sections.reduce((a, r) => a + r.n, 0);
+  const gaps = bp.sections.map((r, i) => ({ sec: i, subject: r.s, needed: r.n - all.filter(q => q.sec === i).length })).filter(g => g.needed > 0);
+  try { await api("/rest/v1/tests?id=eq." + encodeURIComponent(id), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ questions: all, q_count: all.length, blueprint: { ...bp, gaps } }) });
+    mkMsg("✅ " + add.length + " sawal bhare — " + all.length + "/" + tot + (gaps.length ? " (abhi bhi kami)" : " · pura! ab Publish karo"), 1); mkDrafts(); } catch (e) { mkMsg("Refill fail: " + e.message, 0); }
+}
+async function mkPublish(id) {
+  const t = MK.drafts.find(x => String(x.id) === String(id)), tot = t.blueprint.sections.reduce((a, r) => a + r.n, 0);
+  if (t.q_count < tot && !confirm("⚠ Test adhoora hai (" + t.q_count + "/" + tot + "). Phir bhi publish karein?")) return;
+  try { await api("/rest/v1/tests?id=eq." + encodeURIComponent(id), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ is_active: true }) }); mkMsg("✅ Publish ho gaya — app me exam-wise dikhega.", 1); mkDrafts(); } catch (e) { mkMsg("Publish fail: " + e.message, 0); }
+}
+</script>
+<script>
+/* ===== Login yaad rakho (refresh ke baad dobara login nahi) ===== */
+(function () {
+  const KEY = "jk_admin_session_v1";
+  const save = j => { try { localStorage.setItem(KEY, JSON.stringify({ at: j.access_token, rt: j.refresh_token, exp: j.expires_at || (Math.floor(Date.now() / 1000) + (j.expires_in || 3600)), user: j.user })); } catch (e) {} };
+  const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { return null; } };
+  const clear = () => { try { localStorage.removeItem(KEY); } catch (e) {} };
+
+  /* naya login / token refresh jab bhi ho, session save karo */
+  const _api = window.api;
+  window.api = async function (path, opts) {
+    const r = await _api.apply(this, arguments);
+    if (r && r.refresh_token && r.access_token && String(path).indexOf("/auth/v1/token") >= 0) save(r);
+    return r;
+  };
+  /* logout par session hatao */
+  const _lo = window.logout;
+  window.logout = function () { clear(); return _lo.apply(this, arguments); };
+  $("logoutBtn").onclick = window.logout;
+
+  let busy = null;
+  async function refresh(rt) {   /* "ok" | "bad" (refresh token reject) | "net" (network dikkat) */
+    if (busy) return busy;
+    busy = (async () => {
+      try {
+        const r = await fetch(SB_URL + "/auth/v1/token?grant_type=refresh_token", { method: "POST", headers: { apikey: SB_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ refresh_token: rt }) });
+        if (r.status === 400 || r.status === 401 || r.status === 403) return "bad";
+        if (!r.ok) return "net";
+        const j = await r.json(); if (!j.access_token) return "bad";
+        save(j); TOKEN = j.access_token; USER = j.user || USER; return "ok";
+      } catch (e) { return "net"; }
+      finally { busy = null; }
+    })();
+    return busy;
+  }
+  /* token expire hone se pehle chup-chaap naya le lo */
+  async function keepFresh() {
+    const s = load(); if (!s || !TOKEN) return;
+    if (s.exp - Math.floor(Date.now() / 1000) < 300) {
+      const st = await refresh(s.rt);
+      if (st === "bad") clear();
+    }
+  }
+  setInterval(keepFresh, 60000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) keepFresh(); });
+
+  /* page khulte hi purana session wapas lao */
+  (async function restore() {
+    const s = load(); if (!s || !s.rt) return;
+    const m = $("loginMsg"); m.style.color = "var(--mut)"; m.textContent = "Purana login dhoondh raha hoon…";
+    TOKEN = s.at; USER = s.user;
+    if (s.exp - Math.floor(Date.now() / 1000) < 120) {
+      const st = await refresh(s.rt);
+      if (st !== "ok") {
+        TOKEN = null; USER = null;
+        if (st === "bad") { clear(); m.textContent = ""; }
+        else { m.style.color = "var(--bad)"; m.textContent = "Internet / server dikkat — dobara try karo ya login karo."; }
+        return;
+      }
+    }
+    try { m.textContent = ""; await openPanel(); }
+    catch (e) { m.style.color = "var(--bad)"; m.textContent = "Panel load error: " + e.message; }
+  })();
 })();
 </script>
 </body>
