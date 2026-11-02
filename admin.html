@@ -582,6 +582,7 @@ async function openPanel() {
   // admin check (is_admin() function)
   let isAdmin = false;
   try { isAdmin = await api("/rest/v1/rpc/is_admin", { method: "POST", body: "{}" }); } catch (e) {}
+  window.IS_ADMIN = !!isAdmin;
   $("adminState").innerHTML = isAdmin
     ? '<span class="tag on">ADMIN OK</span> Aap admin hain.'
     : '<span class="tag hid">ADMIN NAHI</span> Ye user admins table me nahi hai (sirf active sawal dikhenge).';
@@ -592,8 +593,9 @@ async function openPanel() {
 
 let HAS_QB = true;   /* qbank_setup.sql chali hai ya nahi (difficulty/q_type/import_batch columns) */
 let LOAD_ERR = "", QLOADING = false;
-async function fetchAllQ() {
-  const base = "/rest/v1/questions?select=id,subject,chapter,question,options,answer,explanation,exams,is_active,created_at";
+async function fetchAllQ(filt) {
+  filt = filt || "";
+  const base = "/rest/v1/questions?select=id,subject,chapter,question,options,answer,explanation,exams,is_active,created_at,updated_at";
   /* keyset pagination (id se) — bade offset par Supabase timeout deta tha; har page 3 baar retry */
   const run = async cols => {
     let out = [], last = null, lim = 500;
@@ -601,7 +603,7 @@ async function fetchAllQ() {
       let part = null, err = null, reqLim = lim;
       for (let t = 0; t < 3 && part === null; t++) {
         reqLim = lim;
-        try { part = await api(base + cols + "&order=id.asc&limit=" + lim + (last ? "&id=gt." + encodeURIComponent(last) : "")) || []; }
+        try { part = await api(base + cols + "&order=id.asc&limit=" + lim + filt + (last ? "&id=gt." + encodeURIComponent(last) : "")) || []; }
         catch (e) { err = e; if (/column|schema cache|does not exist/i.test(e.message)) throw e; lim = Math.max(100, Math.floor(lim / 2)); await new Promise(r => setTimeout(r, 700 * (t + 1))); }
       }
       if (part === null) throw err;
@@ -618,12 +620,115 @@ async function fetchAllQ() {
     HAS_QB = false; return await run("");
   }
 }
+
+/* ===== SAWAL CACHE (IndexedDB) =====
+   Pehli baar poora load -> browser me save. Uske baad har baar sirf: (1) naye/badle sawal (created_at/updated_at se),
+   (2) delete hue sawal (count match nahi to sirf id-list se check). Net bahut kam lagta hai. */
+let QFORCE = false, QINFO = { txt: "" };
+const QC_NAME = "jk_admin_qcache_v1";
+function qcOpen() {
+  return new Promise((res, rej) => {
+    if (!window.indexedDB) return rej(new Error("IndexedDB nahi hai"));
+    const r = indexedDB.open(QC_NAME, 1);
+    r.onupgradeneeded = () => { const d = r.result; d.createObjectStore("q", { keyPath: "id" }); d.createObjectStore("meta"); };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error || new Error("IndexedDB error"));
+  });
+}
+function qcTx(db, store, mode, fn) {
+  return new Promise((res, rej) => {
+    const t = db.transaction(store, mode), st = t.objectStore(store);
+    let out; try { out = fn(st); } catch (e) { return rej(e); }
+    t.oncomplete = () => res(typeof IDBRequest !== "undefined" && out instanceof IDBRequest ? out.result : out);
+    t.onerror = () => rej(t.error); t.onabort = () => rej(t.error || new Error("tx abort"));
+  });
+}
+const qcAll = db => qcTx(db, "q", "readonly", st => st.getAll());
+const qcMeta = db => qcTx(db, "meta", "readonly", st => st.get("m"));
+const qcSetMeta = (db, m) => qcTx(db, "meta", "readwrite", st => st.put(m, "m"));
+const qcPut = (db, rows) => rows.length ? qcTx(db, "q", "readwrite", st => { rows.forEach(r => st.put(r)); }) : Promise.resolve();
+const qcDel = (db, ids) => ids.length ? qcTx(db, "q", "readwrite", st => { ids.forEach(i => st.delete(i)); }) : Promise.resolve();
+const qcClear = db => qcTx(db, "q", "readwrite", st => st.clear());
+function qSort(a) { return a.sort((x, y) => String(y.created_at || "").localeCompare(String(x.created_at || "")) || (String(x.id) < String(y.id) ? -1 : 1)); }
+function qWatermark(rows) {
+  let m = ""; rows.forEach(r => { const t = String(r.updated_at || r.created_at || ""); if (t > m) m = t; });
+  return m;
+}
+async function qCount() {
+  const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 25000);
+  try {
+    const r = await fetch(SB_URL + "/rest/v1/questions?select=id&limit=1", { cache: "no-store", signal: ac.signal,
+      headers: { apikey: SB_KEY, Authorization: "Bearer " + (TOKEN || SB_KEY), Prefer: "count=exact" } });
+    const m = /\/(\d+)\s*$/.exec(r.headers.get("content-range") || "");
+    return m ? +m[1] : null;
+  } catch (e) { return null; } finally { clearTimeout(tm); }
+}
+async function qIdsAll() {
+  let out = [], last = null;
+  for (;;) {
+    const part = await api("/rest/v1/questions?select=id&order=id.asc&limit=1000" + (last ? "&id=gt." + encodeURIComponent(last) : "")) || [];
+    out = out.concat(part.map(x => x.id));
+    if (part.length < 1000) break; last = part[part.length - 1].id;
+  }
+  return out;
+}
+async function loadQSmart(force) {
+  let db = null;
+  try { db = await qcOpen(); } catch (e) { db = null; }
+  if (!db) { const r = await fetchAllQ(); QINFO.txt = "Poora load: " + r.length + " sawal (cache is browser me nahi chal raha)"; return r; }
+  const key = SB_URL + "|" + (window.IS_ADMIN ? 1 : 0);
+  let meta = null, cached = [];
+  try { meta = await qcMeta(db); if (!force && meta && meta.key === key) cached = await qcAll(db); } catch (e) { cached = []; }
+  const full = async why => {
+    const rows = await fetchAllQ();
+    try { await qcClear(db); await qcPut(db, rows); await qcSetMeta(db, { key, qb: HAS_QB, at: Date.now() }); } catch (e) {}
+    QINFO.txt = "Poora load: " + rows.length + " sawal (" + why + "). Agli baar sirf naye/badle aayenge.";
+    return rows;
+  };
+  const wm = cached.length ? qWatermark(cached) : "";
+  if (!cached.length || !wm) return await full(force ? "manual reload" : "pehli baar");
+  try {
+    const since = encodeURIComponent(new Date(new Date(wm).getTime() - 5 * 60000).toISOString());
+    const delta = await fetchAllQ("&or=(created_at.gt." + since + ",updated_at.gt." + since + ")");
+    if (!!meta.qb !== !!HAS_QB) return await full("columns badle");
+    const map = new Map(cached.map(r => [r.id, r]));
+    delta.forEach(r => map.set(r.id, r));
+    let removed = 0, extra = 0, putRows = delta.slice();
+    const cnt = await qCount();
+    if (cnt !== null && cnt !== map.size) {            /* delete hue ya kuch chhoota -> sirf id-list mangao (bahut halka) */
+      const ids = await qIdsAll(), set = new Set(ids);
+      const gone = [...map.keys()].filter(i => !set.has(i));
+      gone.forEach(i => map.delete(i)); removed = gone.length;
+      await qcDel(db, gone);
+      const miss = ids.filter(i => !map.has(i));
+      for (let i = 0; i < miss.length; i += 80) {
+        const rows = await fetchAllQ("&id=in.(" + miss.slice(i, i + 80).join(",") + ")");
+        rows.forEach(r => map.set(r.id, r)); putRows = putRows.concat(rows); extra += rows.length;
+      }
+    }
+    await qcPut(db, putRows);
+    await qcSetMeta(db, { key, qb: HAS_QB, at: Date.now() });
+    QINFO.txt = "⚡ Cache se " + map.size + " sawal · naye/badle: " + (delta.length + extra) + " · hate: " + removed;
+    return qSort([...map.values()]);
+  } catch (e) {
+    QINFO.txt = "⚠ Sync nahi hua (" + e.message + ") — purana cache dikha raha hu (" + cached.length + " sawal). 'Poora reload' dabao.";
+    return qSort(cached);
+  }
+}
+function qInfoShow() {
+  const bn = $("adminState"); if (!bn || !QINFO.txt) return;
+  let e = $("qcInfo");
+  if (!e) { e = document.createElement("div"); e.id = "qcInfo"; e.className = "meta"; e.style.marginTop = "6px"; bn.appendChild(e); }
+  e.innerHTML = esc(QINFO.txt) + ' <button class="sec" id="qcFull" style="margin-left:6px;padding:2px 8px">🔄 Poora reload</button>';
+}
+document.addEventListener("click", e => { if (e.target && e.target.id === "qcFull") { QFORCE = true; loadQuestions(); } });
 async function loadQuestions() {
   $("list").innerHTML = '<div class="meta">Load ho raha hai...</div>';
   QLOADING = true; LOAD_ERR = "";
   try {
-    ALL = (await fetchAllQ()).map(q => (q && CHAPTER_ALIAS[q.chapter]) ? { ...q, chapter: CHAPTER_ALIAS[q.chapter] } : q);
-    SEL.clear(); render(); fillSubjects(); renderBatches();
+    const _f = QFORCE; QFORCE = false;
+    ALL = (await loadQSmart(_f)).map(q => (q && CHAPTER_ALIAS[q.chapter]) ? { ...q, chapter: CHAPTER_ALIAS[q.chapter] } : q);
+    SEL.clear(); render(); fillSubjects(); renderBatches(); qInfoShow();
   } catch (e) {
     LOAD_ERR = e.message;
     $("list").innerHTML = '<div class="msg">Load error: ' + esc(e.message) + '</div>';
@@ -2926,7 +3031,7 @@ async function tgWrite(patches, tag) {
   let done = 0;
   for (const p of patches) for (let i = 0; i < p.ids.length; i += 50) {
     const ch = p.ids.slice(i, i + 50);
-    await api("/rest/v1/questions?id=in.(" + ch.join(",") + ")", { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify(p.set) });
+    await api("/rest/v1/questions?id=in.(" + ch.join(",") + ")", { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify(Object.assign({}, p.set, { updated_at: new Date().toISOString() })) });
     ALL.forEach(q => { if (ch.includes(q.id)) Object.assign(q, p.set); });
     done += ch.length; tgMsg("Ho raha hai… " + done + "/" + ids.size, 1);
   }
