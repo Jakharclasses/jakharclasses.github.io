@@ -1154,6 +1154,14 @@ function fixQ(q) {
   return { q: r, n };
 }
 /* DB me jo subject/chapter hain unki list — template aur AI prompt me jaati hai taaki chapter ka naam mismatch na ho */
+const CHAP_NOTE = [
+  "NOTE 1: 'SUBJECT:' wali line ka naam hi subject column me likho. Uske neeche '- ' se shuru lines us subject ke chapters hain (chapter likhte time '- ' mat likhna).",
+  "NOTE 2: chapter hamesha usi subject ke neeche se lo jiska subject tum likh rahe ho — ek subject ka chapter dusre subject ke saath mat likho.",
+  "NOTE 3: इंग्लिश subject ke chapter ENGLISH naam me hi hain (jaise Tense, Passive Voice) — unhe Hindi me mat badlo. Baaki subjects ke chapter Hindi me jaise likhe hain waise hi.",
+  "NOTE 4: lambe naam (jaise bracket, comma ya ':' wale) poore copy karo — chhota, short ya apna naam mat banao. Naam me space, matra, bracket, full stop sab list jaisa hi.",
+  "NOTE 5: jo subject list me hai hi nahi (jaise Reasoning / Maths) uske sawal CSV me mat rakho — CSV ke bahar report me qno aur subject ke saath batao.",
+  ""
+];
 function chapListLines(kind) {
   const SC = window.SC || {}; let subs = Object.keys(SC);
   if (kind === "fst") { const el = document.getElementById("fstSel"); if (el && el.value && SC[el.value]) subs = [el.value]; }
@@ -1325,7 +1333,7 @@ function aiPromptPyq(inFile) {
     "RULES:"
   ].concat(own.map((t, i) => (i + 1) + ". " + t), [""]);
   const cl = chapListLines("pyq");
-  if (cl.length) out.push("CHAPTER LIST (STRICT: subject/chapter ke naam sirf isi list se lo, EXACT word-to-word — alag likha to upload reject ho jayega):", ...cl, "");
+  if (cl.length) out.push("CHAPTER LIST (STRICT: subject/chapter ke naam sirf isi list se lo, EXACT word-to-word — alag likha to upload reject ho jayega):", ...CHAP_NOTE, ...cl, "");
   if (inFile) out.push("⚠ EXAMPLE: is file me '#' wali lines ke neeche header aur 6 example rows hain. Ye SIRF FORMAT samjhane ke liye hain — inhe apne output me SHAMIL MAT KARO aur upload bhi mat karo. Apne output me '#' wali lines mat likho.", "Ab main paper ki PDF dunga — isi format me CSV banao.");
   else out.push("⚠ EXAMPLE (sirf format samjhane ke liye — inhe apne output me SHAMIL MAT KARO):", cols, TPL_EX.map(ex => tplRow("pyq", ex)).join("\n"), "", "Ab main paper ki PDF dunga — isi format me CSV banao.", "");
   return out.join("\n");
@@ -1381,7 +1389,7 @@ function aiPrompt(kind, inFile) {
     ""
   ] : []).concat(chapListLines(kind).length ? [
     kind === "bulk" ? "CHAPTER LIST (STRICT: subject/chapter ke naam sirf isi list se lo, EXACT word-to-word, bilkul isi spelling me — kuch bhi alag likha to naam mismatch hoga aur upload reject ho jayega):" : "CHAPTER LIST (subject/chapter ke naam sirf isi list se, bilkul isi spelling me use karo — naam mismatch hone par upload reject ho jaata hai):"
-  ].concat(chapListLines(kind), [""]) : []).concat(inFile ? [
+  ].concat(CHAP_NOTE, chapListLines(kind), [""]) : []).concat(inFile ? [
     "⚠ EXAMPLE: is file me '#' wali lines ke theek neeche header aur 6 example rows diye hain. Ye 6 rows SIRF FORMAT SAMJHANE ke liye hain — inhe apne output/CSV me SHAMIL MAT KARO aur inhe app me upload bhi mat karo. Bas inhi jaisa format apne sawalon par lagao. Apne output me '#' wali lines bhi mat likho.",
     "Ab main tumhe sawal dunga (PDF / photo / text) — unhe isi format me CSV banao."
   ] : [
@@ -2609,7 +2617,7 @@ async function pyqGo() {
       plan.push({ title, p: rs[0].__pyq, rs, paper, have, rep: rs.filter(r => have.has(r.__pyq.qno)).length, lnk: rs.filter(r => !have.has(r.__pyq.qno) && r.__old && pqCanLink(r)).length });
     }
   } catch (e) { msg.style.color = "var(--bad)"; msg.textContent = "Paper check fail: " + e.message + (/pyq_papers|relation|schema cache/i.test(e.message) ? "\npyq_migration.sql chalaya hai?" : ""); free(); return; }
-  const body = plan.map(x => "• " + x.title + ": " + x.rs.length + " sawal — " + (x.rs.length - x.rep - x.lnk) + " naye, " + x.lnk + " purane sawal paper se jodenge, " + x.rep + " replace (same qno)" + (x.paper ? "" : " · NAYA paper (DRAFT)")).join("\n");
+  const body = plan.map(x => "• " + x.title + ": " + x.rs.length + " sawal — " + (x.rs.length - x.rep - x.lnk) + " naye, " + x.lnk + " purane sawal paper se jodenge (exam tag bhi judega), " + x.rep + " replace (same qno)" + (x.paper ? "" : " · NAYA paper (DRAFT)")).join("\n");
   if (!await askConfirm({ title: "PYQ Paper import karein?", body: body + (plan.some(x => x.rep) ? "\n\n⚠ Jin qno ka sawal paper me pehle se hai, unka text naye CSV se REPLACE hoga." : "") })) { free(); msg.textContent = ""; return; }
   const active = $("bkAct").checked; let nIns = 0, nLnk = 0, nRep = 0;
   const _d = new Date(), _p = n => String(n).padStart(2, "0");
@@ -2626,7 +2634,7 @@ async function pyqGo() {
         const qn = r.__pyq.qno, exId = pl.have.get(qn);
         const base = { subject: r.subject, chapter: r.chapter, question: r.question, options: r.options, answer: r.answer, explanation: r.explanation, exams: r.exams, difficulty: r.difficulty, q_type: r.q_type, updated_at: now };
         if (exId) { await api("/rest/v1/questions?id=eq." + E(exId), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify(base) }); nRep++; }
-        else if (r.__old && pqCanLink(r)) { await api("/rest/v1/questions?id=eq." + E(r.__old), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ paper_id: pid, paper_qno: qn, updated_at: now }) }); nLnk++; }
+        else if (r.__old && pqCanLink(r)) { const o0 = ALL.find(x => x.id === r.__old), ex2 = [...new Set([...((o0 && o0.exams) || []), ...(r.exams || [])])]; await api("/rest/v1/questions?id=eq." + E(r.__old), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ paper_id: pid, paper_qno: qn, exams: ex2, updated_at: now }) }); nLnk++; }
         else news.push({ ...base, is_active: active, import_batch: batchId, paper_id: pid, paper_qno: qn });
         msg.textContent = "Import ho raha hai... " + pl.title + " (" + (nRep + nLnk + nIns) + " done)";
       }
