@@ -703,6 +703,17 @@ html.jk-lite .sq::after,html.jk-lite .scard::after,html.jk-lite .tiles2 button::
 .hd.hm ~ .pg .stats .big{height:46px;font-size:19px}
 .hd.hm ~ .pg .stats small{font-size:10.5px;line-height:1.2}
 @media (max-width:360px){.hd.hm ~ .pg .greet.jg{min-height:76px}}
+
+/* === Thin gold avatar ring, exactly on the edge (YouTube-reference style) === */
+:root{--ring:conic-gradient(from 200deg,#fde68a,#fbbf24,#f59e0b,#fbbf24,#fde68a)}
+.jg-av,.hd.hm ~ .pg .jg-av{padding:1.5px!important;background:var(--ring)!important;box-shadow:none!important;overflow:hidden}
+.jg-av .pfa,.hd.hm ~ .pg .jg-av .pfa{border:2px solid #fff!important;box-sizing:border-box}
+.dark .jg-av .pfa{border-color:#19243a!important}
+.bnav-av{padding:1.5px!important;background:var(--ring)!important;border:0!important;box-shadow:none!important;box-sizing:border-box;border-radius:50%}
+.bn .on .bnav-av{box-shadow:none!important}
+.pf-av{padding:2px!important;background:var(--ring)!important;box-shadow:none!important}
+.pf-av.sm{padding:1.5px!important}
+.pf-av .pfa{border-width:2.5px!important}
 </style>
 <!-- JK-PART-3-DONE --><!-- JK-PART-4-DONE --><!-- JK-PART-5-DONE --><!-- JK-PART-6-DONE -->
 </head>
@@ -1360,8 +1371,12 @@ const COLORS=["#1d4ed8","#c2410c","#0f766e","#7e22ce","#be185d","#4d7c0f"];
 const examColor={};let ci=0;
 const colorFor=n=>examColor[n]||(examColor[n]=COLORS[ci++%COLORS.length]);
 const fmt=s=>String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
-const qc=(s,c)=>QS.filter(q=>q.subject===s&&q.chapter===c).length;
-const sc_=s=>QS.filter(q=>q.subject===s).length;
+/* ===== Authentic Practice: authentic books ke sawal. DB me exams me AUTH_TAG hota hai. PYQ ki ginti/test me nahi judte, alag option me aate hain ===== */
+const AUTH_TAG="Authentic Practice",AUTH_NAME="Authentic Practice";
+const isAuth=q=>!!q&&Array.isArray(q.exams)&&q.exams.indexOf(AUTH_TAG)>=0;
+const qc=(s,c)=>QS.filter(q=>q.subject===s&&q.chapter===c&&!isAuth(q)).length;
+const aqc=(s,c)=>QS.filter(q=>q.subject===s&&q.chapter===c&&isAuth(q)).length;
+const sc_=s=>QS.filter(q=>q.subject===s&&!isAuth(q)).length;
 let sortDir="new",Q=[],state=[],cur=0,startTime=0,tick=null,label="",finished=false,RS={},mode="practice",ret=null;
 const store={get(k){try{return JSON.parse(localStorage.getItem(k)||"[]")}catch(e){return[]}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const cnt=k=>{const s=new Set(store.get(k));return QS.filter(q=>s.has(q.question)).length};
@@ -1478,21 +1493,35 @@ function pyqChapters(si){
   clearInterval(tick);const S=SUBJECTS[si];
   if(!S.chapters.length)return comingSoon(S.name,pyqBack,pTab(),"चैप्टर जल्द जोड़े जाएँगे");
   view(hdr(BACK,"",S.name)+`<main class="pg"><div class="sub">${S.chapters.length} चैप्टर · ${sc_(S.name)} प्रश्न</div><div class="list">
-  ${S.chapters.map((c,ci)=>{const n=qc(S.name,c);return R({c:S.color,i:ci+1,t:c,s:n?n+" प्रश्न उपलब्ध":"जल्द आ रहा है",n:newChap(S.name,c)?"NEW":"",nc:S.color,b:n?n+" प्रश्न":"Coming Soon",soon:!n,on:n?`chapterModes(${si},${ci})`:`chapSoon(${si},${ci})`})}).join("")}</div></main>`,pTab(),false,pyqBack);
+  ${S.chapters.map((c,ci)=>{const n=qc(S.name,c),na=aqc(S.name,c);return R({c:S.color,i:ci+1,t:c,s:n?n+" प्रश्न उपलब्ध"+(na?" · + Authentic "+na:""):na?"Authentic Practice · "+na+" प्रश्न":"जल्द आ रहा है",n:newChap(S.name,c)?"NEW":"",nc:S.color,b:n?n+" प्रश्न":"Coming Soon",soon:!n&&!na,on:(n||na)?`chapterModes(${si},${ci})`:`chapSoon(${si},${ci})`})}).join("")}</div></main>`,pTab(),false,pyqBack);
 }
 function subTest(si,ci){if(!qc(SUBJECTS[si].name,SUBJECTS[si].chapters[ci]))return comingSoon("Test",()=>subOptions(si,ci),"subj",SUBJECTS[si].chapters[ci]);fromSub=true;chapterModes(si,ci)}
 const pyqBack=()=>exI>=0?examSubjects(exI):pyqSubjects(pyqFrom);
 function chapSoon(si,ci){comingSoon(SUBJECTS[si].chapters[ci],()=>pyqChapters(si),pTab(),SUBJECTS[si].name)}
 function chapterModes(si,ci){
-  const S=SUBJECTS[si],c=S.chapters[ci],n=qc(S.name,c),f=q=>q.subject===S.name&&q.chapter===c;
+  const S=SUBJECTS[si],c=S.chapters[ci],n=qc(S.name,c),f=q=>q.subject===S.name&&q.chapter===c&&!isAuth(q),na=aqc(S.name,c);
   ret=()=>chapterModes(si,ci);
   const A=store.get("jk_hist").map((h,i)=>({h:h,i:i})).filter(o=>o.h&&!o.h.k&&!o.h.tid&&o.h.n===c&&(!o.h.cx||o.h.cx==="chapter")).slice(0,4);
   view(hdr(BACK,"",c)+`<main class="pg"><div class="card hello" style="margin-bottom:14px"><span class="av" style="background:${S.color}">${S.icon}</span><div><b>${S.name}</b><br><small>${ci+1}. ${c} · ${n} प्रश्न</small></div></div><div class="list">
-  ${R({c:"#7c3aed",i:"📝",t:"Test Mode",s:"सबमिट के बाद ही उत्तर · −1/3 नेगेटिव मार्किंग",on:"cm('test')"})}
-  ${R({c:"#1457d9",i:"📘",t:"Practice Mode",s:"उत्तर चुनते ही सही/गलत और व्याख्या",on:"cm('practice')"})}</div>
+  ${n?R({c:"#7c3aed",i:"📝",t:"Test Mode",s:"सबमिट के बाद ही उत्तर · −1/3 नेगेटिव मार्किंग",on:"cm('test')"}):""}
+  ${n?R({c:"#1457d9",i:"📘",t:"Practice Mode",s:"उत्तर चुनते ही सही/गलत और व्याख्या",on:"cm('practice')"}):""}
+  ${na?R({c:"#d97706",i:"📚",t:AUTH_NAME,s:"Authentic किताबों के प्रश्न · Test / Practice",b:na+" प्रश्न",on:`authModes(${si},${ci})`}):""}</div>
   ${A.length?`<h3>पिछले प्रयास</h3><div class="card act">${A.map(o=>`<div class="ar"><div class="arm" onclick="histOpen(${o.i})"><b>${o.h.m==="test"?"Test Mode":"Practice Mode"}${o.h.an>1?" · प्रयास "+o.h.an:""}</b><small>${o.h.r} सही · ${o.h.w} गलत · ${o.h.s} छोड़े${o.h.m==="test"?" · "+o.h.sc+" अंक":""}</small><em>${ago(o.h.ts)}</em></div><button class="rtb" onclick="cmFresh('${o.h.m}')">🔁 Retest</button></div>`).join("")}</div>`:""}</main>`,fromSub?"subj":pTab(),false,()=>fromSub?subOptions(si,ci):pyqChapters(si));
   window.cm=m=>start(f,c,0,m);
   window.cmFresh=m=>{const sp=progAll()[m+"|"+c];if(sp&&Array.isArray(sp.qs)&&!confirm("इस चैप्टर का एक अधूरा प्रयास सेव है। Retest शुरू करने पर वह हट जाएगा (पुराने रिज़ल्ट सुरक्षित रहेंगे)। जारी रखें?"))return;start(f,c,0,m,undefined,true)};
+}
+
+/* ---------- Authentic Practice: chapter ke andar alag Test / Practice ---------- */
+function authModes(si,ci){
+  const S=SUBJECTS[si],c=S.chapters[ci],n=aqc(S.name,c),lb=c+" · "+AUTH_NAME,f=q=>q.subject===S.name&&q.chapter===c&&isAuth(q);
+  ret=()=>authModes(si,ci);
+  const A=store.get("jk_hist").map((h,i)=>({h:h,i:i})).filter(o=>o.h&&!o.h.k&&!o.h.tid&&o.h.n===lb).slice(0,4);
+  view(hdr(BACK,"",c)+`<main class="pg"><div class="card hello" style="margin-bottom:14px"><span class="av" style="background:#d97706">📚</span><div><b>${AUTH_NAME}</b><br><small>${S.name} · ${c} · ${n} प्रश्न</small></div></div><div class="list">
+  ${R({c:"#7c3aed",i:"📝",t:"Test Mode",s:"सबमिट के बाद ही उत्तर · −1/3 नेगेटिव मार्किंग",on:"am('test')"})}
+  ${R({c:"#1457d9",i:"📘",t:"Practice Mode",s:"उत्तर चुनते ही सही/गलत और व्याख्या",on:"am('practice')"})}</div>
+  ${A.length?`<h3>पिछले प्रयास</h3><div class="card act">${A.map(o=>`<div class="ar"><div class="arm" onclick="histOpen(${o.i})"><b>${o.h.m==="test"?"Test Mode":"Practice Mode"}${o.h.an>1?" · प्रयास "+o.h.an:""}</b><small>${o.h.r} सही · ${o.h.w} गलत · ${o.h.s} छोड़े${o.h.m==="test"?" · "+o.h.sc+" अंक":""}</small><em>${ago(o.h.ts)}</em></div><button class="rtb" onclick="amFresh('${o.h.m}')">🔁 Retest</button></div>`).join("")}</div>`:""}</main>`,pTab(),false,()=>chapterModes(si,ci));
+  window.am=m=>start(f,lb,0,m);
+  window.amFresh=m=>{const sp=progAll()[m+"|"+lb];if(sp&&Array.isArray(sp.qs)&&!confirm("इसका एक अधूरा प्रयास सेव है। Retest शुरू करने पर वह हट जाएगा (पुराने रिज़ल्ट सुरक्षित रहेंगे)। जारी रखें?"))return;start(f,lb,0,m,undefined,true)};
 }
 
 /* ---------- नीचे के "Subjects" टैब: विषय → चैप्टर → Detail Notes / Short Notes / Video Lecture ---------- */
@@ -4600,9 +4629,9 @@ a.dnpay{display:block;text-align:center;text-decoration:none;background:#16a34a;
   function validEntry(r){
     if(!r||!tracked[r.fn]||typeof window[r.fn]!=="function"||!Array.isArray(r.args))return false;
     try{
-      if(/^(pyqChapters|chapterModes|subChapters|subOptions|fstTests)$/.test(r.fn)){
+      if(/^(pyqChapters|chapterModes|authModes|subChapters|subOptions|fstTests)$/.test(r.fn)){
         var S=SUBJECTS[r.args[0]];if(!S)return false;
-        if((r.fn==="chapterModes"||r.fn==="subOptions")&&!S.chapters[r.args[1]])return false;
+        if((r.fn==="chapterModes"||r.fn==="authModes"||r.fn==="subOptions")&&!S.chapters[r.args[1]])return false;
       }
     }catch(e){return false}
     return true;
@@ -4866,9 +4895,9 @@ var WN_FEATURES=[];
         reason:pick,comment:(d.querySelector("#rpC").value||"").trim().slice(0,500),context:String(ctx||"").slice(0,40),
         user_id:uid()||null,user_label:email().slice(0,120)||null,app_version:BV,
         q_snapshot:{options:q.options||[],answer:q.answer,explanation:String(q.explanation||"").slice(0,1500)}};
-      fetch(SB+"/rest/v1/question_reports?on_conflict=q_key,reporter_key",{method:"POST",
-        headers:{apikey:SK,Authorization:"Bearer "+SK,"Content-Type":"application/json",Prefer:"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(body)})
-      .then(function(r){if(r.ok){doneAdd(k);close();toast("आपकी रिपोर्ट भेज दी गई। धन्यवाद!")}
+      fetch(SB+"/rest/v1/question_reports",{method:"POST",
+        headers:{apikey:SK,Authorization:"Bearer "+SK,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(body)})
+      .then(function(r){if(r.ok||r.status===409){doneAdd(k);close();toast("आपकी रिपोर्ट भेज दी गई। धन्यवाद!")}
         else{sb.disabled=false;sb.textContent="रिपोर्ट भेजें";toast("भेजा नहीं जा सका (कोड "+r.status+")। फिर कोशिश करें।")}},
         function(){sb.disabled=false;sb.textContent="रिपोर्ट भेजें";toast("इंटरनेट नहीं चल रहा। फिर कोशिश करें।")});
     };
@@ -4898,9 +4927,9 @@ var WN_FEATURES=[];
       b.disabled=true;b.textContent="भेज रहे हैं…";
       var body={item_key:k,requester_key:who(),title:plain(i.t).slice(0,200),sub:plain(i.sub).slice(0,200),screen:String(i.tab||"").slice(0,40),
         user_id:uid()||null,user_label:email().slice(0,120)||null,app_version:BV};
-      fetch(SB+"/rest/v1/content_requests?on_conflict=item_key,requester_key",{method:"POST",
-        headers:{apikey:SK,Authorization:"Bearer "+SK,"Content-Type":"application/json",Prefer:"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(body)})
-      .then(function(r){if(r.ok){doneAdd(k);paint(b,true);toast("आपकी रिक्वेस्ट भेज दी गई है। धन्यवाद!")}
+      fetch(SB+"/rest/v1/content_requests",{method:"POST",
+        headers:{apikey:SK,Authorization:"Bearer "+SK,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(body)})
+      .then(function(r){if(r.ok||r.status===409){doneAdd(k);paint(b,true);toast("आपकी रिक्वेस्ट भेज दी गई है। धन्यवाद!")}
         else{paint(b,false);toast("भेजा नहीं जा सका (कोड "+r.status+")। फिर कोशिश करें।")}},
         function(){paint(b,false);toast("इंटरनेट नहीं चल रहा। फिर कोशिश करें।")});
     };

@@ -964,10 +964,12 @@ function bulkCheck() {
   if (miss.length) { msg.textContent = "Header me ye column nahi mile: " + miss.join(", ") + "\n(Template se naam copy karo)"; return; }
   const ix = n => hdr.indexOf(n);
   BULKMERGE = {}; SIM = []; renderSim();
-  const fpMap = new Map(); ALL.forEach(q => { const f = qFingerprint(q.question, q.options, q.q_type); if (!fpMap.has(f)) fpMap.set(f, q); });
+  /* Authentic aur PYQ/normal sawal alag "class" me — authentic ka tag kisi PYQ sawal me merge na ho (warna PYQ se gayab ho jayega) */
+  const fpMap = new Map(); ALL.forEach(q => { const f = (isAuthQ(q) ? "A|" : "P|") + qFingerprint(q.question, q.options, q.q_type); if (!fpMap.has(f)) fpMap.set(f, q); });
   const seen = new Set(), errs = [], w2 = []; let fixc = 0, dupc = 0, unl = 0;
   const pqSeen = new Set(), pqMeta = new Map(); let pqLinked = 0;
   const amap = { A:0, B:1, C:2, D:3, "1":0, "2":1, "3":2, "4":3 };
+  const exIx0 = hdr.indexOf("exams"), anyAuth = !PQ && exIx0 >= 0 && rows.slice(1).some(r => authExams(r[exIx0]).includes(AUTH_TAG)); let autoTag = 0;
   rows.slice(1).forEach((r, k) => {
     const g = n => ix(n) >= 0 ? (r[ix(n)] || "").trim() : "";
     const e = [], subject = g("subject"), chapter = chAlias(g("chapter")), q0 = g("question"), fx = fixQ(q0), question = fx.q;
@@ -979,7 +981,7 @@ function bulkCheck() {
     else if (new Set(options).size < 4) e.push("options alag-alag nahi");
     if (a === undefined) e.push("answer 1-4 ya A-D hona chahiye");
     if (!(window.SC && window.SC[subject] && window.SC[subject].has(chapter))) e.push("subject/chapter DB me nahi mila (spelling check karo)");
-    const dfi = normDiff(g("difficulty")), tyi = normType(g("q_type")), exl = g("exams").split(/[,;|]/).map(s => s.trim()).filter(Boolean);
+    const dfi = normDiff(g("difficulty")), tyi = normType(g("q_type")), exl = authExams(g("exams"), anyAuth); if (anyAuth && !authExams(g("exams")).includes(AUTH_TAG)) autoTag++;
     if (dfi === "?") w2.push("Line " + (k + 2) + ": difficulty samajh nahi aayi (easy/moderate/hard chahiye)");
     if (tyi === "?") w2.push("Line " + (k + 2) + ": q_type samajh nahi aaya");
     const type = (tyi && tyi !== "?") ? tyi : detectType(question, options), diff = (dfi && dfi !== "?") ? dfi : "";
@@ -999,7 +1001,7 @@ function bulkCheck() {
     }
     if (e.length) { errs.push("Line " + (k + 2) + ": " + e.join(", ")); return; }
     seen.add(fp);
-    const old = fpMap.get(fp);
+    const old = fpMap.get((exl.includes(AUTH_TAG) ? "A|" : "P|") + fp);
     if (old && !PQ) {   /* D5: duplicate -> naya row nahi, purane ke exams me jod do */
       dupc++; const add = exl.filter(x => !(old.exams || []).includes(x));
       if (add.length) BULKMERGE[old.id] = [...new Set([...(BULKMERGE[old.id] || old.exams || []), ...add])];
@@ -1008,11 +1010,12 @@ function bulkCheck() {
     if (fx.n.length) fixc++; if (!diff) unl++;
     const row = { subject, chapter, question, options, answer: a, explanation: g("explanation"), exams: exl, difficulty: diff || null, q_type: type };
     if (pq) { row.__pyq = pq; row.exams = [pq.exam + (pq.year ? " " + pq.year : "")]; if (old) { row.__old = old.id; pqLinked++; } }
-    const sm = (pq && old) ? null : bestSim(row, ALL.concat(BULK)); if (sm) SIM.push({ row, old: sm.old, score: sm.score, choice: "both" });
+    const sm = (pq && old) ? null : bestSim(row, ALL.concat(BULK).filter(o => isAuthQ(o) === isAuthQ(row))); if (sm) SIM.push({ row, old: sm.old, score: sm.score, choice: "both" });
     BULK.push(row);
   });
   msg.style.color = errs.length ? "var(--bad)" : "var(--ok)";
   msg.textContent = "Sahi (nayi): " + BULK.length + "   Galat: " + errs.length + (SIM.length ? "\n🔍 Milte-julte: " + SIM.length + " (neeche dekh kar chuno)" : "") + (dupc ? "\n♻ Duplicate: " + dupc + " (pehle se bank me — naya row nahi banega, exams merge honge: " + Object.keys(BULKMERGE).length + " sawal)" : "") + (unl ? "\n🏷 Bina difficulty: " + unl + " (upload ho jayenge, baad me label kar sakte ho)" : "") + (w2.length ? "\n⚠ " + w2.slice(0, 5).join("\n⚠ ") : "") + (fixc ? "\n🛠 Auto-fix: " + fixc + " sawal me table / assertion formatting sudhaari gayi (neeche preview dekho)" : "") + (errs.length ? "\n\n" + errs.slice(0, 15).join("\n") + (errs.length > 15 ? "\n...aur " + (errs.length - 15) + " line" : "") : "");
+  { const na = BULK.filter(isAuthQ).length; if (na) msg.textContent += "\n📚 Authentic Practice: " + na + " sawal (exam tag: " + AUTH_TAG + ") — app me chapter ke andar alag option me dikhenge" + (autoTag ? "\n🏷 " + autoTag + " row me tag nahi tha — apne-aap laga diya" : ""); }
   renderSim();
   $("bkGo").disabled = BULK.length === 0 && !Object.keys(BULKMERGE).length;
   if (PQ) {   /* Part 1B: PYQ summary — upload Part 1C me */
@@ -1223,6 +1226,11 @@ const TPL_COLS = {
 };
 const TPL_FILE = { bulk: "jakhar_questions_template.csv", fst: "jakhar_full_subject_test_template.csv", fmk: "jakhar_full_mock_test_template.csv", pyq: "jakhar_pyq_paper_template.csv" };
 const TPL_TITLE = { bulk: "Chapter-wise questions", fst: "Full Subject Test", fmk: "Full Mock Test", pyq: "PYQ Paper (RSSB)" };
+/* ===== Authentic Practice: authentic books ke sawal (exam tag fixed). Template = chapter-wise (bulk) jaisa ===== */
+const AUTH_TAG = "Authentic Practice", AUTH_RE = /^authentic[\s_-]*practice$/i;
+TPL_COLS.auth = TPL_COLS.bulk.slice(); TPL_FILE.auth = "jakhar_authentic_practice_template.csv"; TPL_TITLE.auth = "Authentic Practice (authentic books ke sawal)";
+const isAuthQ = q => !!q && Array.isArray(q.exams) && q.exams.includes(AUTH_TAG);
+function authExams(str, force) { const a = String(str || "").split(/[,;|]/).map(x => x.trim()).filter(Boolean).map(x => AUTH_RE.test(x) ? AUTH_TAG : x); if (force && !a.includes(AUTH_TAG)) a.push(AUTH_TAG); return [...new Set(a)]; }
 /* 6 example types: simple, statement, assertion-reason, match (table), table-based, multi-line options */
 const TPL_EX = [
   { t: "सरल MCQ",
@@ -1321,10 +1329,10 @@ document.addEventListener("change", e => { const c = e.target.closest && e.targe
 const EX_Q = () => new Set(TPL_EX.map(x => x.q));
 function tplRow(kind, ex) {
   const v = {
-    subject: kind === "bulk" ? (document.getElementById("aSub") && document.getElementById("aSub").value) || "विषय" : "",
-    chapter: kind === "bulk" ? (document.getElementById("aChap") && document.getElementById("aChap").value) || "चैप्टर" : "",
+    subject: (kind === "bulk" || kind === "auth") ? (document.getElementById("aSub") && document.getElementById("aSub").value) || "विषय" : "",
+    chapter: (kind === "bulk" || kind === "auth") ? (document.getElementById("aChap") && document.getElementById("aChap").value) || "चैप्टर" : "",
     paper_title: kind === "pyq" ? "Example Exam 2025 – Shift 1" : "", exam: kind === "pyq" ? "Example Exam" : "", year: kind === "pyq" ? "2025" : "", shift: kind === "pyq" ? "Shift 1" : "", qno: kind === "pyq" ? String(TPL_EX.indexOf(ex) + 1) : "",
-    question: ex.q, option1: ex.o[0], option2: ex.o[1], option3: ex.o[2], option4: ex.o[3], answer: ex.a, explanation: ((kind === "bulk" || kind === "pyq") && ex.eb) ? ex.eb : ex.e, exams: ex.x, difficulty: ex.d || "", q_type: ex.t || ""
+    question: ex.q, option1: ex.o[0], option2: ex.o[1], option3: ex.o[2], option4: ex.o[3], answer: ex.a, explanation: ((kind === "bulk" || kind === "auth" || kind === "pyq") && ex.eb) ? ex.eb : ex.e, exams: kind === "auth" ? AUTH_TAG : ex.x, difficulty: ex.d || "", q_type: ex.t || ""
   };
   if (kind === "pyq") { v.subject = "विषय"; v.chapter = "चैप्टर"; }
   return TPL_COLS[kind].map(c => (c === "answer" || c === "qno" || c === "year") ? String(v[c]) : csvCell(v[c])).join(",");
@@ -1378,6 +1386,10 @@ function aiPromptPyq(inFile) {
 }
 function aiPrompt(kind, inFile) {
   if (kind === "pyq") return aiPromptPyq(inFile);
+  if (kind === "auth") return aiPromptBase("bulk", inFile, true);
+  return aiPromptBase(kind, inFile, false);
+}
+function aiPromptBase(kind, inFile, AU) {
   const cols = TPL_COLS[kind].join(",");
   const kindNote = {
     bulk: "subject aur chapter: main jo naam bataunga use neeche di gayi CHAPTER LIST me se dhoondho aur list wala naam EXACT, word-to-word, bilkul waisa hi likho jaisa list me hai (spelling/matra/space/chinh kuch mat badlo, apna ya chhota naam mat banao). Agar mere bataye naam me thodi galti/alag spelling ho to topic dekhkar list ka sabse sahi chapter khud chuno. Har row me subject aur chapter list se hi aane chahiye.",
@@ -1385,7 +1397,7 @@ function aiPrompt(kind, inFile) {
     fmk: "subject aur chapter columns optional hain: sawal ka topic dekhkar neeche di CHAPTER LIST me se subject aur chapter ka EXACT naam likho; match na ho to khaali chhodo."
   }[kind];
   return [
-    "Tum ek exam-question formatter ho. Main tumhe (PDF / photo / text) me sawal dunga. Tumhe unhe Jakhar Academy App ke CSV format me badalna hai (" + TPL_TITLE[kind] + ").",
+    "Tum ek exam-question formatter ho. Main tumhe (PDF / photo / text) me sawal dunga. Tumhe unhe Jakhar Academy App ke CSV format me badalna hai (" + TPL_TITLE[AU ? "auth" : kind] + ").",
     "",
     "OUTPUT: sirf ek CSV (ek hi code block). Aage-peeche koi explanation mat likho.",
     "HEADER (pehli line, bilkul yahi, isi order me): " + cols,
@@ -1393,14 +1405,14 @@ function aiPrompt(kind, inFile) {
     "FORMAT RULES:",
     "1. Har cell double-quote (\") me likho. Cell ke andar agar quote aaye to use double karo (\"\"). Answer column me sirf number (bina quote ke bhi chalega).",
     "2. Cell ke andar asli Enter/new line KABHI mat dalo. Line todni ho to sirf <br> likho. Ek blank line ke liye <br><br>.",
-    "3. Sawal ka stem/sentence PDF jaisa hi rakho (Hindi/English jo bhi ho): wording mat badlo, spelling mat sudharo, kuch jodo ya hatao mat. Sirf rule 13, 14 me likhe reshuffle allowed hain.",
+    AU ? "3. (Authentic Practice) Sawal ka stem book/PDF se HU-B-HU mat rakho — neeche rule 29 se 32 ke hisab se thoda reframe karo; par tathya, arth aur sahi answer KABHI mat badlo. Spelling/matra galat mat karo." : "3. Sawal ka stem/sentence PDF jaisa hi rakho (Hindi/English jo bhi ho): wording mat badlo, spelling mat sudharo, kuch jodo ya hatao mat. Sirf rule 13, 14 me likhe reshuffle allowed hain.",
     "4. KATHAN-BASED sawal: pehle sawal ki line, phir <br><br>, phir HAR KATHAN APNI NAYI LINE par (1. ... <br>2. ... <br>3. ...), phir <br><br> aur last line (jaise 'उपर्युक्त कथनों में से कौन-सा/से सही है/हैं?'). Kabhi bhi 1. aur 2. (ya A. aur B.) ek hi line me mat chhodo.",
     "5. ASSERTION-REASON: app me poora sawal by-default bold dikhta hai, isliye upar ki intro/instruction wali line (jaise 'नीचे दो कथन दिए गए हैं — एक अभिकथन (A) aur ek कारण (R)...') ko BOLD NAHI rakhna: use <span style=\"font-weight:400\">...</span> me likho. Sirf asli statements bold/alag dikhne chahiye: <span style=\"font-weight:400\">intro line</span><br><br><b>अभिकथन (A):</b> ...<br><br><b>कारण (R):</b> ...<br><br><span style=\"font-weight:400\">सही उत्तर चुनिए:</span>. Agar PDF me upar koi intro line nahi hai to bas <b>अभिकथन (A):</b> ...<br><br><b>कारण (R):</b> ... likho. 4 options PDF jaise standard A/R wale.",
     "6. TABLE / SUMELAN (match the following, सूची-I / सूची-II) / data table: HAMESHA HTML table banao. Pipe ( | ) se bani text-lines, '(a) X | (i) Y' jaisi lines, tab/space se alag ki hui lines ya Markdown table KABHI mat likho — app unhe table nahi banata, seedha text dikhta hai. Compact HTML table likho: <table class=\"qt\"><tr><th>..</th><th>..</th></tr><tr><td>..</td><td>..</td></tr></table>. Table me inline style, width, border, <p>, <div> kuch mat lagao. Table ke pehle aur baad <br><br> rakho. Table ki har row ek hi line me (cell ke andar new line nahi).",
     "7. OPTIONS: option1..option4 me sirf option ka text. Shuru ka '(A)', 'A.', '1)' jaisa label HATA do. Hamesha 4 alag-alag options. Option lamba ya multi-line ho to <br> use karo.",
     "8. answer: sahi option ka number 1-4 (option1=1, option2=2, option3=3, option4=4). Agar PDF me answer key hai to wahi lo. Agar nahi hai aur tum 100% sure nahi ho to answer khaali chhod do (main khud check kar loonga). Andaza mat lagao.",
     (kind === "bulk" ? "9. explanation (rule 15 dekho): PDF/book ki explanation copy mat karo — apne shabdon me modify karke likho, par tathya (facts) wahi rakho. ⚠ Explanation me \"सही उत्तर: ...\" wali line ya sahi option ka text/number KABHI mat likho — app me sahi uttar pehle se by-default bold karke dikhta hai, isliye explanation me likhne se wo double dikhta hai." : "9. explanation (rule 15 dekho): PDF/book ki explanation copy mat karo — apne shabdon me modify karke likho, par tathya (facts) wahi rakho."),
-    "10. exams: jis exam ka sawal hai (jaise RPSC RAS 2021). Ek se zyada ho to semicolon (;) se alag karo. Pata na ho to khaali \"\".",
+    AU ? "10. exams: HAR row me bilkul yahi likho: \"Authentic Practice\" (fixed tag, spelling aur space isi jaisa). Koi aur exam ya saal mat likho." : "10. exams: jis exam ka sawal hai (jaise RPSC RAS 2021). Ek se zyada ho to semicolon (;) se alag karo. Pata na ho to khaali \"\".",
     "11. Sirf ye HTML tags allowed hain: <br>, <b>, <i>, <u>, <sup>, <sub>, <table class=\"qt\"> (with tr/th/td), aur assertion-reason ki intro line ke liye <span style=\"font-weight:400\">. Markdown (**bold**, | --- | tables, # headings) bilkul mat use karo. Math/formula ho to plain text (x², H₂O) ya <sup>/<sub> use karo.",
     "12. Ek sawal = CSV ki ek row. Jo sawal adhura/kata hua ya padhne me na aaye use skip karke last me alag se bata do (CSV ke bahar).",
     "13. KATHAN reshuffle (sirf jab bilkul safe ho): kathan ka text mat badlo, sirf unka SEQUENCE badlo (PDF ka kathan 3 ab kathan 1 ban sakta hai). Phir options me 'केवल 1 और 2' / '1, 3 और 4' jaise combination naye numbers ke hisab se dobara likho, sahi answer position se copy mat karo — kathan ki sachchai dekhkar dobara nikalo, explanation me bhi naye numbers. Zara bhi risk lage (arth bigad sakta hai, options complex hain) to kathan jaise the waise hi rehne do — ye bilkul theek hai.",
@@ -1425,6 +1437,17 @@ function aiPrompt(kind, inFile) {
     "27. GALTI SUDHAR + REPORT: agar PDF me kisi sawal/option/answer me galti ho ya tumhe galat lage (jaise answer key galat, sawal adhura, option me galti, tathya galat), to apne hisaab se use sahi karke CSV me do. Phir CSV ke BAHAR, output ke end me list do: sawal kaun sa (PDF wala number + sawal ki shuruaat), usme dikkat kya thi, aur tumne kya badla. Main use ek baar check karunga; meri manzoori ke baad hi wo final maana jayega. Jis galti ka sahi hal tumhe pakka na ho use mat badlo, bas list me batao.",
     "28. DELETE WALE SAWAL: agar PDF me kisi sawal ke saath 'डिलीट' / 'Deleted' likha ho ya main bolun ki wo delete hai, to use CSV me BILKUL mat rakhna (na khaali row, na kisi aur form me). Bas CSV ke bahar list me batao ki kaun-kaun se sawal delete maanke chhode.",
     ""
+  ] : []).concat(AU ? [
+    "AUTHENTIC PRACTICE — KHAAS NIYAM (is template ka asli maksad; rule 3 aur 10 ki jagah ye lagu hain):",
+    "29. REFRAME (copy se bachne ke liye, sabse zaroori): ye sawal authentic book/PDF se hain — unhe HU-B-HU / word-to-word copy mat karo. Har sawal ko thoda-bahut reframe karo, par tathya (facts), arth aur sahi answer wahi rahe. Itna bhi mat badlo ki sawal hi kharab ho jaye ya answer badal jaye.",
+    "30. KATHAN WALE SAWAL: jaise sawal me 4 kathan hon to kam se kam 2 kathan ki wording badlo (arth wahi; shabd aur vakya-rachna alag, jaise 'राजस्थान का सबसे बड़ा जिला जैसलमेर है' → 'क्षेत्रफल में जैसलमेर राजस्थान के सभी जिलों से बड़ा है'). Kathan ka SEQUENCE bhi badal sakte ho (rule 13: options ke combination naye numbers se dobara likho). Sahi kathan sahi rahe, galat kathan galat — sachchai mat badlo.",
+    "31. SEEDHE / SIMPLE SAWAL: sawal ke stem ki wording thodi alag karo (shabd badlo, vakya ka dhancha badlo; jaise 'किस जिले में स्थित है' → 'कौन-से जिले में पाया जाता है') ya jab safe ho sawal ka rup badlo (seedha prashn ↔ adhoora vakya). Naam, saal, aankde, sthan jaise tathya KABHI mat badlo. Options ka order rule 14 ke hisab se badlo.",
+    "32. KUCH SAWALON ME STRUCTURE BADLO: har 3-4 sawal me kuch sawalon me zyada update karo — do kathan jodkar ek karo ya ek kathan ko do me todo; sawal ko 'सही है' se 'सही नहीं है / गलत' wale rup me ulto (tab answer aur options sahi se dobara nikalo); ya ek naya sambhavit-par-galat option (distractor) likho. Ye sab sirf tab jab tathya par 100% yakeen ho.",
+    "33. REFRAME KE BAAD SELF-CHECK: har row me dekho — (i) tathya wahi hain (ii) answer number sahi hai (iii) explanation naye wording/numbering se match karti hai. Jis sawal me reframe se arth bigadne ka zara bhi darr ho use bas halka (sirf shabd badal kar) reframe karo aur CSV ke BAHAR list me batao (sawal ki shuruaat + kya badla).",
+    "34. EXPLANATION: rule 9, 15 aur 15A strict — explanation me book / source / lekhak / page number / 'पुस्तक में दिया है' jaisa koi bhi ullekh KABHI nahi. Explanation apne shabdon me, confident teacher jaisi, reframe kiye hue sawal ke hisab se likho (book ki line copy mat karo). 'सही उत्तर: ...' wali line bhi mat likho.",
+    "35. SOURCE KA NAAM CSV ME NAHI: book ka naam, lekhak, ya page number CSV ke kisi bhi column me (sawal, options, explanation) mat likho.",
+    "36. OPTIONS: options ko bhi reshuffle karo (rule 14) aur jab safe ho option ki wording thodi badlo (arth wahi). 'उपरोक्त सभी / इनमें से कोई नहीं' jaise options ki position mat hilao.",
+    ""
   ] : []).concat(chapListLines(kind).length ? [
     kind === "bulk" ? "CHAPTER LIST (STRICT: subject/chapter ke naam sirf isi list se lo, EXACT word-to-word, bilkul isi spelling me — kuch bhi alag likha to naam mismatch hoga aur upload reject ho jayega):" : "CHAPTER LIST (subject/chapter ke naam sirf isi list se, bilkul isi spelling me use karo — naam mismatch hone par upload reject ho jaata hai):"
   ].concat(CHAP_NOTE, chapListLines(kind), [""]) : []).concat(inFile ? [
@@ -1433,7 +1456,7 @@ function aiPrompt(kind, inFile) {
   ] : [
     "⚠ EXAMPLE (sirf format samjhane ke liye — inhe apne output me SHAMIL MAT KARO):",
     TPL_COLS[kind].join(","),
-    TPL_EX.map(ex => tplRow(kind, ex)).join("\n"),
+    TPL_EX.map(ex => tplRow(AU ? "auth" : kind, ex)).join("\n"),
     "",
     "Ab neeche diye sawal isi format me convert karo:",
     ""
@@ -1503,7 +1526,7 @@ $("toggleRecent").onclick = () => admOpen("recentBox", "toggleRecent", $("recent
 $("togglePyq").onclick = () => admOpen("pyqBox", "togglePyq", $("pyqBox").classList.contains("hide"));
 $("toggleBulk").onclick = () => { $("bulkBox").classList.toggle("hide"); $("toggleBulk").classList.toggle("open", !$("bulkBox").classList.contains("hide")); };
 $("bkFile").onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $("bkText").value = r.result; bulkCheck(); }; r.readAsText(f, "utf-8"); };
-$("bkCheck").onclick = bulkCheck; $("bkGo").onclick = bulkGo; $("bkTools").innerHTML = tplButtons("bulk") + '<div class="meta" style="margin:12px 0 4px;font-weight:600">📄 RSSB PYQ Paper (poora paper, mixed subjects)</div>' + tplButtons("pyq");
+$("bkCheck").onclick = bulkCheck; $("bkGo").onclick = bulkGo; $("bkTools").innerHTML = tplButtons("bulk") + '<div class="meta" style="margin:12px 0 4px;font-weight:600">📚 Authentic Practice (authentic books ke sawal — reframe + exam tag "Authentic Practice")</div>' + tplButtons("auth") + '<div class="meta" style="margin:12px 0 4px;font-weight:600">📄 RSSB PYQ Paper (poora paper, mixed subjects)</div>' + tplButtons("pyq");
 
 let MATS = [];
 const PUB = SB_URL + "/storage/v1/object/public/study-material/";
@@ -3600,7 +3623,26 @@ async function tgImpApply() {
 </script>
 <script>
 /* JK-HANDOFF P7 DONE — Test Builder (Question Bank se Full Subject Test) */
-const EG = { pick: [], short: [], pool: [], seed: 0, used: null, bp: null };
+const EG = { pick: [], short: [], pool: [], apool: [], seed: 0, used: null, bp: null };
+/* ===== Authentic Practice: builders me alag kota. Normal pool me authentic sawal nahi aate; "kitne authentic" khud chuno (kul me se) ===== */
+function authPoolOf(sub, chaps, avoid) {
+  const seen = new Set();
+  return ALL.filter(q => q.is_active !== false && isAuthQ(q) && q.subject === sub && (!chaps || !chaps.length || chaps.includes(q.chapter)) && !(avoid && avoid.has(q.id)))
+    .sort((a, b) => String(a.id) < String(b.id) ? -1 : 1)
+    .filter(q => { const k = qFingerprint(q.question, q.options, q.q_type); if (seen.has(k)) return false; seen.add(k); return true; })
+    .map(q => ({ q, d: q.difficulty || "", t: q.q_type || detectType(q.question, q.options) }));
+}
+function authPull(pool, n, taken, rnd, wmode) {   /* chapter-wise seeded pick, difficulty ka bandhan nahi */
+  const got = [];
+  while (got.length < n) {
+    const c = pool.filter(x => !taken.has(x.q.id)); if (!c.length) break;
+    const by = {}; c.forEach(x => (by[x.q.chapter] = by[x.q.chapter] || []).push(x));
+    const ks = Object.keys(by).sort(), w = ks.map(k => wmode === "e" ? 1 : by[k].length); let r = rnd() * w.reduce((a, b) => a + b, 0), i = 0;
+    while (i < ks.length - 1 && r >= w[i]) { r -= w[i]; i++; }
+    const a = by[ks[i]], x = a[Math.floor(rnd() * a.length)]; taken.add(x.q.id); got.push(x);
+  }
+  return got;
+}
 const egMsg = (t, ok) => { const m = $("egMsg"); if (m) { m.style.color = ok ? "var(--ok)" : "var(--bad)"; m.textContent = t; } };
 function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 const EG_LV = { easy: [60, 30, 10], moderate: [25, 50, 25], hard: [10, 40, 50] };
@@ -3619,9 +3661,9 @@ async function egUsed() {
 }
 function egBank() {
   const subs = [...new Set(ALL.filter(q => q.is_active !== false).map(q => q.subject))].sort(), u = new Set(); (EG.used || []).forEach(s => s.forEach(i => u.add(i)));
-  $("egBank").innerHTML = '<div style="overflow-x:auto"><table style="width:100%;font-size:12px;border-collapse:collapse"><tr><th align=left>Subject</th><th>Kul</th><th>E</th><th>M</th><th>H</th><th>?</th><th>Unused</th></tr>' + subs.map(s => {
-    const a = ALL.filter(q => q.subject === s && q.is_active !== false), c = d => a.filter(q => q.difficulty === d).length;
-    return `<tr><td>${esc(s)}</td><td align=center>${a.length}</td><td align=center>${c("easy")}</td><td align=center>${c("moderate")}</td><td align=center>${c("hard")}</td><td align=center>${a.filter(q => !q.difficulty).length}</td><td align=center>${a.filter(q => !u.has(q.id)).length}</td></tr>`;
+  $("egBank").innerHTML = '<div style="overflow-x:auto"><table style="width:100%;font-size:12px;border-collapse:collapse"><tr><th align=left>Subject</th><th>Kul</th><th>E</th><th>M</th><th>H</th><th>?</th><th>Unused</th><th>📚Auth</th></tr>' + subs.map(s => {
+    const a = ALL.filter(q => q.subject === s && q.is_active !== false && !isAuthQ(q)), c = d => a.filter(q => q.difficulty === d).length;
+    return `<tr><td>${esc(s)}</td><td align=center>${a.length}</td><td align=center>${c("easy")}</td><td align=center>${c("moderate")}</td><td align=center>${c("hard")}</td><td align=center>${a.filter(q => !q.difficulty).length}</td><td align=center>${a.filter(q => !u.has(q.id)).length}</td><td align=center>${ALL.filter(q => q.subject === s && q.is_active !== false && isAuthQ(q)).length}</td></tr>`;
   }).join("") + "</table></div>";
 }
 function mountEng() {
@@ -3635,7 +3677,8 @@ function mountEng() {
   <div class="sc2 c-amber"><div class="sch"><span class="scn">2</span>Kitne sawal aur kaunsa level</div>
    <div class="lbl" style="margin-top:0">Kul sawal</div><div class="chips">${[25, 50, 75, 100, 150].map(n => `<button class="sec chip" data-n="${n}">${n}</button>`).join(" ")} <input id="egN" type="number" value="50" class="num"></div>
    <div class="lbl">Level (Easy / Moderate / Hard %)</div><div class="chips">${Object.keys(EG_LV).map(k => `<button class="sec chip" data-lv="${k}">${k}</button>`).join(" ")}</div>
-   <div class="chips" style="margin-top:8px"><input id="egE" type="number" value="25" class="num-s"><input id="egM" type="number" value="50" class="num-s"><input id="egH" type="number" value="25" class="num-s"> <span id="egLvS" class="meta"></span></div></div>
+   <div class="chips" style="margin-top:8px"><input id="egE" type="number" value="25" class="num-s"><input id="egM" type="number" value="50" class="num-s"><input id="egH" type="number" value="25" class="num-s"> <span id="egLvS" class="meta"></span></div>
+   <div class="lbl">📚 Authentic Practice se kitne sawal <small>(kul sawal me se · 0 = nahi lena)</small></div><div class="chips">${[0, 10, 20, 30].map(n => `<button class="sec chip" data-a="${n}">${n}</button>`).join(" ")} <input id="egA" type="number" value="0" min="0" class="num"></div><div id="egAInfo" class="meta"></div></div>
   <div class="sc2 c-violet"><div class="sch"><span class="scn">3</span>Sawal ke prakar (type)</div>
    <div class="meta" style="margin-bottom:8px">Type ke minimum sawal (0 = natural)</div>
    <div class="tboxes">${["statement", "match", "assertion_reason", "table"].map(t => `<label class="tbox t-${t}"><span>${t.replace("_", " ")}</span><input id="egT_${t}" type="number" value="0" min="0"></label>`).join("")}</div></div>
@@ -3652,7 +3695,9 @@ function mountEng() {
   <div id="egMsg" class="meta"></div><div id="egRes"></div>`;
   $("egSeed").value = Math.floor(Math.random() * 1e9);
   const chs = () => { const s = $("egSub").value; $("egChap").innerHTML = [...new Set(ALL.filter(q => q.subject === s).map(q => q.chapter))].sort().map(c => `<label class="exopt"><input type="checkbox" value="${esc(c)}"> ${esc(c)}</label>`).join(""); };
-  $("egSub").onchange = chs; chs();
+  const aInfo = () => { const n = authPoolOf($("egSub").value, [...document.querySelectorAll("#egChap input:checked")].map(i => i.value)).length, a = +$("egA").value | 0; $("egAInfo").textContent = "Is subject/chapter me Authentic Practice ke " + n + " sawal hain" + (a > n ? " — ⚠ " + a + " maange, kami rahegi" : ""); $("egAInfo").style.color = a > n ? "var(--bad)" : ""; };
+  $("egSub").onchange = () => { chs(); aInfo(); }; chs(); $("egChap").addEventListener("change", aInfo); $("egA").oninput = aInfo;
+  p.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { $("egA").value = b.dataset.a; aInfo(); }); aInfo();
   p.querySelectorAll("[data-n]").forEach(b => b.onclick = () => $("egN").value = b.dataset.n);
   p.querySelectorAll("[data-lv]").forEach(b => b.onclick = () => { const v = EG_LV[b.dataset.lv]; $("egE").value = v[0]; $("egM").value = v[1]; $("egH").value = v[2]; lvS(); });
   const lvS = () => { const s = +$("egE").value + +$("egM").value + +$("egH").value; $("egLvS").textContent = "योग " + s + "%"; $("egLvS").style.color = s === 100 ? "var(--ok)" : "var(--bad)"; };
@@ -3663,14 +3708,15 @@ function mountEng() {
 function egGen() {
   const N = +$("egN").value | 0, lv = [+$("egE").value, +$("egM").value, +$("egH").value], sub = $("egSub").value, seed = +$("egSeed").value | 0;
   if (N < 1) return egMsg("Sawalon ki sankhya daalo.", 0);
+  const A = Math.max(0, +$("egA").value | 0); if (A > N) return egMsg("Authentic Practice ke sawal kul sawal (" + N + ") se zyada nahi ho sakte.", 0);
   if (lv.reduce((a, b) => a + b, 0) !== 100) return egMsg("Level % ka yog 100 hona chahiye.", 0);
   const chaps = [...document.querySelectorAll("#egChap input:checked")].map(i => i.value), ex = $("egEx").value, av = +$("egAv").value, pol = $("egU").value;
   const avoid = new Set(); (EG.used || []).slice(0, av).forEach(s => s.forEach(i => avoid.add(i)));
   const rnd = mulberry(seed), seen = new Set(), dn = d => d || (pol === "m" ? "moderate" : "");
-  let pool = ALL.filter(q => q.is_active !== false && q.subject === sub && (!chaps.length || chaps.includes(q.chapter)) && (!ex || (q.exams || []).includes(ex)) && !avoid.has(q.id))
+  let pool = ALL.filter(q => q.is_active !== false && q.subject === sub && (!chaps.length || chaps.includes(q.chapter)) && !isAuthQ(q) && (!ex || (q.exams || []).includes(ex)) && !avoid.has(q.id))
     .sort((a, b) => String(a.id) < String(b.id) ? -1 : 1).filter(q => { const k = qFingerprint(q.question, q.options, q.q_type); if (seen.has(k)) return false; seen.add(k); return true; });
   pool = pool.map(q => ({ q, d: dn(q.difficulty), t: q.q_type || detectType(q.question, q.options) }));
-  const take = new Set(), pick = [], D = ["easy", "moderate", "hard"], quota = {}; lrm(N, lv).forEach((n, i) => quota[D[i]] = n);
+  const take = new Set(), pick = [], D = ["easy", "moderate", "hard"], quota = {}; lrm(N - A, lv).forEach((n, i) => quota[D[i]] = n);
   const cap = Math.max(1, Math.ceil(+$("egCap").value / 100 * N)), cc = {}, wmode = $("egW").value;
   const pull = (cand, d) => {   /* chapter-weighted seeded pick */
     cand = cand.filter(x => !take.has(x.q.id) && (cc[x.q.chapter] || 0) < cap); if (!cand.length) return null;
@@ -3690,26 +3736,32 @@ function egGen() {
     for (const o of near[d]) while (n > 0 && pull(pool.filter(x => x.d === o), d)) n--;
     while (n > 0 && pol !== "s" && pull(pool.filter(x => !x.d), d)) n--;
     if (n > 0) short.push({ subject: sub, difficulty: d, q_type: "any", needed: n }); });
+  let apool = [];
+  if (A > 0) {   /* Authentic Practice kota (exam filter authentic par lagu nahi) */
+    apool = authPoolOf(sub, chaps, avoid); const ag = authPull(apool, A, new Set(), rnd, wmode);
+    ag.forEach(x => pick.push(Object.assign({}, x, { dd: x.q.difficulty || "moderate", auth: true })));
+    if (ag.length < A) short.push({ subject: sub, difficulty: "authentic", q_type: "any", needed: A - ag.length });
+  }
   for (let i = pick.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pick[i], pick[j]] = [pick[j], pick[i]]; }
-  EG.pick = pick; EG.short = short; EG.pool = pool; EG.seed = seed; EG.bp = { subject: sub, n: N, level: lv, chapters: chaps, exam: ex, seed };
+  EG.pick = pick; EG.short = short; EG.pool = pool; EG.apool = apool; EG.seed = seed; EG.bp = { subject: sub, n: N, level: lv, chapters: chaps, exam: ex, seed, auth: A };
   egRes();
 }
 function egRes() {
   const P = EG.pick, c = f => { const m = {}; P.forEach(x => { const k = f(x); m[k] = (m[k] || 0) + 1; }); return Object.entries(m).map(([k, v]) => k + " " + v).join(" · "); };
   const pc = d => P.length ? Math.round(100 * P.filter(x => (x.q.difficulty || x.d) === d).length / P.length) : 0;
   $("egRes").innerHTML = `<div class="sc2 c-violet"><div class="sch">👀 Preview: ${P.length} sawal · seed ${EG.seed}</div>
-   <div class="meta">Easy/Mod/Hard ≈ ${pc("easy")}/${pc("moderate")}/${pc("hard")}% · ${esc(c(x => x.t))}<br>Chapters: ${esc(c(x => x.q.chapter))}</div>
+   <div class="meta">Easy/Mod/Hard ≈ ${pc("easy")}/${pc("moderate")}/${pc("hard")}% · ${esc(c(x => x.t))}<br>Chapters: ${esc(c(x => x.q.chapter))}${P.some(x => x.auth) ? "<br>📚 Authentic Practice: " + P.filter(x => x.auth).length + " sawal" : ""}</div>
    ${EG.short.length ? `<div style="color:var(--bad);margin:6px 0">⚠ Kami: ${EG.short.map(s => s.difficulty + " −" + s.needed).join(", ")} <button class="sec" id="egGap">⬇️ Gap CSV</button></div>` : ""}
    <div class="savebox"><input id="egTitle" placeholder="Test ka title" style="width:100%;margin-bottom:6px">
     Time (min): <input id="egDur" type="number" value="${P.length}" style="width:70px"> Marks/Q: <input id="egMk" type="number" step="0.5" value="1" style="width:60px">
     <select id="egNeg">${T_NEG.map(o => `<option value="${o[0]}">${esc(o[1])}</option>`).join("")}</select> <label><input type="checkbox" id="egAct" checked> Active</label>
     <button class="pri" id="egSave" style="--c:#16a34a">💾 Save Test</button></div>
-   <div id="egList">${P.map((x, i) => `<div class="egi"><span class="tag d-${x.q.difficulty || x.dd}">${x.q.difficulty || x.dd + "*"}</span> <span class="tag tg-type">${x.t}</span> <span class="meta">${esc(x.q.chapter || "")}</span>
+   <div id="egList">${P.map((x, i) => `<div class="egi">${x.auth ? '<span class="tag" style="background:#d97706;color:#fff">📚 Authentic</span> ' : ""}<span class="tag d-${x.q.difficulty || x.dd}">${x.q.difficulty || x.dd + "*"}</span> <span class="tag tg-type">${x.t}</span> <span class="meta">${esc(x.q.chapter || "")}</span>
     <button class="sec" data-rp="${i}">🔄</button> <button class="sec" data-rm="${i}">❌</button><div>${i + 1}. ${esc(String(x.q.question).replace(/<[^>]*>/g, " ").slice(0, 130))}</div></div>`).join("")}</div></div>`;
   $("egRes").querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { EG.pick.splice(+b.dataset.rm, 1); egRes(); });
   $("egRes").querySelectorAll("[data-rp]").forEach(b => b.onclick = () => {
-    const i = +b.dataset.rp, x = EG.pick[i], have = new Set(EG.pick.map(y => y.q.id)), c = EG.pool.filter(y => !have.has(y.q.id) && y.d === x.d);
-    if (!c.length) return egMsg("Is cell me aur sawal nahi.", 0); EG.pick[i] = Object.assign({}, c[Math.floor(Math.random() * c.length)], { dd: x.dd }); egRes();
+    const i = +b.dataset.rp, x = EG.pick[i], have = new Set(EG.pick.map(y => y.q.id)), c = x.auth ? (EG.apool || []).filter(y => !have.has(y.q.id)) : EG.pool.filter(y => !have.has(y.q.id) && y.d === x.d);
+    if (!c.length) return egMsg("Is cell me aur sawal nahi.", 0); EG.pick[i] = Object.assign({}, c[Math.floor(Math.random() * c.length)], { dd: x.dd, auth: !!x.auth }); egRes();
   });
   $("egSave").onclick = egSave; if ($("egGap")) $("egGap").onclick = () => tgDl("jakhar_gap_" + EG.bp.subject + ".csv", "\uFEFF" + ["subject,difficulty,q_type,needed"].concat(EG.short.map(s => [s.subject, s.difficulty, s.q_type, s.needed].map(csvCell).join(","))).join("\r\n"), "text/csv;charset=utf-8");
 }
@@ -3734,17 +3786,19 @@ const MK = { sec: [{ s: "", n: 25 }], res: null, drafts: [] };
 const mkMsg = (t, ok) => { const m = $("mkMsg"); if (m) { m.style.color = ok ? "var(--ok)" : "var(--bad)"; m.textContent = t; } };
 function mkPool(sub, taken, pol) {
   const seen = new Set();
-  return ALL.filter(q => q.is_active !== false && q.subject === sub && !taken.has(q.id)).sort((a, b) => String(a.id) < String(b.id) ? -1 : 1)
+  return ALL.filter(q => q.is_active !== false && q.subject === sub && !isAuthQ(q) && !taken.has(q.id)).sort((a, b) => String(a.id) < String(b.id) ? -1 : 1)
     .filter(q => { const k = qFingerprint(q.question, q.options, q.q_type); if (seen.has(k)) return false; seen.add(k); return true; })
     .map(q => ({ q, d: q.difficulty || (pol === "m" ? "moderate" : ""), t: q.q_type || detectType(q.question, q.options) }));
 }
 /* ek section bharo: level quota -> chapter-anupat random -> paas ki difficulty -> untagged. return {got:[x], need:kami} */
-function mkFill(sub, n, lv, taken, rnd, pol) {
-  const pool = mkPool(sub, taken, pol), D = ["easy", "moderate", "hard"], near = { easy: ["moderate", "hard"], moderate: ["easy", "hard"], hard: ["moderate", "easy"] }, got = [];
+function mkFill(sub, n, lv, taken, rnd, pol, a) {
+  const A = Math.min(Math.max(a | 0, 0), n), pool = mkPool(sub, taken, pol), D = ["easy", "moderate", "hard"], near = { easy: ["moderate", "hard"], moderate: ["easy", "hard"], hard: ["moderate", "easy"] }, got = [];
   const pull = f => { const c = pool.filter(x => !taken.has(x.q.id) && f(x)); if (!c.length) return false;
     const by = {}; c.forEach(x => (by[x.q.chapter] = by[x.q.chapter] || []).push(x)); const ks = Object.keys(by).sort(), w = ks.map(k => by[k].length); let r = rnd() * w.reduce((a, b) => a + b, 0), i = 0;
     while (i < ks.length - 1 && r >= w[i]) { r -= w[i]; i++; } const a = by[ks[i]], x = a[Math.floor(rnd() * a.length)]; taken.add(x.q.id); got.push(x); return true; };
-  let short = 0; lrm(n, lv).forEach((k, i) => { const d = D[i]; while (k > 0 && pull(x => x.d === d)) k--;
+  let short = 0;
+  if (A > 0) { const g = authPull(authPoolOf(sub, null, taken), A, taken, rnd, "p"); g.forEach(x => got.push(x)); short += A - g.length; }   /* Authentic Practice kota pehle */
+  lrm(n - A, lv).forEach((k, i) => { const d = D[i]; while (k > 0 && pull(x => x.d === d)) k--;
     for (const o of near[d]) while (k > 0 && pull(x => x.d === o)) k--; while (k > 0 && pol !== "s" && pull(x => !x.d)) k--; short += k; });
   return { got, need: short };
 }
@@ -3757,7 +3811,7 @@ function mountMk() {
   <div class="sc2 c-blue"><div class="sch"><span class="scn">1</span>Exam aur test ka naam</div>
    <div class="lbl" style="margin-top:0">Exams (ek ya zyada)</div><div id="mkEx" class="exbox" style="--c:#7c3aed">${T_EXAMS.flatMap(g => g.list).map(e => `<label class="exopt"><input type="checkbox" value="${esc(e)}"> ${esc(e)}</label>`).join("")}</div>
    <input id="mkTitle" placeholder="Test ka title" style="width:100%;margin:10px 0 0"></div>
-  <div class="sc2 c-green"><div class="sch"><span class="scn">2</span>Sections (subject × sawal) <small id="mkTot"></small></div>
+  <div class="sc2 c-green"><div class="sch"><span class="scn">2</span>Sections (subject × sawal × 📚 Authentic) <small id="mkTot"></small></div>
    <div id="mkSec"></div><button class="sec" id="mkAdd" style="margin-top:6px">+ Section jodo</button></div>
   <div class="sc2 c-amber"><div class="sch"><span class="scn">3</span>Level (E / M / H %) — sab sections par</div>
    <div class="chips">${Object.keys(EG_LV).map(k => `<button class="sec chip" data-lv="${k}">${k}</button>`).join(" ")}</div>
@@ -3775,10 +3829,11 @@ function mountMk() {
   $("mkAdd").onclick = () => { MK.sec.push({ s: "", n: 10 }); mkSecR(); }; $("mkGen").onclick = mkGen; mkSecR(); mkDrafts();
 }
 function mkSecR() {
-  $("mkSec").innerHTML = MK.sec.map((r, i) => `<div class="mkrow" style="--c:${["#1457d9", "#16a34a", "#d97706", "#7c3aed", "#db2777", "#0d9488"][i % 6]}"><span class="scn">${i + 1}</span><select data-s="${i}" style="flex:1"><option value="">Subject chuno</option>${MK.subs.map(s => `<option ${s === r.s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select><input data-n="${i}" type="number" value="${r.n}" style="width:65px"><button class="danger" data-x="${i}">✕</button></div>`).join("");
+  $("mkSec").innerHTML = MK.sec.map((r, i) => `<div class="mkrow" style="--c:${["#1457d9", "#16a34a", "#d97706", "#7c3aed", "#db2777", "#0d9488"][i % 6]}"><span class="scn">${i + 1}</span><select data-s="${i}" style="flex:1"><option value="">Subject chuno</option>${MK.subs.map(s => `<option ${s === r.s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select><input data-n="${i}" type="number" value="${r.n}" style="width:62px" title="Kul sawal"><input data-a="${i}" type="number" min="0" value="${r.a || 0}" style="width:54px" title="📚 Authentic Practice se kitne (kul me se)" placeholder="📚"><button class="danger" data-x="${i}">✕</button></div>`).join("");
   const tot = () => $("mkTot").textContent = "Kul: " + MK.sec.reduce((a, r) => a + (+r.n || 0), 0) + " sawal"; tot();
   $("mkSec").querySelectorAll("[data-s]").forEach(e => e.onchange = () => MK.sec[+e.dataset.s].s = e.value);
   $("mkSec").querySelectorAll("[data-n]").forEach(e => e.oninput = () => { MK.sec[+e.dataset.n].n = +e.value | 0; tot(); if (!$("mkDur").value) $("mkDur").placeholder = MK.sec.reduce((a, r) => a + r.n, 0); });
+  $("mkSec").querySelectorAll("[data-a]").forEach(e => e.oninput = () => { MK.sec[+e.dataset.a].a = Math.max(0, +e.value | 0); });
   $("mkSec").querySelectorAll("[data-x]").forEach(e => e.onclick = () => { MK.sec.splice(+e.dataset.x, 1); mkSecR(); });
 }
 function mkGen() {
@@ -3786,13 +3841,13 @@ function mkGen() {
   if (lv.reduce((a, b) => a + b, 0) !== 100) return mkMsg("Level % ka yog 100 hona chahiye.", 0);
   if (!secs.length) return mkMsg("Kam se kam ek section (subject + sawal) bharo.", 0);
   const seed = +$("mkSeed").value | 0, rnd = mulberry(seed), taken = new Set(), pol = $("mkU").value, qs = [], gaps = [];
-  secs.forEach((r, i) => { const f = mkFill(r.s, r.n, lv, taken, rnd, pol); f.got.forEach(x => qs.push(mkSnap(x, i))); if (f.need) gaps.push({ sec: i, subject: r.s, needed: f.need }); });
+  secs.forEach((r, i) => { const f = mkFill(r.s, r.n, lv, taken, rnd, pol, r.a); f.got.forEach(x => qs.push(mkSnap(x, i))); if (f.need) gaps.push({ sec: i, subject: r.s, needed: f.need }); });
   MK.res = { qs, gaps, bp: { sections: secs, level: lv, seed, pol, gaps } }; mkRes();
 }
 function mkRes() {
   const R = MK.res, bp = R.bp, tot = bp.sections.reduce((a, r) => a + r.n, 0);
   $("mkRes").innerHTML = `<div class="sc2 c-violet"><div class="sch">📋 Result: ${R.qs.length}/${tot} sawal bhare</div>
-   ${bp.sections.map((r, i) => { const g = R.gaps.find(x => x.sec === i); return `<div class="meta mkres ${g ? "bad" : ""}">${esc(r.s)}: ${r.n - (g ? g.needed : 0)}/${r.n}${g ? ' <b style="color:var(--bad)">· ' + g.needed + " khaali</b>" : " ✓"}</div>`; }).join("")}
+   ${bp.sections.map((r, i) => { const g = R.gaps.find(x => x.sec === i); return `<div class="meta mkres ${g ? "bad" : ""}">${esc(r.s)}: ${r.n - (g ? g.needed : 0)}/${r.n}${r.a ? " · 📚 " + R.qs.filter(q => q.sec === i && (q.exams || []).includes(AUTH_TAG)).length + "/" + Math.min(r.a, r.n) : ""}${g ? ' <b style="color:var(--bad)">· ' + g.needed + " khaali</b>" : " ✓"}</div>`; }).join("")}
    <div style="margin-top:8px">${R.gaps.length ? '<button class="sec" id="mkGap">⬇️ Gap CSV</button> ' : ""}<button class="pri" id="mkSave" style="--c:#16a34a">💾 ${R.gaps.length ? "Draft save (inactive)" : "Save test"}</button></div></div>`;
   if ($("mkGap")) $("mkGap").onclick = () => mkGapCsv(R.gaps, bp);
   $("mkSave").onclick = () => mkSave(R);
@@ -3826,7 +3881,7 @@ async function mkDrafts() {
 }
 async function mkRefill(id) {   /* sirf khaali slots bharo; pehle chune sawal nahi badalte */
   const t = MK.drafts.find(x => String(x.id) === String(id)), bp = t.blueprint, qs = t.questions || [], taken = new Set(qs.map(q => q.qid)), rnd = mulberry((bp.seed | 0) + qs.length + 7), add = [];
-  bp.sections.forEach((r, i) => { const have = qs.filter(q => q.sec === i).length; if (have >= r.n) return; const f = mkFill(r.s, r.n - have, bp.level, taken, rnd, bp.pol || "m"); f.got.forEach(x => add.push(mkSnap(x, i))); });
+  bp.sections.forEach((r, i) => { const have = qs.filter(q => q.sec === i).length; if (have >= r.n) return; const haveA = qs.filter(q => q.sec === i && (q.exams || []).includes(AUTH_TAG)).length, needA = Math.max(0, (r.a | 0) - haveA); const f = mkFill(r.s, r.n - have, bp.level, taken, rnd, bp.pol || "m", needA); f.got.forEach(x => add.push(mkSnap(x, i))); });
   if (!add.length) return mkMsg("Bank me abhi naye sawal nahi mile — pehle sawal jodo.", 0);
   const all = qs.concat(add).sort((a, b) => a.sec - b.sec), tot = bp.sections.reduce((a, r) => a + r.n, 0);
   const gaps = bp.sections.map((r, i) => ({ sec: i, subject: r.s, needed: r.n - all.filter(q => q.sec === i).length })).filter(g => g.needed > 0);
