@@ -2135,7 +2135,7 @@ function mountTestPane(kind) {
       <div class="sc2 c-blue">
         <div class="sch"><span class="scn">1</span>${isSub ? "Subject aur test ka naam" : "Exam aur test ka naam"}</div>
         ${isSub ? `<select id="${kind}Sel">${opts}</select>` : exBoxHtml(kind)}
-        <input id="${kind}Title" placeholder="Test ka naam (title) — jaise: Full Test 1" style="margin-top:10px;margin-bottom:0">
+        <input id="${kind}Title" placeholder="Test ka naam (title) — jaise: Test No. 1" style="margin-top:10px;margin-bottom:0">
       </div>
       <div class="sc2 c-amber">
         <div class="sch"><span class="scn">2</span>Time aur marks</div>
@@ -2156,7 +2156,7 @@ function mountTestPane(kind) {
         <div id="${kind}Msg" class="msg" style="white-space:pre-wrap"></div>
         <div id="${kind}Prev"></div>
       </div>
-      <div class="sc2 c-violet"><div class="sch">📋 Upload hue tests</div><div id="${kind}List" class="meta">Load ho raha hai...</div></div>`;
+      <div class="sc2 c-violet"><div class="sch">📋 Upload hue tests</div><button type="button" class="sec" style="margin-bottom:8px" onclick="testRenameAll('${kind}')">\ud83d\udd27 Sab naam \u2192 Test No. N</button><div id="${kind}List" class="meta">Load ho raha hai...</div></div>`;
     $(kind + "File").onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $(kind + "Text").value = r.result; testCheck(kind); }; r.readAsText(f, "utf-8"); };
     $(kind + "Chk").onclick = () => testCheck(kind);
     $(kind + "Go").onclick = () => testUpload(kind);
@@ -2165,6 +2165,34 @@ function mountTestPane(kind) {
   testList(kind);
 }
 
+/* Test number title se nikalo ("Test Number 3", "Test 3", "Test No-3"); sirf "Test"/number-rahit = 1 */
+function tstNoA(x) {
+  const t = String(x && x.title || "");
+  let m = t.match(/(?:test|\u091f\u0947\u0938\u094d\u091f|mock|no\.?|number)\s*(?:no\.?|number|#|-|:)?\s*(\d+)/i);
+  if (!m) { const a = t.match(/\d+/g); if (a) return +a[a.length - 1] || 1; }
+  return m ? (+m[1] || 1) : 1;
+}
+/* Is pane ke saare tests ke naam "Test No. N" me badlo (DB me) */
+async function testRenameAll(kind) {
+  const S = TP[kind], isSub = kind === "fst", used = new Set(), todo = [], skip = [];
+  const list = (S.tests || []).slice().sort((a, b) => tstNoA(a) - tstNoA(b) || new Date(a.created_at) - new Date(b.created_at));
+  list.forEach(t => {
+    const nt = "Test No. " + tstNoA(t), keys = (isSub ? [t.subject || ""] : (examsOfA(t).length ? examsOfA(t) : [""])).map(k => k + "|" + nt);
+    if (keys.some(k => used.has(k))) { skip.push(t.title + " (" + nt + " pehle se hai)"); return; }
+    keys.forEach(k => used.add(k));
+    if (t.title !== nt) todo.push({ t, nt });
+  });
+  if (!todo.length) { alert(skip.length ? "Rename ke liye kuch nahi; ye skip hue:\n" + skip.join("\n") : "Sab naam pehle se Test No. N hain."); return; }
+  const body = todo.map(x => (isSub ? (x.t.subject || "") + ": " : "") + x.t.title + "  \u2192  " + x.nt).join("\n") + (skip.length ? "\n\nSkip (naam takraata hai):\n" + skip.join("\n") : "");
+  if (!await askConfirm({ title: todo.length + " test ka naam badlein?", body })) return;
+  let ok = 0, bad = [];
+  for (const x of todo) {
+    try { await api("/rest/v1/tests?id=eq." + encodeURIComponent(x.t.id), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ title: x.nt }) }); ok++; }
+    catch (e) { bad.push(x.t.title + ": " + e.message); }
+  }
+  alert(ok + " naam badle" + (bad.length ? "\nFail:\n" + bad.join("\n") : ""));
+  testList(kind);
+}
 async function testList(kind) {
   const S = TP[kind], box = $(kind + "List"), dbKind = kind === "fst" ? "subject" : "mock";
   try {
@@ -2177,12 +2205,27 @@ async function testList(kind) {
   }
   const c = $(kind === "fst" ? "cFst" : "cFmk"); if (c) c.textContent = S.tests.length + " test";
   if (!S.tests.length) { box.textContent = "Abhi koi test upload nahi hua."; return; }
+  S.tests.sort((a, b) => (kind === "fst" ? String(a.subject || "").localeCompare(String(b.subject || ""), "hi") : 0) || tstNoA(a) - tstNoA(b) || new Date(a.created_at) - new Date(b.created_at));
   box.innerHTML = S.tests.map(t => `<div class="srow trow ${t.is_active ? "live" : "off"}" style="align-items:center">
     <div style="min-width:0"><div class="q" style="margin:0">${esc(t.title)} ${t.is_active ? '<span class="tag on">LIVE</span>' : '<span class="tag hid">HIDDEN</span>'}</div>
     <div class="meta">${kind === "fst" ? esc(t.subject) : examsOfA(t).map(e => '<span class="tag on" title="' + esc(e) + '">' + esc(exShortA(e)) + '</span>').join(" ")} · ${t.q_count} sawal · ${t.q_count * t.marks_per_q} marks${t.duration_min ? " · " + t.duration_min + " min" : ""}${t.neg_marking == null ? "" : (t.neg_marking > 0 ? " · neg " + t.neg_marking : " · neg nahi")}</div></div>
-    <div class="row" style="flex:none;flex-wrap:nowrap">${kind === "fmk" ? `<button class="sec" onclick="testEditExams('${kind}','${esc(t.id)}')">Exams</button>` : ""}<button class="sec" onclick="testEditNeg('${kind}','${esc(t.id)}')">Neg</button><button class="sec" onclick="testToggle('${kind}','${esc(t.id)}',${t.is_active ? "false" : "true"})">${t.is_active ? "Hide" : "Show"}</button><button class="danger" onclick="testDelete('${kind}','${esc(t.id)}')">Delete</button></div></div>`).join("");
+    <div class="row" style="flex:none;flex-wrap:nowrap">${kind === "fmk" ? `<button class="sec" onclick="testEditExams('${kind}','${esc(t.id)}')">Exams</button>` : ""}<button class="sec" onclick="testRename('${kind}','${esc(t.id)}')">Rename</button><button class="sec" onclick="testEditNeg('${kind}','${esc(t.id)}')">Neg</button><button class="sec" onclick="testToggle('${kind}','${esc(t.id)}',${t.is_active ? "false" : "true"})">${t.is_active ? "Hide" : "Show"}</button><button class="danger" onclick="testDelete('${kind}','${esc(t.id)}')">Delete</button></div></div>`).join("");
 }
 
+/* Galat title type ho gaya ho to yahin se theek karo. Sirf number likho (jaise 5) to "Test No. 5" ban jayega */
+async function testRename(kind, id) {
+  const S = TP[kind], isSub = kind === "fst", t = (S.tests || []).find(x => String(x.id) === String(id)); if (!t) return;
+  let v = prompt("Naya naam likho (sirf number likhoge to Test No. N ban jayega):", t.title); if (v === null) return;
+  v = v.trim(); if (!v) { alert("Naam khali nahi ho sakta."); return; }
+  if (/^\d+$/.test(v)) v = "Test No. " + v;
+  if (v === t.title) return;
+  const ex = examsOfA(t);
+  if ((S.tests || []).some(o => String(o.id) !== String(id) && String(o.title).trim().toLowerCase() === v.toLowerCase() && (isSub ? o.subject === t.subject : examsOfA(o).some(e => ex.includes(e))))) { alert("Is " + (isSub ? "subject" : "exam") + " me ye naam pehle se hai."); return; }
+  if (!/\d/.test(v) && !confirm("Is naam me number nahi hai, app me ye Test No. 1 dikhega. Phir bhi rakhein?")) return;
+  try { await api("/rest/v1/tests?id=eq." + encodeURIComponent(id), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ title: v }) }); }
+  catch (e) { alert("Naam nahi badla: " + e.message); return; }
+  testList(kind);
+}
 async function testEditNeg(kind, id) {
   const t = (TP[kind].tests || []).find(x => String(x.id) === String(id)); if (!t) return;
   const v = prompt('"' + t.title + '" — Negative marking (har galat sawal par kitna katega)\n0 = nahi · 0.25 = 1/4 · 0.333333 = 1/3 · 0.5 = 1/2 · ya koi bhi number', t.neg_marking || 0);
@@ -4408,7 +4451,7 @@ function mountAbk() {
       <div class="row" style="margin-top:8px"><div style="flex:1;min-width:110px"><div class="lbl" style="margin-top:0">Marks / sawal</div><input id="abMk" type="number" min="0.25" step="0.25" value="2" style="margin:0"></div>
       <div style="flex:2;min-width:150px"><div class="lbl" style="margin-top:0">➖ Negative marking <small>(baad me test list me 'Neg' se badal sakte ho)</small></div><select id="abNeg" style="margin:0">${T_NEG.map(o => `<option value="${o[0]}" ${o[0] === "0.333333" ? "selected" : ""}>${esc(o[1])}</option>`).join("")}</select></div></div>
       <div class="meta" id="abTot" style="margin-top:6px"></div>
-      <div class="lbl">Test ka naam: prefix <small>(Test 1, Test 2 ... aage ka number apne-aap judega)</small></div><input id="abPre" value="Test" style="margin-bottom:0"></div>
+      <div class="lbl">Test ka naam: prefix <small>(Test 1, Test 2 ... aage ka number apne-aap judega)</small></div><input id="abPre" value="Test No." style="margin-bottom:0"></div>
     <div class="sc2 c-violet"><div class="sch"><span class="scn">3</span>Level aur sawal ke prakar</div>
       <div class="row"><div style="flex:1;min-width:110px"><div class="lbl" style="margin-top:0">Easy tests (shuru me)</div><input id="abE" type="number" min="0" value="2" style="margin:0"></div>
       <div style="flex:1;min-width:110px"><div class="lbl" style="margin-top:0">Hard tests (aakhir me)</div><input id="abH" type="number" min="0" value="2" style="margin:0"></div></div>
@@ -4428,7 +4471,7 @@ function mountAbk() {
       <div class="row"><div style="flex:1;min-width:110px"><div class="lbl" style="margin-top:0">Kitne mock</div><input id="cetT" type="number" min="1" value="10" style="margin:0"></div>
       <div style="flex:1;min-width:110px"><div class="lbl" style="margin-top:0">Easy mock (shuru me)</div><input id="cetE" type="number" min="0" value="2" style="margin:0"></div>
       <div style="flex:1;min-width:110px"><div class="lbl" style="margin-top:0">Hard mock (aakhir me)</div><input id="cetH" type="number" min="0" value="2" style="margin:0"></div></div>
-      <div class="lbl">Test ka naam (prefix)</div><input id="cetPre" value="CET Full Mock" style="margin-bottom:0">
+      <div class="lbl">Test ka naam (prefix)</div><input id="cetPre" value="Test No." style="margin-bottom:0">
       <label style="display:block;margin-top:8px;font-size:14px"><input id="cetNR" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Sawal DOHRAO MAT — jis subject me naye sawal khatam, wahan kami rahegi (mock DRAFT me rahega, baad me naye sawal se bharenge)</label><label style="display:block;margin-top:8px;font-size:14px"><input id="cetAct" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Jo mock poora bhar jaye use turant LIVE karo (adhoore apne-aap DRAFT rahenge)</label></div>
     <div class="sc2 c-pink"><div class="row"><button id="cetGen" style="flex:1">⚡ 1. CET mocks generate karo</button></div>
       <div id="cetMsg" class="msg" style="white-space:pre-wrap"></div><div id="cetPrev"></div>
@@ -4480,7 +4523,7 @@ function abBuild(sub, N, lv, tmin, seed, taken, capPct, noReuse) {
 async function abGen() {
   if (!ALL.length) return abMsg("Question bank abhi load nahi hua. Dashboard par jao, load hone do, phir aao.", 0);
   const subs = [...document.querySelectorAll("#abSubs input:checked")].map(i => i.value);
-  const T = +$("abT").value | 0, N = +$("abN").value | 0, E = +$("abE").value | 0, H = +$("abH").value | 0, pre = $("abPre").value.trim() || "Test";
+  const T = +$("abT").value | 0, N = +$("abN").value | 0, E = +$("abE").value | 0, H = +$("abH").value | 0, pre = $("abPre").value.trim() || "Test No.";
   if (!subs.length) return abMsg("Kam se kam ek subject chuno.", 0);
   if (T < 1 || N < 1) return abMsg("Test aur sawal ki sankhya sahi daalo.", 0);
   if (E + H > T) return abMsg("Easy + Hard tests kul tests (" + T + ") se zyada nahi ho sakte.", 0);
@@ -4536,7 +4579,7 @@ const CET = { plan: [], busy: false };
 const cetMsg = (t, ok) => { const m = $("cetMsg"); if (m) { m.style.color = ok ? "var(--ok)" : "var(--bad)"; m.textContent = t; } };
 async function cetGen() {
   if (!ALL.length) return cetMsg("Question bank abhi load nahi hua. Dashboard par jao, load hone do, phir aao.", 0);
-  const T = +$("cetT").value | 0, E = +$("cetE").value | 0, H = +$("cetH").value | 0, pre = $("cetPre").value.trim() || "CET Full Mock";
+  const T = +$("cetT").value | 0, E = +$("cetE").value | 0, H = +$("cetH").value | 0, pre = $("cetPre").value.trim() || "Test No.";
   if (T < 1) return cetMsg("Mock ki sankhya daalo.", 0); if (E + H > T) return cetMsg("Easy + Hard mock kul se zyada nahi ho sakte.", 0);
   $("cetGen").disabled = true; $("cetPub").disabled = true; $("cetGap").disabled = true; cetMsg("Purane mocks check ho rahe hain...", 1);
   const taken = new Set(); let start = 0;

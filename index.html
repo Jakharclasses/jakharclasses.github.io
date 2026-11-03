@@ -1384,7 +1384,7 @@ const day=d=>d.toLocaleDateString("en-CA");
 function streak(){const D=new Set(store.get("jk_days"));let n=0,t=new Date();if(!D.has(day(t)))t.setDate(t.getDate()-1);while(D.has(day(t))){n++;t.setDate(t.getDate()-1)}return n}
 function ago(t){const m=Math.round((Date.now()-t)/6e4);return m<1?"अभी":m<60?m+" मिनट पहले":m<1440?Math.round(m/60)+" घंटे पहले":Math.round(m/1440)+" दिन पहले"}
 function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
-const actRow=(h,i)=>`<div onclick="openHist(${i})"><b>${smE(jvDisp(h.n,h.k,h.ex))}${h.m==="test"?" · टेस्ट":""}${h.an>1?" · प्रयास "+h.an:""}</b><small>${h.ex&&h.ex.length?smE(h.ex.slice(0,2).join(" · "))+" · ":""}${h.r} सही · ${h.w} गलत · ${h.s} छोड़े${h.m==="test"?" · "+h.sc+" अंक":""}</small><em>${ago(h.ts)}</em></div>`;
+const actRow=(h,i)=>`<div onclick="openHist(${i})"><b>${smE(jvDisp(h.n,h.k,h.ex,"",h.tid))}${h.m==="test"?" · टेस्ट":""}${h.an>1?" · प्रयास "+h.an:""}</b><small>${h.ex&&h.ex.length?smE(h.ex.slice(0,2).join(" · "))+" · ":""}${h.r} सही · ${h.w} गलत · ${h.s} छोड़े${h.m==="test"?" · "+h.sc+" अंक":""}</small><em>${ago(h.ts)}</em></div>`;
 function openHist(i){histOpen(i)}
 const TABS=[["home","🏠","Home"],["subj","📚","Subjects"],["tests","📝","Tests"],["mist","🔍","Mistake Analysis"],["prof","👤","Profile"]];
 const BM=on=>`<svg viewBox="0 0 24 24" fill="${on?"#ffd21f":"none"}" stroke="${on?"#ffd21f":"#fff"}" stroke-width="2.4" stroke-linejoin="round"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg>`;
@@ -1567,7 +1567,7 @@ function fstSubjects(){
   draw();tstLoad().then(()=>{if(document.getElementById("fstroot")){draw(true)}}).catch(()=>{});
 }
 function fstTests(si){
-  clearInterval(tick);const S=SUBJECTS[si],L=TL.filter(x=>x.kind==="subject"&&x.subject===S.name);
+  clearInterval(tick);const S=SUBJECTS[si],L=TL.filter(x=>x.kind==="subject"&&x.subject===S.name).sort(tstCmp);
   if(!L.length)return comingSoon(S.name,fstSubjects,"tests","इस विषय का Full Subject Test जल्द जोड़ा जाएगा");
   view(hdr(BACK,"","Full Subject Test")+`<main class="pg"><div class="card hello" style="margin-bottom:14px"><span class="av" style="background:${S.color}">${S.icon}</span><div><b>${S.name}</b><br><small>${L.length} टेस्ट · Test Mode</small></div></div><div class="list">
   ${L.map(x=>tstCard(x,S.color,"📝")).join("")}</div></main>`,"tests",false,fstSubjects);
@@ -1580,7 +1580,7 @@ function mockExamNames(){
 }
 function mockOf(e){
   return TL.filter(x=>{if(x.kind!=="mock")return false;const a=examsOf(x);return a.indexOf(e)>=0||(e===MOCK_OTHER&&!a.length)})
-    .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+    .sort(tstCmp);
 }
 function mockList(f){if(f==="home"||f==="tests")mockFrom=f;mockExams()}   /* purana naam: Home tile, Tests tab, notification yahi bulate hain */
 function mockExams(){
@@ -1639,7 +1639,7 @@ function tintro(){
   const x=CFG.t,n=Q.length,mk=CFG.mark,ng=CFG.neg,tot=+(n*mk).toFixed(2);
   const nt=Math.abs(ng-1/3)<1e-3?"1/3":Math.abs(ng-.25)<1e-9?"1/4":Math.abs(ng-.5)<1e-9?"1/2":String(ng);
   const A=x.kind==="mistake"?[]:histOfTest(x);
-  view(hdr(BACK,"","टेस्ट निर्देश")+`<main class="pg"><div class="card"><h2 style="margin:0;font-size:19px">${smE(x._pyq?x.title:cleanTitle(x))}</h2>
+  view(hdr(BACK,"","टेस्ट निर्देश")+`<main class="pg"><div class="card"><h2 style="margin:0;font-size:19px">${smE(x._pyq?x.title:(x.kind==="subject"&&x.subject?x.subject+" · ":"")+cleanTitle(x))}</h2>
   ${x.kind==="mock"?exChips(examsOf(x),x.id,1):""}
   ${x.kind==="subject"&&x.subject?`<div style="margin:6px 0 0;font-size:14px">विषय: <b>${smE(x.subject)}</b></div>`:""}
   <div class="sub" style="margin:6px 0 12px">Test Mode${A.length?" · प्रयास "+(A.length+1):""}</div>
@@ -3562,15 +3562,24 @@ function cleanTitle(x){
     const re=new RegExp("(^|[\\s\\-–—:|(\\[])"+n.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?=$|[\\s\\-–—:|)\\]])","ig");t=t.replace(re,"$1")});
   t=t.replace(/\b(Rajasthan\s+)?CET\s*\(?\s*(Graduation|Senior\s+Secondary|12th)\s*Level\)?/ig,"").replace(/^\s*Rajasthan\s+/i,"");
   t=t.replace(/^[\s\-–—:|,()]+|[\s\-–—:|,()]+$/g,"").replace(/\s{2,}/g," ");
+  if(x&&!x._pyq&&(x.kind==="subject"||x.kind==="mock"))return "Test No. "+tstNo(x);
   return t||String(x&&x.title||"");
 }
+/* Full Subject / Full Mock test ka number: title se nikalo ("Test Number 3", "टेस्ट 3", "Test No-3"...). Sirf "Test" ya number-rahit title = Test 1 */
+function tstNo(x){
+  const t=String(x&&x.title||"").replace(/[०-९]/g,d=>"०१२३४५६७८९".indexOf(d));
+  let m=t.match(/(?:test|टेस्ट|mock|मॉक|no\.?|number|नंबर|संख्या)\s*(?:no\.?|number|नंबर|#|-|:)?\s*(\d+)/i);
+  if(!m){const a=t.match(/\d+/g);if(a)return +a[a.length-1]||1}
+  return m?(+m[1]||1):1;
+}
+const tstCmp=(a,b)=>tstNo(a)-tstNo(b)||new Date(a.created_at)-new Date(b.created_at);
 const EXMAP={};
 function exChips(ex,id,all){
   const L=ex.map(exShort).filter(Boolean),n=L.length;if(!n)return"";
   EXMAP[id]=L;const vis=all?L:L.slice(0,2),more=n-vis.length;
   return `<span class="exc" data-id="${smE(id)}">${vis.map(e=>`<span class="exl">${smE(e)}</span>`).join("")}${more>0?`<span class="exl more" onclick="event.stopPropagation();exMore(this)">+${more} More</span>`:""}</span>`;
 }
-function jvDisp(l,k,ex){return k==="mock"?cleanTitle({title:l,exams:ex||[]}):l}
+function jvDisp(l,k,ex,sub,tid){if(k==="mock")return cleanTitle({title:l,kind:k,exams:ex||[]});if(k==="subject"){const t=cleanTitle({title:l,kind:k}),y=sub||(tid&&(tfind(tid)||{}).subject)||"";return y?y+" · "+t:t}return l}
 function exMore(el){const p=el.closest(".exc");if(!p)return;const L=EXMAP[p.dataset.id]||[];p.innerHTML=L.map(e=>`<span class="exl">${smE(e)}</span>`).join("")}
 
 /* ---------- Test ke prashn: ek hi jagah se (tstOpen aur history dono ke liye) ---------- */
@@ -4053,7 +4062,7 @@ function rsPracticeWrong(){
   d.onclick=e=>{if(e.target===d)d.remove()};document.body.appendChild(d);
   d.querySelector("#rsm1").onclick=()=>{d.remove();rsTab("wrong")};
   d.querySelector("#rsm3").onclick=()=>d.remove();
-  d.querySelector("#rsm2").onclick=()=>{d.remove();const k=rsSnapPush();ret=()=>rsReturn(k);startFresh(wq,"गलत प्रश्न अभ्यास · "+jvDisp(label,CFG.kind,(CFG.t&&examsOf(CFG.t))||(RS.h&&RS.h.ex)||[]),"practice",{ctx:"set"})};
+  d.querySelector("#rsm2").onclick=()=>{d.remove();const k=rsSnapPush();ret=()=>rsReturn(k);startFresh(wq,"गलत प्रश्न अभ्यास · "+jvDisp(label,CFG.kind,(CFG.t&&examsOf(CFG.t))||(RS.h&&RS.h.ex)||[],CFG.t&&CFG.t.subject,(CFG.t&&CFG.t.id)||(RS.h&&RS.h.tid)),"practice",{ctx:"set"})};
 }
 function rsImprove(i){
   const x=jvW[i];if(!x)return;const k=rsSnapPush();ret=()=>rsReturn(k);
@@ -4067,7 +4076,7 @@ function result(){
   const mk=CFG.mark,ng=CFG.neg,tot=test?fmtM(n*mk):n,obt=test?sc:r,pc=jvPct(obt,tot),pcc=Math.max(0,Math.min(100,pc));
   const neg=test&&ng>0&&w>0?fmtM(w*mk*ng):0,gain=test?fmtM(r*mk):r;
   const acc=att>0?Math.round(r/att*100)+"%":"N/A";
-  const disp=jvDisp(label,CFG.kind,(CFG.t&&examsOf(CFG.t))||(h&&h.ex)||[]);
+  const disp=jvDisp(label,CFG.kind,(CFG.t&&examsOf(CFG.t))||(h&&h.ex)||[],CFG.t&&CFG.t.subject,(CFG.t&&CFG.t.id)||(h&&h.tid));
   const when=RS.ts?new Date(RS.ts).toLocaleString("en-IN",{day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit",hour12:true}):"";
   const A=jvAttempts(),cur=A.find(o=>o.x.ts===RS.ts),no=cur?cur.no:RS.an||1;
   const exs=h&&Array.isArray(h.ex)&&h.ex.length?h.ex:(CFG.t&&CFG.kind==="mock"?examsOf(CFG.t).map(exShort):[]);
@@ -4793,7 +4802,7 @@ var WN_FEATURES=[];
     Object.keys(g).forEach(function(k){var o=g[k];out.push({t:o.t,i:"📝",h:o.s+" › "+o.c,d:"+"+o.n+" नए सवाल"})});
     (typeof TL!=="undefined"?TL:[]).forEach(function(x){
       var t=Date.parse(x.created_at||"");if(isNaN(t)||t<=lo||t>now+864e5)return;
-      out.push({t:t,i:"🧪",h:x.title,d:"नया "+(x.kind==="mock"?"Full Mock Test":"Full Subject Test")+(x.subject?" · "+x.subject:"")})});
+      out.push({t:t,i:"🧪",h:(typeof cleanTitle==="function"?cleanTitle(x):x.title),d:"नया "+(x.kind==="mock"?"Full Mock Test":"Full Subject Test")+(x.subject?" · "+x.subject:"")})});
     var rows=[];try{rows=(window.jvNT&&jvNT.rows&&jvNT.rows.length?jvNT.rows:(typeof ntCached==="function"?ntCached():[]))||[]}catch(e){}
     rows.forEach(function(r){var t=Date.parse(r.created_at||"");if(isNaN(t)||t<=lo||t>now+864e5)return;
       out.push({t:t,i:r.icon||"🔔",h:r.title,d:"नई सूचना"})});
@@ -4837,7 +4846,7 @@ var WN_FEATURES=[];
       out.push({k:o.k,v:o.n,t:o.t,i:"📝",h:"नए सवाल जोड़े गए",p:"<b>"+esc(o.c)+"</b> ("+esc(o.s)+") में "+o.n+" नए सवाल जोड़े गए हैं। अभी प्रैक्टिस करें!"})});
     (typeof TL!=="undefined"?TL:[]).forEach(function(x){
       var t=Date.parse(x.created_at||"");if(isNaN(t)||t<=lo||t>now+864e5)return;
-      out.push({k:"t|"+(x.id||x.title),v:1,t:t,i:"🧪",h:"नया "+(x.kind==="mock"?"Full Mock Test":"Full Subject Test"),p:"<b>"+esc(x.title)+"</b>"+(x.subject?" · "+esc(x.subject):"")+" जोड़ा गया है। अभी दें!"})});
+      out.push({k:"t|"+(x.id||x.title),v:1,t:t,i:"🧪",h:"नया "+(x.kind==="mock"?"Full Mock Test":"Full Subject Test"),p:"<b>"+esc((typeof cleanTitle==="function"?cleanTitle(x):x.title))+"</b>"+(x.subject?" · "+esc(x.subject):"")+" जोड़ा गया है। अभी दें!"})});
     (WN_FEATURES||[]).forEach(function(f){if(f&&f.ts>lo&&f.ts<=now+864e5)out.push({k:"f|"+f.ts+"|"+f.title,v:1,t:f.ts,i:f.icon||"✨",h:f.title,p:esc(f.text||"नया फीचर")})});
     out.sort(function(a,b){return b.t-a.t});return out.slice(0,30);
   }
