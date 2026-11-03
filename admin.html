@@ -1315,14 +1315,35 @@ function bestSim(row, pool) {
   for (const o of pool) { if (o === row || o.subject !== row.subject) continue; const x = simScore(p, profOf(o)); if (x > sc) { sc = x; best = o; } }
   return sc >= 0.6 ? { old: best, score: sc } : null;
 }
+/* ===== Dekho button: milte-julte sawal ko poora kholo (ID, options, answer, explanation) ===== */
+function qFull(q) {
+  const L = "ABCD", o = q.options || [];
+  return '<div class="qpv" style="margin-top:8px"><div class="meta" style="word-break:break-all"><b>ID:</b> ' + (q.id ? esc(q.id) : '— (abhi import nahi hua / isi file ka sawal)') + '</div>' +
+    '<div class="meta"><b>Subject:</b> ' + esc(q.subject || "-") + ' · <b>Chapter:</b> ' + esc(q.chapter || "-") + '</div>' +
+    '<div class="meta">' + (q.q_type ? '<span class="tag on">' + esc(q.q_type) + '</span> ' : '') + (q.difficulty ? '<span class="tag on">' + esc(q.difficulty) + '</span> ' : '') + ((q.exams || []).length ? '<b>Exams:</b> ' + esc((q.exams || []).join("; ")) : '') + '</div>' +
+    '<p class="q">' + fmtQ(pvSafe(q.question)) + '</p>' +
+    o.map((x, i) => '<div class="po' + (i === q.answer ? " ok" : "") + '"><span class="pl">' + L[i] + '</span><div class="pt">' + fmtQ(pvSafe(x), 1) + '</div>' + (i === q.answer ? '<span class="pk">✓</span>' : "") + '</div>').join("") +
+    '<div class="meta" style="margin-top:6px"><b>Sahi answer:</b> ' + (L[q.answer] || "?") + ' (option ' + ((q.answer ?? -1) + 1) + ')</div>' +
+    (q.explanation ? '<div class="pe"><b>व्याख्या:</b> ' + fmtQ(pvSafe(q.explanation), 1) + '</div>' : '<div class="pe">(explanation nahi hai)</div>') + '</div>';
+}
+let SV_ROWS = [];
+const svBtn = (q, extra) => { SV_ROWS.push(q); return '<button type="button" class="sec" data-sv="' + (SV_ROWS.length - 1) + '" style="margin:0;padding:6px 12px;white-space:nowrap;flex:none">👁 Dekho</button>'; };
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-sv]"); if (!b) return;
+  const box = b.closest(".svwrap").querySelector(".svbox"), open = !box.classList.contains("hide");
+  if (open) { box.classList.add("hide"); b.textContent = "👁 Dekho"; return; }
+  if (!box.innerHTML) box.innerHTML = qFull(SV_ROWS[+b.dataset.sv]);
+  box.classList.remove("hide"); b.textContent = "✖ Band karo";
+});
 let SIM = [];
 function renderSim() {
   const el = $("bkSim"); if (!el) return;
   if (!SIM.length) { el.innerHTML = ""; return; }
+  SV_ROWS = [];
   el.innerHTML = '<div class="card" style="margin-top:12px"><div class="q">🔍 Milte-julte sawal (' + SIM.length + ')</div><div class="meta" style="margin-bottom:8px">Ye naye sawal bank ke kisi sawal se milte hain. Har jode par chuno (default: dono rakho).</div>' +
     SIM.map((x, i) => '<div class="card" style="margin:8px 0"><div class="meta"><b>' + Math.round(x.score * 100) + '% match</b> · ' + (x.old.id ? "bank me" : "isi file me") + (x.old.chapter ? " · " + esc(x.old.chapter) : "") + '</div>' +
-      '<div class="meta" style="margin-top:6px"><b>नया:</b> ' + esc(plainTxt(x.row.question)) + '<br>✓ ' + esc(plainTxt(x.row.options[x.row.answer], 80)) + '</div>' +
-      '<div class="meta" style="margin-top:6px"><b>पुराना:</b> ' + esc(plainTxt(x.old.question)) + '<br>✓ ' + esc(plainTxt(x.old.options[x.old.answer], 80)) + '</div>' +
+      '<div class="svwrap" style="margin-top:6px"><div style="display:flex;gap:8px;align-items:flex-start;justify-content:space-between"><div class="meta"><b>नया:</b> ' + esc(plainTxt(x.row.question)) + '<br>✓ ' + esc(plainTxt(x.row.options[x.row.answer], 80)) + '</div>' + svBtn(x.row) + '</div><div class="svbox hide"></div></div>' +
+      '<div class="svwrap" style="margin-top:6px"><div style="display:flex;gap:8px;align-items:flex-start;justify-content:space-between"><div class="meta"><b>पुराना:</b> ' + esc(plainTxt(x.old.question)) + '<br>✓ ' + esc(plainTxt(x.old.options[x.old.answer], 80)) + '</div>' + svBtn(x.old) + '</div><div class="svbox hide"></div></div>' +
       '<select class="simsel" data-i="' + i + '" style="margin-top:8px"><option value="both"' + (x.choice === "both" ? " selected" : "") + '>Dono rakho</option><option value="skip"' + (x.choice === "skip" ? " selected" : "") + '>Purana rakho (naya mat jodo' + (x.old.id ? ', exams merge' : '') + ')</option>' + (x.old.id ? '<option value="replace"' + (x.choice === "replace" ? " selected" : "") + '>Naya rakho, purana hatao</option>' : '') + '</select></div>').join("") + '</div>';
 }
 document.addEventListener("change", e => { const c = e.target.closest && e.target.closest("select.simsel"); if (c) SIM[+c.dataset.i].choice = c.value; });
@@ -2507,11 +2528,12 @@ function findDups() {
   const pairs = [];
   for (let i = 0; i < rows.length; i++) for (let j = i + 1; j < rows.length; j++) { const sc = simScore(profOf(rows[i]), profOf(rows[j])); if (sc >= 0.6) pairs.push([rows[i], rows[j], sc]); }
   pairs.sort((a, b) => b[2] - a[2]);
+  SV_ROWS = [];
   if (!pairs.length) { box.innerHTML = '<div class="card meta">✅ Is chapter me koi milte-julte sawal nahi mile.</div>'; return; }
   box.innerHTML = '<div class="card"><div class="q">🔍 ' + pairs.length + ' milte-julte jode' + (pairs.length > 40 ? " (pehle 40)" : "") + '</div>' + pairs.slice(0, 40).map(([a, b, sc]) =>
     '<div class="card" style="margin:8px 0"><div class="meta"><b>' + Math.round(sc * 100) + '% match</b></div>' +
-    '<div class="meta" style="margin-top:6px"><b>A:</b> ' + esc(plainTxt(a.question)) + '<br>✓ ' + esc(plainTxt(a.options[a.answer], 80)) + '</div>' +
-    '<div class="meta" style="margin-top:6px"><b>B:</b> ' + esc(plainTxt(b.question)) + '<br>✓ ' + esc(plainTxt(b.options[b.answer], 80)) + '</div>' +
+    '<div class="svwrap" style="margin-top:6px"><div style="display:flex;gap:8px;align-items:flex-start;justify-content:space-between"><div class="meta"><b>A:</b> ' + esc(plainTxt(a.question)) + '<br>✓ ' + esc(plainTxt(a.options[a.answer], 80)) + '</div>' + svBtn(a) + '</div><div class="svbox hide"></div></div>' +
+    '<div class="svwrap" style="margin-top:6px"><div style="display:flex;gap:8px;align-items:flex-start;justify-content:space-between"><div class="meta"><b>B:</b> ' + esc(plainTxt(b.question)) + '<br>✓ ' + esc(plainTxt(b.options[b.answer], 80)) + '</div>' + svBtn(b) + '</div><div class="svbox hide"></div></div>' +
     '<div class="row" style="margin-top:8px"><button class="sec" data-dp="mergeB" data-a="' + a.id + '" data-b="' + b.id + '">B hatao (exams A me jodo)</button><button class="sec" data-dp="mergeA" data-a="' + a.id + '" data-b="' + b.id + '">A hatao (exams B me jodo)</button></div></div>').join("") +
     '<button class="sec" onclick="document.getElementById(\'dupBox\').innerHTML=\'\'">Band karo</button></div>';
 }
