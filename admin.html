@@ -3911,11 +3911,11 @@ async function mkDrafts() {
   try { MK.drafts = await api("/rest/v1/tests?select=id,title,is_active,q_count,exams,blueprint,questions&kind=eq.mock&order=created_at.desc&limit=30") || []; }
   catch (e) { box.textContent = "Drafts list nahi mili (" + e.message + ") — blueprint column chahiye."; return; }
   const dl = MK.drafts.filter(t => t.blueprint && t.blueprint.sections), nd = dl.filter(t => !t.is_active).length, nf = dl.filter(t => !t.is_active && t.q_count < t.blueprint.sections.reduce((a, r) => a + r.n, 0)).length;
-  const bulk = nd ? `<div style="margin:6px 0"><button class="pri" id="mkRfAll">🔁 Sab drafts refill (${nf} adhoore)</button> <button class="sec" id="mkGapCsv">📥 Taaza kami CSV</button> <button class="sec" id="mkDelAll" style="color:var(--bad)">🗑 Sab DRAFT delete (${nd})</button><div class="meta">Sab refill: har sawal poore mocks me sirf ek baar — repeat nahi.</div></div>` : "";
+  const bulk = nd ? `<div style="margin:6px 0"><button class="pri" id="mkRfAll">🔁 Sab drafts refill (${nf} adhoore)</button> <button class="sec" id="mkGapCsv">📥 Taaza kami CSV</button> <button class="sec" id="mkTpl">📋 Kami Template (AI ke liye)</button> <button class="sec" id="mkDelAll" style="color:var(--bad)">🗑 Sab DRAFT delete (${nd})</button><div class="meta">Sab refill: har sawal poore mocks me sirf ek baar — repeat nahi.</div></div>` : "";
   box.innerHTML = bulk + MK.drafts.filter(t => t.blueprint && t.blueprint.sections).map(t => { const tot = t.blueprint.sections.reduce((a, r) => a + r.n, 0);
     return `<div class="trow ${t.is_active ? "live" : "off"}"><b>${esc(t.title)}</b> <span class="tag ${t.is_active ? "on" : "hid"}">${t.is_active ? "LIVE" : "DRAFT"}</span><div class="meta">${t.q_count}/${tot} sawal</div>
      ${t.q_count < tot ? `<button class="sec" data-rf="${t.id}">🔁 Refill</button> ` : ""}${t.is_active ? "" : `<button class="pri bpub" data-pb="${t.id}">🚀 Publish</button> <button class="sec" data-dl="${t.id}" style="color:var(--bad)">🗑 Delete</button>`}</div>`; }).join("") || "Koi mock builder-draft nahi.";
-  const ra = $("mkRfAll"); if (ra) ra.onclick = mkRefillAll; const gc = $("mkGapCsv"); if (gc) gc.onclick = mkGapNow; const da = $("mkDelAll"); if (da) da.onclick = mkDelAll;
+  const ra = $("mkRfAll"); if (ra) ra.onclick = mkRefillAll; const gc = $("mkGapCsv"); if (gc) gc.onclick = mkGapNow; const tp = $("mkTpl"); if (tp) tp.onclick = mkTplNow; const da = $("mkDelAll"); if (da) da.onclick = mkDelAll;
   box.querySelectorAll("[data-dl]").forEach(b => b.onclick = () => mkDelete(b.dataset.dl));
   box.querySelectorAll("[data-rf]").forEach(b => b.onclick = () => mkRefill(b.dataset.rf));
   box.querySelectorAll("[data-pb]").forEach(b => b.onclick = () => mkPublish(b.dataset.pb));
@@ -3939,6 +3939,30 @@ function mkGapNow() {   /* abhi ki sachchi kami: blueprint - maujooda sawal (ref
   if (!rows.length) return mkMsg("Koi kami nahi — sab draft poore hain.", 1);
   rows.push([], ["KUL (subject-wise)", "", "", ""]); Object.keys(tot).forEach(k => rows.push(["", "", k, tot[k]]));
   tgDl("jakhar_cet_kami_taaza.csv", "\uFEFF" + ["mock,level,subject,needed"].concat(rows.map(r => r.map(csvCell).join(","))).join("\r\n"), "text/csv;charset=utf-8");
+}
+function mkTplNow() {   /* bulk-import template: har kami = 1 row (subject, difficulty, exams bhare); baaki AI bharega */
+  const need = {};
+  (MK.drafts || []).filter(t => !t.is_active && t.blueprint && t.blueprint.sections).forEach(t => { const lv = t.blueprint.level || [34, 33, 33];
+    t.blueprint.sections.forEach((r, i) => { const n = r.n - (t.questions || []).filter(q => q.sec === i).length; if (n <= 0) return;
+      const q = lrm(n, lv); ["easy", "moderate", "hard"].forEach((d, k) => { if (q[k]) { const key = r.s + "|" + d; need[key] = (need[key] || 0) + q[k]; } }); }); });
+  const keys = Object.keys(need).sort(); if (!keys.length) return mkMsg("Koi kami nahi — sab draft poore hain.", 1);
+  const hdr = TPL_COLS.bulk.slice(), rows = [];
+  keys.forEach(k => { const [sub, d] = k.split("|"); for (let i = 0; i < need[k]; i++) rows.push(hdr.map(c => c === "subject" ? sub : c === "exams" ? MOCK_TAG : c === "difficulty" ? d : "")); });
+  const own = ["CET MOCK KAMI TEMPLATE — ye file AI ko do. Neeche pehle iske khaas niyam, phir chapter-wise template wale saare FORMAT RULES (# wali lines) hain.",
+    "KHAAS NIYAM (is template ke liye):",
+    "A. Har row = ek NAYA sawal jo tumhe khud banana hai (kisi PDF se nahi). Rows pehle se bani hain: subject, exams aur difficulty BHARE HUE hain — inhe KABHI mat badlo, na row hatao, na jodo, na order badlo.",
+    "B. Tumhe har row me ye columns bharne hain: chapter, question, option1-4, answer, explanation, q_type. Header wahi rakho, '#' lines final CSV me mat likho.",
+    "C. exams column me 'CET Mock Only' hi rehne do (ye tag in sawalon ko chapter-wise/PYQ se alag rakhta hai).",
+    "D. Sawal CET (Rajasthan) ke syllabus aur uske exam-level ke hon; difficulty column jo likhi hai usi level ka sawal banao. Poori file me koi sawal repeat ya milta-julta na ho (same subject ke rows me alag-alag topic/chapter failao).",
+    "E. Answer HAR row me bharo (khaali nahi) — sochkar sahi answer nikalo; explanation bhi HAR row me zaroori (rule 15 jaisa detail, 'सही उत्तर' wali line ke bina).",
+    "F. Current affairs / budget / aarthik samiksha wale subject me latest jaankari web search se verify karke likho; pakka na ho to us sawal ko skip na karke sabse sahi andaza likho aur CSV ke bahar report me batao.",
+    "G. Mixed type: difficulty ke hisab se q_type rakho — easy me zyadatar simple; moderate me statement/match; hard me assertion_reason/statement/table/lengthy bhi.",
+    "H. chapter ka naam CHAPTER LIST se EXACT likho; subject ke andar topics ka spread rakho.",
+    ""];
+  const rules = aiPrompt("bulk", true).split("\n").filter(l => l.trim() !== "" && !/^10\. exams/.test(l) && !/^8\. answer/.test(l) && !/^(2[1-9]|3\d)\. /.test(l) && !/EXAMPLE|^Ab main tumhe|^QUESTION COUNT|^13\. |^14\. |^18\. |^19\. /.test(l)).map(l => csvCell("# " + l));
+  const head = own.filter(l => l !== "").map(l => csvCell("# " + l)).concat(rules);
+  tgDl("jakhar_cet_mock_template.csv", "\uFEFF" + head.concat([hdr.join(",")]).concat(rows.map(r => r.map(csvCell).join(","))).join("\r\n"), "text/csv;charset=utf-8");
+  mkMsg("📋 Template: " + rows.length + " row (har row = 1 sawal). AI se question/options/answer/explanation/chapter/q_type bharwao, phir Import karo.", 1);
 }
 async function mkDelRows(ids) {   /* sirf DRAFT (is_active=false) delete; verify returned rows */
   const r = await api("/rest/v1/tests?id=in.(" + ids.map(encodeURIComponent).join(",") + ")&is_active=eq.false", { method: "DELETE", headers: { Prefer: "return=representation" } });
