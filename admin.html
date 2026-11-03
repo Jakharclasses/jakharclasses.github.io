@@ -2135,7 +2135,7 @@ function mountTestPane(kind) {
       <div class="sc2 c-blue">
         <div class="sch"><span class="scn">1</span>${isSub ? "Subject aur test ka naam" : "Exam aur test ka naam"}</div>
         ${isSub ? `<select id="${kind}Sel">${opts}</select>` : exBoxHtml(kind)}
-        <input id="${kind}Title" placeholder="Test ka naam (title) — jaise: Test No. 1" style="margin-top:10px;margin-bottom:0">
+        <input id="${kind}Title" placeholder="Test ka naam — apne-aap Test No. N bharta hai" style="margin-top:10px;margin-bottom:0">
       </div>
       <div class="sc2 c-amber">
         <div class="sch"><span class="scn">2</span>Time aur marks</div>
@@ -2156,12 +2156,15 @@ function mountTestPane(kind) {
         <div id="${kind}Msg" class="msg" style="white-space:pre-wrap"></div>
         <div id="${kind}Prev"></div>
       </div>
-      <div class="sc2 c-violet"><div class="sch">📋 Upload hue tests</div><button type="button" class="sec" style="margin-bottom:8px" onclick="testRenameAll('${kind}')">\ud83d\udd27 Sab naam \u2192 Test No. N</button><div id="${kind}List" class="meta">Load ho raha hai...</div></div>`;
+      <div class="sc2 c-violet"><div class="sch">📋 Upload hue tests</div><div id="${kind}List" class="meta">Load ho raha hai...</div></div>`;
     $(kind + "File").onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $(kind + "Text").value = r.result; testCheck(kind); }; r.readAsText(f, "utf-8"); };
     $(kind + "Chk").onclick = () => testCheck(kind);
     $(kind + "Go").onclick = () => testUpload(kind);
+    $(kind + "Title").addEventListener("input", () => { $(kind + "Title").dataset.t = "1"; });
+    ["Sel", "Ex"].forEach(x => { const el = $(kind + x); if (el) el.addEventListener("change", () => { delete $(kind + "Title").dataset.t; autoTitle(kind); }); });
     ["Sel", "Title", "Dur", "Mk", "Neg", "Ex"].forEach(x => { const el = $(kind + x); if (el) el.addEventListener("change", () => { S.rows = []; $(kind + "Go").disabled = true; if (x === "Ex") exCount(kind); }); });
   }
+  S.open = null; S.dirty = false; S.ord = null;
   testList(kind);
 }
 
@@ -2171,27 +2174,6 @@ function tstNoA(x) {
   let m = t.match(/(?:test|\u091f\u0947\u0938\u094d\u091f|mock|no\.?|number)\s*(?:no\.?|number|#|-|:)?\s*(\d+)/i);
   if (!m) { const a = t.match(/\d+/g); if (a) return +a[a.length - 1] || 1; }
   return m ? (+m[1] || 1) : 1;
-}
-/* Is pane ke saare tests ke naam "Test No. N" me badlo (DB me) */
-async function testRenameAll(kind) {
-  const S = TP[kind], isSub = kind === "fst", used = new Set(), todo = [], skip = [];
-  const list = (S.tests || []).slice().sort((a, b) => tstNoA(a) - tstNoA(b) || new Date(a.created_at) - new Date(b.created_at));
-  list.forEach(t => {
-    const nt = "Test No. " + tstNoA(t), keys = (isSub ? [t.subject || ""] : (examsOfA(t).length ? examsOfA(t) : [""])).map(k => k + "|" + nt);
-    if (keys.some(k => used.has(k))) { skip.push(t.title + " (" + nt + " pehle se hai)"); return; }
-    keys.forEach(k => used.add(k));
-    if (t.title !== nt) todo.push({ t, nt });
-  });
-  if (!todo.length) { alert(skip.length ? "Rename ke liye kuch nahi; ye skip hue:\n" + skip.join("\n") : "Sab naam pehle se Test No. N hain."); return; }
-  const body = todo.map(x => (isSub ? (x.t.subject || "") + ": " : "") + x.t.title + "  \u2192  " + x.nt).join("\n") + (skip.length ? "\n\nSkip (naam takraata hai):\n" + skip.join("\n") : "");
-  if (!await askConfirm({ title: todo.length + " test ka naam badlein?", body })) return;
-  let ok = 0, bad = [];
-  for (const x of todo) {
-    try { await api("/rest/v1/tests?id=eq." + encodeURIComponent(x.t.id), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ title: x.nt }) }); ok++; }
-    catch (e) { bad.push(x.t.title + ": " + e.message); }
-  }
-  alert(ok + " naam badle" + (bad.length ? "\nFail:\n" + bad.join("\n") : ""));
-  testList(kind);
 }
 async function testList(kind) {
   const S = TP[kind], box = $(kind + "List"), dbKind = kind === "fst" ? "subject" : "mock";
@@ -2204,12 +2186,72 @@ async function testList(kind) {
     return;
   }
   const c = $(kind === "fst" ? "cFst" : "cFmk"); if (c) c.textContent = S.tests.length + " test";
+  testRender(kind);
+  autoTitle(kind);
+}
+
+/* ---- Subject-wise (Full Subject) / Exam-wise (Full Mock) group: pehle subject/exam, phir uske tests ---- */
+function grpTests(kind, key) { return (TP[kind].tests || []).filter(t => kind === "fst" ? (t.subject || "") === key : (key === "" ? !examsOfA(t).length : examsOfA(t).includes(key))); }
+function grpSorted(kind, key) { return grpTests(kind, key).sort((a, b) => tstNoA(a) - tstNoA(b) || new Date(a.created_at) - new Date(b.created_at)); }
+function grpKeys(kind) {
+  const S = TP[kind], ks = [], add = k => { if (!ks.includes(k)) ks.push(k); };
+  if (kind === "fst") { T_SUBJECTS.forEach(add); (S.tests || []).forEach(t => add(t.subject || "")); }
+  else { T_EXAMS.forEach(g => g.list.forEach(add)); (S.tests || []).forEach(t => { const a = examsOfA(t); if (!a.length) add(""); a.forEach(add); }); }
+  return ks.filter(k => grpTests(kind, k).length);
+}
+function grpLabel(kind, k) { return k === "" ? (kind === "fst" ? "(subject nahi)" : "(exam nahi)") : (kind === "fst" ? k : exShortA(k)); }
+/* Naya test ka naam apne-aap: us subject/exam me agla number (Test No. N) */
+function autoTitle(kind, force) {
+  const el = $(kind + "Title"); if (!el || (el.dataset.t && !force)) return;
+  const keys = kind === "fst" ? [$(kind + "Sel").value].filter(Boolean) : selExams(kind);
+  if (!keys.length) { el.value = ""; return; }
+  let mx = 0, cnt = 0; keys.forEach(k => { const L = grpTests(kind, k); cnt = Math.max(cnt, L.length); L.forEach(t => { mx = Math.max(mx, tstNoA(t)); }); });
+  el.value = "Test No. " + (Math.max(mx, cnt) + 1);
+}
+function testOpenGrp(kind, i) { const S = TP[kind]; S.open = { k: S.gk[i] }; S.dirty = false; S.ord = null; testRender(kind); }
+function testBackGrp(kind) { const S = TP[kind]; if (S.dirty && !confirm("Order badla hai par save nahi hua. Bina save kiye wapas jayein?")) return; S.open = null; S.dirty = false; S.ord = null; testRender(kind); }
+function testMove(kind, id, d) {
+  const S = TP[kind], i = S.ord.indexOf(String(id)), j = i + d; if (i < 0 || j < 0 || j >= S.ord.length) return;
+  [S.ord[i], S.ord[j]] = [S.ord[j], S.ord[i]]; S.dirty = true; testRender(kind);
+}
+function testRender(kind) {
+  const S = TP[kind], box = $(kind + "List"), isSub = kind === "fst";
   if (!S.tests.length) { box.textContent = "Abhi koi test upload nahi hua."; return; }
-  S.tests.sort((a, b) => (kind === "fst" ? String(a.subject || "").localeCompare(String(b.subject || ""), "hi") : 0) || tstNoA(a) - tstNoA(b) || new Date(a.created_at) - new Date(b.created_at));
-  box.innerHTML = S.tests.map(t => `<div class="srow trow ${t.is_active ? "live" : "off"}" style="align-items:center">
-    <div style="min-width:0"><div class="q" style="margin:0">${esc(t.title)} ${t.is_active ? '<span class="tag on">LIVE</span>' : '<span class="tag hid">HIDDEN</span>'}</div>
-    <div class="meta">${kind === "fst" ? esc(t.subject) : examsOfA(t).map(e => '<span class="tag on" title="' + esc(e) + '">' + esc(exShortA(e)) + '</span>').join(" ")} · ${t.q_count} sawal · ${t.q_count * t.marks_per_q} marks${t.duration_min ? " · " + t.duration_min + " min" : ""}${t.neg_marking == null ? "" : (t.neg_marking > 0 ? " · neg " + t.neg_marking : " · neg nahi")}</div></div>
-    <div class="row" style="flex:none;flex-wrap:nowrap">${kind === "fmk" ? `<button class="sec" onclick="testEditExams('${kind}','${esc(t.id)}')">Exams</button>` : ""}<button class="sec" onclick="testRename('${kind}','${esc(t.id)}')">Rename</button><button class="sec" onclick="testEditNeg('${kind}','${esc(t.id)}')">Neg</button><button class="sec" onclick="testToggle('${kind}','${esc(t.id)}',${t.is_active ? "false" : "true"})">${t.is_active ? "Hide" : "Show"}</button><button class="danger" onclick="testDelete('${kind}','${esc(t.id)}')">Delete</button></div></div>`).join("");
+  if (S.open === undefined || S.open === null) {
+    const ks = grpKeys(kind); S.gk = ks;
+    box.innerHTML = '<div class="meta" style="margin-bottom:8px">' + (isSub ? "Subject" : "Exam") + ' chuno — us ke tests khulenge.</div>' + ks.map((k, i) => {
+      const L = grpTests(kind, k), off = L.filter(t => !t.is_active).length;
+      return '<button type="button" class="sec" style="display:flex;width:100%;justify-content:space-between;align-items:center;text-align:left;gap:8px;margin-bottom:6px" onclick="testOpenGrp(\'' + kind + '\',' + i + ')"><span>' + esc(grpLabel(kind, k)) + '</span><span class="meta" style="margin:0;white-space:nowrap">' + L.length + ' test' + (off ? ' · ' + off + ' hidden' : '') + ' ›</span></button>';
+    }).join("");
+    return;
+  }
+  const key = S.open.k, cur = grpSorted(kind, key), byId = new Map(cur.map(t => [String(t.id), t]));
+  if (!S.ord) S.ord = cur.map(t => String(t.id));
+  else { S.ord = S.ord.filter(id => byId.has(id)); cur.forEach(t => { if (!S.ord.includes(String(t.id))) S.ord.push(String(t.id)); }); }
+  if (!S.ord.length) { S.open = null; S.dirty = false; S.ord = null; return testRender(kind); }
+  const rows = S.ord.map((id, i) => { const t = byId.get(id), sid = esc(t.id); return `<div class="srow trow ${t.is_active ? "live" : "off"}" style="align-items:center;flex-wrap:wrap">
+    <div style="min-width:0;flex:1 1 200px"><div class="q" style="margin:0"><span class="tag on">${i + 1}</span> ${esc(t.title)} ${t.is_active ? '<span class="tag on">LIVE</span>' : '<span class="tag hid">HIDDEN</span>'}</div>
+    <div class="meta">${isSub ? "" : examsOfA(t).map(e => '<span class="tag on" title="' + esc(e) + '">' + esc(exShortA(e)) + '</span>').join(" ") + " · "}${t.q_count} sawal · ${t.q_count * t.marks_per_q} marks${t.duration_min ? " · " + t.duration_min + " min" : ""}${t.neg_marking == null ? "" : (t.neg_marking > 0 ? " · neg " + t.neg_marking : " · neg nahi")}</div></div>
+    <div class="row" style="flex:none;flex-wrap:wrap;gap:4px"><button class="sec" ${i === 0 ? "disabled" : ""} onclick="testMove('${kind}','${sid}',-1)">▲</button><button class="sec" ${i === S.ord.length - 1 ? "disabled" : ""} onclick="testMove('${kind}','${sid}',1)">▼</button>${kind === "fmk" ? `<button class="sec" onclick="testEditExams('${kind}','${sid}')">Exams</button>` : ""}<button class="sec" onclick="testRename('${kind}','${sid}')">Rename</button><button class="sec" onclick="testEditNeg('${kind}','${sid}')">Neg</button><button class="sec" onclick="testToggle('${kind}','${sid}',${t.is_active ? "false" : "true"})">${t.is_active ? "Hide" : "Show"}</button><button class="danger" onclick="testDelete('${kind}','${sid}')">Delete</button></div></div>`; }).join("");
+  box.innerHTML = `<button type="button" class="sec bk" onclick="testBackGrp('${kind}')">← ${isSub ? "Sabhi subjects" : "Sabhi exams"}</button>
+    <div class="q" style="margin:8px 0 2px">${esc(grpLabel(kind, key))}</div><div class="meta" style="margin-bottom:8px">${S.ord.length} test · ▲ ▼ se order badlo, phir neeche button se save karo. Naya test hamesha sabse neeche judta hai.</div>
+    ${rows}
+    <button type="button" class="${S.dirty ? "bgo" : "sec"}" style="margin-top:10px;width:100%" onclick="testRenumber('${kind}')">${S.dirty ? "💾 Order save karo — " : "🔢 "}naam Test No. 1 se ${S.ord.length} tak karo</button>`;
+}
+/* Is subject/exam ke tests ko dikhe hue order me Test No. 1, 2, 3... naam do (DB me) */
+async function testRenumber(kind) {
+  const S = TP[kind], byId = new Map((S.tests || []).map(t => [String(t.id), t])), todo = [];
+  (S.ord || []).forEach((id, i) => { const t = byId.get(id), nt = "Test No. " + (i + 1); if (t && t.title !== nt) todo.push({ t, nt }); });
+  if (!todo.length) { S.dirty = false; alert("Naam pehle se Test No. 1, 2, 3... ke order me hain."); testRender(kind); return; }
+  const note = kind === "fmk" ? "\n\nNote: jo test kai exams me hai, uska number doosre exam ki list me bhi badlega (app me har exam ki list apne-aap 1, 2, 3 dikhati hai)." : "";
+  if (!await askConfirm({ title: todo.length + " test ka naam badlein?", body: todo.map(x => x.t.title + "  →  " + x.nt).join("\n") + note })) return;
+  let ok = 0, bad = [];
+  for (const x of todo) {
+    try { await api("/rest/v1/tests?id=eq." + encodeURIComponent(x.t.id), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ title: x.nt }) }); ok++; }
+    catch (e) { bad.push(x.t.title + ": " + e.message); }
+  }
+  S.dirty = false; alert(ok + " naam badle" + (bad.length ? "\nFail:\n" + bad.join("\n") : ""));
+  await testList(kind);
 }
 
 /* Galat title type ho gaya ho to yahin se theek karo. Sirf number likho (jaise 5) to "Test No. 5" ban jayega */
@@ -2325,7 +2367,7 @@ async function testUpload(kind) {
     }
     if (!r || !r.length) throw new Error("Test save nahi hua (admin permission / tests table check karo).");
     msg.style.color = "var(--ok)"; msg.textContent = "Upload ho gaya: " + title + " (" + S.rows.length + " sawal)." + note;
-    S.rows = []; qPreview(kind + "Prev", []); $(kind + "Text").value = ""; $(kind + "File").value = ""; $(kind + "Title").value = ""; if (!isSub) document.querySelectorAll("#" + kind + "Ex input").forEach(c => c.checked = false), exCount(kind);
+    S.rows = []; qPreview(kind + "Prev", []); $(kind + "Text").value = ""; $(kind + "File").value = ""; $(kind + "Title").value = ""; delete $(kind + "Title").dataset.t; if (!isSub) document.querySelectorAll("#" + kind + "Ex input").forEach(c => c.checked = false), exCount(kind); testList(kind);
   } catch (e) {
     msg.style.color = "var(--bad)"; msg.textContent = "Upload fail: " + e.message + "\nAgar 'tests' table nahi hai to tests_setup.sql Supabase SQL Editor me ek baar chalao.";
   }

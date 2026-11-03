@@ -1599,7 +1599,7 @@ function mockExamTests(i){
     const L=mockOf(e);
     if(!L.length&&TLOK)return comingSoon(exShort(e),mockExams,"tests","इस परीक्षा के Mock Test जल्द जोड़े जाएँगे");
     view(hdr(BACK,"","Full Mock Test")+`<main class="pg" id="mexroot"><div class="card hello" style="margin-bottom:14px"><span class="av" style="background:${colorFor(e)}">🎯</span><div><b>${smE(exShort(e))}</b><br><small>${L.length} टेस्ट · Test Mode</small></div></div>${L.length?`<div class="list">
-    ${L.map(x=>tstCard(x,colorFor(e),"🎯")).join("")}</div>`:`<div class="card cs"><div class="csi">🎯</div><p>लोड हो रहा है…</p></div>`}</main>`,mockFrom,keep,mockExams);
+    ${L.map(x=>tstCard(x,colorFor(e),"🎯",e)).join("")}</div>`:`<div class="card cs"><div class="csi">🎯</div><p>लोड हो रहा है…</p></div>`}</main>`,mockFrom,keep,mockExams);
   };
   draw();tstLoad().then(()=>{if(document.getElementById("mexroot"))draw(true)}).catch(()=>{});
 }
@@ -3555,14 +3555,33 @@ function examsOf(x){
   if(x&&x.exam&&a.indexOf(x.exam)<0)a.unshift(x.exam);return a;
 }
 const exMin=x=>{const r=examsOf(x).map(exRank);return r.length?Math.min.apply(null,r):999};
-function cleanTitle(x){
+/* Test ka number ab POSITION se aata hai: Full Subject => usi subject ki list me, Full Mock => usi exam ki list me (1,2,3...). Doosre subject/exam se koi takraav nahi. Order: title ka number, phir upload ka time. */
+function tstGrpOf(x,e){
+  if(x.kind==="subject")return TL.filter(y=>y.kind==="subject"&&y.subject===x.subject).sort(tstCmp);
+  const ee=e!==undefined&&e!==null&&e!==""?e:(examsOf(x)[0]||"");
+  return mockOf(ee);
+}
+function tstPos(x,e){
+  if(!x||x._pyq||!(x.kind==="subject"||x.kind==="mock"))return 0;
+  let r=null;
+  if(x.id!==undefined&&x.id!==null)r=tfind(x.id);
+  if(!r){   /* sirf title+subject/exam se: tabhi maano jab us group me ek hi match ho */
+    const ex=e||(Array.isArray(x.exams)&&x.exams[0])||"";
+    const c=TL.filter(y=>y.kind===x.kind&&String(y.title).trim()===String(x.title).trim()&&(x.kind==="subject"?(!x.subject||y.subject===x.subject):(!ex||examsOf(y).indexOf(ex)>=0)));
+    if(c.length===1)r=c[0];
+  }
+  if(!r)return 0;
+  const g=tstGrpOf(r,e||(Array.isArray(x.exams)&&x.exams[0])||""),i=g.findIndex(y=>String(y.id)===String(r.id));
+  return i>=0?i+1:0;
+}
+function cleanTitle(x,e){
   let t=String(x&&x.title||"");const names=[];
-  examsOf(x).forEach(e=>{names.push(e,exShort(e))});
+  examsOf(x).forEach(n=>{names.push(n,exShort(n))});
   names.filter(Boolean).sort((a,b)=>b.length-a.length).forEach(n=>{
     const re=new RegExp("(^|[\\s\\-–—:|(\\[])"+n.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?=$|[\\s\\-–—:|)\\]])","ig");t=t.replace(re,"$1")});
   t=t.replace(/\b(Rajasthan\s+)?CET\s*\(?\s*(Graduation|Senior\s+Secondary|12th)\s*Level\)?/ig,"").replace(/^\s*Rajasthan\s+/i,"");
   t=t.replace(/^[\s\-–—:|,()]+|[\s\-–—:|,()]+$/g,"").replace(/\s{2,}/g," ");
-  if(x&&!x._pyq&&(x.kind==="subject"||x.kind==="mock"))return "Test No. "+tstNo(x);
+  if(x&&!x._pyq&&(x.kind==="subject"||x.kind==="mock"))return "Test No. "+(tstPos(x,e)||tstNo(x));
   return t||String(x&&x.title||"");
 }
 /* Full Subject / Full Mock test ka number: title se nikalo ("Test Number 3", "टेस्ट 3", "Test No-3"...). Sirf "Test" ya number-rahit title = Test 1 */
@@ -3579,7 +3598,11 @@ function exChips(ex,id,all){
   EXMAP[id]=L;const vis=all?L:L.slice(0,2),more=n-vis.length;
   return `<span class="exc" data-id="${smE(id)}">${vis.map(e=>`<span class="exl">${smE(e)}</span>`).join("")}${more>0?`<span class="exl more" onclick="event.stopPropagation();exMore(this)">+${more} More</span>`:""}</span>`;
 }
-function jvDisp(l,k,ex,sub,tid){if(k==="mock")return cleanTitle({title:l,kind:k,exams:ex||[]});if(k==="subject"){const t=cleanTitle({title:l,kind:k}),y=sub||(tid&&(tfind(tid)||{}).subject)||"";return y?y+" · "+t:t}return l}
+function jvDisp(l,k,ex,sub,tid){
+  const r=tid?tfind(tid):null,e0=(ex&&ex[0])||"";
+  if(k==="mock")return cleanTitle(r&&r.kind==="mock"?r:{title:l,kind:k,exams:ex||[]},e0);
+  if(k==="subject"){const y=sub||(r&&r.subject)||"",t=cleanTitle(r&&r.kind==="subject"?r:{title:l,kind:k,subject:y});return y?y+" · "+t:t}
+  return l}
 function exMore(el){const p=el.closest(".exc");if(!p)return;const L=EXMAP[p.dataset.id]||[];p.innerHTML=L.map(e=>`<span class="exl">${smE(e)}</span>`).join("")}
 
 /* ---------- Test ke prashn: ek hi jagah se (tstOpen aur history dono ke liye) ---------- */
@@ -3617,20 +3640,21 @@ function TQALL(rebuild){
 const TQX=t=>TQALL().get(t);
 
 /* ---------- Test Retest / pichhle attempts ---------- */
+const tstSame=(y,x)=>y.kind===x.kind&&y.title===x.title&&(x.kind==="subject"?y.subject===x.subject:(examsOf(y).some(e=>examsOf(x).indexOf(e)>=0)||(!examsOf(y).length&&!examsOf(x).length)));
 function histOfTest(x){
-  const H=store.get("jk_hist"),id=String(x.id),uniq=TL.filter(y=>y.kind===x.kind&&y.title===x.title).length===1;
+  const H=store.get("jk_hist"),id=String(x.id),uniq=TL.filter(y=>tstSame(y,x)).length===1;
   return H.map((h,i)=>({h:h,i:i})).filter(o=>o.h&&((o.h.tid&&String(o.h.tid)===id)||(!o.h.tid&&uniq&&o.h.k===x.kind&&o.h.n===x.title)));
 }
-function tstCard(x,c,icon){
+function tstCard(x,c,icon,ctxE){
   const id=smE(x.id),A=histOfTest(x),L=A[0],nw=newTest(x);
   const tot=+((x.q_count||0)*(+x.marks_per_q||1)).toFixed(2);
   const ex=x.kind==="mock"?exChips(examsOf(x),x.id):"";
-  return `<div class="tc" style="--c:${c}"><button class="row" onclick="tstOpen('${id}')"><span class="ic">${icon}</span><span class="tx"><b>${smE(cleanTitle(x))}</b>${ex}<small>${smE(tmeta(x))}</small></span>${nw?'<span class="nw">NEW</span>':""}<span class="bg${L?" dn":""}">${L?"✔ दिया":"Test"}</span><i>›</i></button>`
+  return `<div class="tc" style="--c:${c}"><button class="row" onclick="tstOpen('${id}')"><span class="ic">${icon}</span><span class="tx"><b>${smE(cleanTitle(x,ctxE))}</b>${ex}<small>${smE(tmeta(x))}</small></span>${nw?'<span class="nw">NEW</span>':""}<span class="bg${L?" dn":""}">${L?"✔ दिया":"Test"}</span><i>›</i></button>`
   +(L?`<div class="tca"><span>${A.length} प्रयास · अंतिम: ${L.h.sc}${tot?" / "+tot:""} · ${ago(L.h.ts)}</span><button onclick="histOpen(${L.i})">📊 रिज़ल्ट</button><button onclick="retestTest('${id}')">🔁 Retest</button></div>`:"")+`</div>`;
 }
 function retestTest(id){
   const x=tfind(id);if(!x)return;
-  const o=progAll(),sp=o["test|"+x.title+"|"+x.id]||o["test|"+x.title];
+  const o=progAll(),sp=o["test|"+x.title+"|"+x.id]||(TL.filter(y=>tstSame(y,x)).length===1?o["test|"+x.title]:null);
   if(sp&&Array.isArray(sp.qs)&&!confirm("इस टेस्ट का एक अधूरा प्रयास सेव है। Retest शुरू करने पर वह अधूरा प्रयास हट जाएगा (पुराने रिज़ल्ट सुरक्षित रहेंगे)। जारी रखें?"))return;
   tstOpen(id,{fresh:true});
 }
