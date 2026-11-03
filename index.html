@@ -1234,7 +1234,7 @@ const YT='<svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="
    (पहले से बने प्रश्न अपने-आप नए नाम में दिखेंगे, कोई प्रश्न नहीं छूटेगा। admin-5.html के CHAPTER_ALIAS में भी वही लाइन डालें) ---- */
 const CHAPTER_RENAME={};
 QUESTIONS.forEach(q=>{if(CHAPTER_RENAME[q.chapter])q.chapter=CHAPTER_RENAME[q.chapter]});
-const QS=(function(){const ok=new Set();SUBJECTS.forEach(s=>s.chapters.forEach(c=>ok.add(s.name+"\u0001"+c)));return QUESTIONS.filter(q=>ok.has(q.subject+"\u0001"+q.chapter))})();
+const isMockOnly=q=>!!q&&Array.isArray(q.exams)&&q.exams.indexOf("CET Mock Only")>=0;const QS=(function(){const ok=new Set();SUBJECTS.forEach(s=>s.chapters.forEach(c=>ok.add(s.name+"\u0001"+c)));return QUESTIONS.filter(q=>ok.has(q.subject+"\u0001"+q.chapter)&&!isMockOnly(q))})();
 if(QS.length!==QUESTIONS.length)console.warn((QUESTIONS.length-QS.length)+" प्रश्न नहीं दिख रहे: subject/chapter का नाम SUBJECTS से मेल नहीं खाता");
 /* ---------- Part 4: fmtQ — question/option/explanation HTML ko padhne layak banata hai ----------
    (admin.html me bhi yahi function hai — dono jagah sync rakho)
@@ -2780,7 +2780,7 @@ splash();
   /* naya sawal jodo / badla hua sawal update karo. Return: kitne jude ya badle */
   function upsert(list){
     const byId=new Map(QUESTIONS.filter(q=>q.id).map(q=>[q.id,q]));let n=0;
-    const inSub=q=>SUBJECTS.some(z=>z.name===q.subject&&z.chapters.includes(q.chapter));
+    const inSub=q=>!isMockOnly(q)&&SUBJECTS.some(z=>z.name===q.subject&&z.chapters.includes(q.chapter));
     list.forEach(r=>{
       const ch=chAlias(r.chapter),ex=r.explanation||"";let o=byId.get(r.id);
       if(o){

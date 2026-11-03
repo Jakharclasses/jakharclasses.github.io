@@ -1232,6 +1232,7 @@ const TPL_TITLE = { bulk: "Chapter-wise questions", fst: "Full Subject Test", fm
 const AUTH_TAG = "Authentic Practice", AUTH_RE = /^authentic[\s_-]*practice$/i;
 TPL_COLS.auth = TPL_COLS.bulk.slice(); TPL_FILE.auth = "jakhar_authentic_practice_template.csv"; TPL_TITLE.auth = "Authentic Practice (authentic books ke sawal)";
 const isAuthQ = q => !!q && Array.isArray(q.exams) && q.exams.includes(AUTH_TAG);
+const MOCK_TAG = "CET Mock Only", isMockOnly = q => !!q && Array.isArray(q.exams) && q.exams.includes(MOCK_TAG);   /* sirf CET mock ke liye; chapter/subject tests me nahi */
 function authExams(str, force) { const a = String(str || "").split(/[,;|]/).map(x => x.trim()).filter(Boolean).map(x => AUTH_RE.test(x) ? AUTH_TAG : x); if (force && !a.includes(AUTH_TAG)) a.push(AUTH_TAG); return [...new Set(a)]; }
 /* 6 example types: simple, statement, assertion-reason, match (table), table-based, multi-line options */
 const TPL_EX = [
@@ -3749,7 +3750,7 @@ function egGen() {
   const chaps = [...document.querySelectorAll("#egChap input:checked")].map(i => i.value), ex = $("egEx").value, av = +$("egAv").value, pol = $("egU").value;
   const avoid = new Set(); (EG.used || []).slice(0, av).forEach(s => s.forEach(i => avoid.add(i)));
   const rnd = mulberry(seed), seen = new Set(), dn = d => d || (pol === "m" ? "moderate" : "");
-  let pool = ALL.filter(q => q.is_active !== false && q.subject === sub && (!chaps.length || chaps.includes(q.chapter)) && !isAuthQ(q) && (!ex || (q.exams || []).includes(ex)) && !avoid.has(q.id))
+  let pool = ALL.filter(q => q.is_active !== false && q.subject === sub && (!chaps.length || chaps.includes(q.chapter)) && !isAuthQ(q) && !isMockOnly(q) && (!ex || (q.exams || []).includes(ex)) && !avoid.has(q.id))
     .sort((a, b) => String(a.id) < String(b.id) ? -1 : 1).filter(q => { const k = qFingerprint(q.question, q.options, q.q_type); if (seen.has(k)) return false; seen.add(k); return true; });
   pool = pool.map(q => ({ q, d: dn(q.difficulty), t: q.q_type || detectType(q.question, q.options) }));
   const take = new Set(), pick = [], D = ["easy", "moderate", "hard"], quota = {}; lrm(N - A, lv).forEach((n, i) => quota[D[i]] = n);
@@ -3909,20 +3910,66 @@ async function mkDrafts() {
   const box = $("mkDr"); if (!box) return;
   try { MK.drafts = await api("/rest/v1/tests?select=id,title,is_active,q_count,exams,blueprint,questions&kind=eq.mock&order=created_at.desc&limit=30") || []; }
   catch (e) { box.textContent = "Drafts list nahi mili (" + e.message + ") — blueprint column chahiye."; return; }
-  box.innerHTML = MK.drafts.filter(t => t.blueprint && t.blueprint.sections).map(t => { const tot = t.blueprint.sections.reduce((a, r) => a + r.n, 0);
+  const dl = MK.drafts.filter(t => t.blueprint && t.blueprint.sections), nd = dl.filter(t => !t.is_active).length, nf = dl.filter(t => !t.is_active && t.q_count < t.blueprint.sections.reduce((a, r) => a + r.n, 0)).length;
+  const bulk = nd ? `<div style="margin:6px 0"><button class="pri" id="mkRfAll">🔁 Sab drafts refill (${nf} adhoore)</button> <button class="sec" id="mkGapCsv">📥 Taaza kami CSV</button> <button class="sec" id="mkDelAll" style="color:var(--bad)">🗑 Sab DRAFT delete (${nd})</button><div class="meta">Sab refill: har sawal poore mocks me sirf ek baar — repeat nahi.</div></div>` : "";
+  box.innerHTML = bulk + MK.drafts.filter(t => t.blueprint && t.blueprint.sections).map(t => { const tot = t.blueprint.sections.reduce((a, r) => a + r.n, 0);
     return `<div class="trow ${t.is_active ? "live" : "off"}"><b>${esc(t.title)}</b> <span class="tag ${t.is_active ? "on" : "hid"}">${t.is_active ? "LIVE" : "DRAFT"}</span><div class="meta">${t.q_count}/${tot} sawal</div>
-     ${t.q_count < tot ? `<button class="sec" data-rf="${t.id}">🔁 Refill</button> ` : ""}${t.is_active ? "" : `<button class="pri bpub" data-pb="${t.id}">🚀 Publish</button>`}</div>`; }).join("") || "Koi mock builder-draft nahi.";
+     ${t.q_count < tot ? `<button class="sec" data-rf="${t.id}">🔁 Refill</button> ` : ""}${t.is_active ? "" : `<button class="pri bpub" data-pb="${t.id}">🚀 Publish</button> <button class="sec" data-dl="${t.id}" style="color:var(--bad)">🗑 Delete</button>`}</div>`; }).join("") || "Koi mock builder-draft nahi.";
+  const ra = $("mkRfAll"); if (ra) ra.onclick = mkRefillAll; const gc = $("mkGapCsv"); if (gc) gc.onclick = mkGapNow; const da = $("mkDelAll"); if (da) da.onclick = mkDelAll;
+  box.querySelectorAll("[data-dl]").forEach(b => b.onclick = () => mkDelete(b.dataset.dl));
   box.querySelectorAll("[data-rf]").forEach(b => b.onclick = () => mkRefill(b.dataset.rf));
   box.querySelectorAll("[data-pb]").forEach(b => b.onclick = () => mkPublish(b.dataset.pb));
 }
 async function mkRefill(id) {   /* sirf khaali slots bharo; pehle chune sawal nahi badalte */
-  const t = MK.drafts.find(x => String(x.id) === String(id)), bp = t.blueprint, qs = t.questions || [], taken = new Set(qs.map(q => q.qid)), rnd = mulberry((bp.seed | 0) + qs.length + 7), add = [];
+  const t = MK.drafts.find(x => String(x.id) === String(id)), bp = t.blueprint, qs = t.questions || [], taken = new Set(qs.map(q => q.qid));
+  try { const o = await api("/rest/v1/tests?select=questions&kind=eq.mock&limit=500") || []; o.forEach(x => (x.questions || []).forEach(q => taken.add(q.qid))); } catch (e) {}
+  const rnd = mulberry((bp.seed | 0) + qs.length + 7), add = [];
   bp.sections.forEach((r, i) => { const have = qs.filter(q => q.sec === i).length; if (have >= r.n) return; const haveA = qs.filter(q => q.sec === i && (q.exams || []).includes(AUTH_TAG)).length, needA = Math.max(0, (r.a | 0) - haveA); const f = mkFill(r.s, r.n - have, bp.level, taken, rnd, bp.pol || "m", needA); f.got.forEach(x => add.push(mkSnap(x, i))); });
   if (!add.length) return mkMsg("Bank me abhi naye sawal nahi mile — pehle sawal jodo.", 0);
   const all = qs.concat(add).sort((a, b) => a.sec - b.sec), tot = bp.sections.reduce((a, r) => a + r.n, 0);
   const gaps = bp.sections.map((r, i) => ({ sec: i, subject: r.s, needed: r.n - all.filter(q => q.sec === i).length })).filter(g => g.needed > 0);
   try { await api("/rest/v1/tests?id=eq." + encodeURIComponent(id), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ questions: all, q_count: all.length, blueprint: { ...bp, gaps } }) });
     mkMsg("✅ " + add.length + " sawal bhare — " + all.length + "/" + tot + (gaps.length ? " (abhi bhi kami)" : " · pura! ab Publish karo"), 1); mkDrafts(); } catch (e) { mkMsg("Refill fail: " + e.message, 0); }
+}
+function mkGapNow() {   /* abhi ki sachchi kami: blueprint - maujooda sawal (refill ke baad bhi sahi) */
+  const rows = [], tot = {};
+  (MK.drafts || []).filter(t => !t.is_active && t.blueprint && t.blueprint.sections).forEach(t => { const lv = t.blueprint.level || [];
+    const lvl = lv[0] >= 50 ? "easy" : lv[2] >= 50 ? "hard" : lv[2] >= 30 ? "hard" : "moderate";
+    t.blueprint.sections.forEach((r, i) => { const n = r.n - (t.questions || []).filter(q => q.sec === i).length; if (n > 0) { rows.push([t.title, lvl, r.s, n]); tot[r.s] = (tot[r.s] || 0) + n; } }); });
+  if (!rows.length) return mkMsg("Koi kami nahi — sab draft poore hain.", 1);
+  rows.push([], ["KUL (subject-wise)", "", "", ""]); Object.keys(tot).forEach(k => rows.push(["", "", k, tot[k]]));
+  tgDl("jakhar_cet_kami_taaza.csv", "\uFEFF" + ["mock,level,subject,needed"].concat(rows.map(r => r.map(csvCell).join(","))).join("\r\n"), "text/csv;charset=utf-8");
+}
+async function mkDelRows(ids) {   /* sirf DRAFT (is_active=false) delete; verify returned rows */
+  const r = await api("/rest/v1/tests?id=in.(" + ids.map(encodeURIComponent).join(",") + ")&is_active=eq.false", { method: "DELETE", headers: { Prefer: "return=representation" } });
+  return Array.isArray(r) ? r.length : 0;
+}
+async function mkDelete(id) {
+  const t = MK.drafts.find(x => String(x.id) === String(id)); if (!t || t.is_active) return;
+  if (!(await askConfirm({ danger: true, title: "Draft delete?", body: t.title + " (" + t.q_count + " sawal) hamesha ke liye hat jayega. Bank ke sawal safe rahenge." }))) return;
+  try { const n = await mkDelRows([id]); mkMsg(n ? "🗑 Delete ho gaya." : "Delete nahi hua (RLS/permission?).", !!n); mkDrafts(); } catch (e) { mkMsg("Delete fail: " + e.message, 0); }
+}
+async function mkDelAll() {
+  const ds = (MK.drafts || []).filter(t => t.blueprint && t.blueprint.sections && !t.is_active); if (!ds.length) return;
+  if (!(await askConfirm({ danger: true, title: "Sab " + ds.length + " DRAFT delete?", body: "Sirf DRAFT hatenge (LIVE tests nahi). Bank ke sawal safe.", requireText: "DELETE" }))) return;
+  try { const n = await mkDelRows(ds.map(t => t.id)); mkMsg("🗑 " + n + "/" + ds.length + " draft delete hue.", n === ds.length); mkDrafts(); } catch (e) { mkMsg("Delete fail: " + e.message, 0); }
+}
+async function mkRefillAll() {   /* sab drafts ek saath; taken = SAB mocks ke qids -> cross-mock repeat nahi */
+  let all;
+  try { all = await api("/rest/v1/tests?select=id,title,is_active,blueprint,questions&kind=eq.mock&order=created_at.asc&limit=500") || []; } catch (e) { return mkMsg("Load fail: " + e.message, 0); }
+  const taken = new Set(); all.forEach(t => (t.questions || []).forEach(q => taken.add(q.qid)));
+  const ds = all.filter(t => !t.is_active && t.blueprint && t.blueprint.sections); let added = 0, done = 0; const left = {};
+  for (const t of ds) {
+    const bp = t.blueprint, qs = t.questions || [], rnd = mulberry((bp.seed | 0) + qs.length + 7), add = [];
+    bp.sections.forEach((r, i) => { const have = qs.filter(q => q.sec === i).length; if (have >= r.n) return; const haveA = qs.filter(q => q.sec === i && (q.exams || []).includes(AUTH_TAG)).length, needA = Math.max(0, (r.a | 0) - haveA); const f = mkFill(r.s, r.n - have, bp.level, taken, rnd, bp.pol || "m", needA); f.got.forEach(x => { taken.add(x.q.id); add.push(mkSnap(x, i)); }); });
+    const mine = qs.concat(add).sort((a, b) => a.sec - b.sec);
+    const gaps = bp.sections.map((r, i) => ({ sec: i, subject: r.s, needed: r.n - mine.filter(q => q.sec === i).length })).filter(g => g.needed > 0);
+    gaps.forEach(g => left[g.subject] = (left[g.subject] || 0) + g.needed);
+    if (add.length) { try { await api("/rest/v1/tests?id=eq." + encodeURIComponent(t.id), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ questions: mine, q_count: mine.length, blueprint: { ...bp, gaps } }) }); added += add.length; } catch (e) { return mkMsg("Fail (" + t.title + "): " + e.message, 0); } }
+    if (!gaps.length) done++;
+  }
+  const lk = Object.keys(left);
+  mkMsg("✅ " + added + " sawal bhare · " + done + "/" + ds.length + " poore." + (lk.length ? " Abhi kami: " + lk.map(k => k + " " + left[k]).join(", ") : " Sab poore — Publish karo!"), 1); mkDrafts();
 }
 async function mkPublish(id) {
   const t = MK.drafts.find(x => String(x.id) === String(id)), tot = t.blueprint.sections.reduce((a, r) => a + r.n, 0);
@@ -4379,7 +4426,7 @@ async function abLoadUsed() {   /* purane tests ke qid + subject-wise existing t
 }
 function abBuild(sub, N, lv, tmin, seed, taken, capPct, noReuse) {
   const rnd = mulberry(seed), fp = new Set(), D = ["easy", "moderate", "hard"], quota = {}, inT = new Set(), cc = {}, pick = [];
-  const pool = ALL.filter(q => q.is_active !== false && q.subject === sub && !isAuthQ(q)).sort((a, b) => String(a.id) < String(b.id) ? -1 : 1)
+  const pool = ALL.filter(q => q.is_active !== false && q.subject === sub && !isAuthQ(q) && !isMockOnly(q)).sort((a, b) => String(a.id) < String(b.id) ? -1 : 1)
     .filter(q => { const k = qFingerprint(q.question, q.options, q.q_type); if (fp.has(k)) return false; fp.add(k); return true; })
     .map(q => ({ q, d: q.difficulty || "moderate", t: q.q_type || detectType(q.question, q.options) }));
   lrm(N, lv).forEach((n, i) => quota[D[i]] = n);
