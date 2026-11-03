@@ -236,6 +236,7 @@ button.bpub{background:#7c3aed;color:#fff}
         <div class="tgh" style="--c:#0d9488">🧪 Tests<small>banao · upload karo</small></div>
         <button data-go="eng" style="background:linear-gradient(135deg,#0891b2,#7c3aed)"><span>🧪</span><b>Test Builder</b><small>Question Bank se Full Subject Test</small></button>
         <button data-go="mkb" style="background:linear-gradient(135deg,#7c3aed,#db2777)"><span>🎯</span><b>Mock Builder</b><small>Sections · Draft · Refill</small></button>
+        <button data-go="abk" style="background:linear-gradient(135deg,#f59e0b,#db2777)"><span>⚡</span><b>Auto Test Maker</b><small>Ek saath 10 test · 4 subject</small></button>
         <button data-go="fst" style="background:#16a34a"><span>📚</span><b>Full Subject Test</b><small id="cFst">CSV upload · subject wise</small></button>
         <button data-go="fmk" style="background:#7c3aed"><span>🎯</span><b>Full Mock Test</b><small id="cFmk">CSV upload · exam wise</small></button>
         <div class="tgh" style="--c:#16a34a">📚 Study content<small>PDF · notes · video</small></div>
@@ -349,6 +350,7 @@ button.bpub{background:#7c3aed;color:#fff}
     <div class="pane hide" data-pane="tag"></div>
     <div class="pane hide" data-pane="eng"></div>
     <div class="pane hide" data-pane="mkb"></div>
+    <div class="pane hide" data-pane="abk"></div>
     <div class="pane hide" data-pane="fst"></div>
     <div class="pane hide" data-pane="fmk"></div>
     <div class="pane hide" data-pane="com"></div>
@@ -2177,9 +2179,20 @@ async function testList(kind) {
   box.innerHTML = S.tests.map(t => `<div class="srow trow ${t.is_active ? "live" : "off"}" style="align-items:center">
     <div style="min-width:0"><div class="q" style="margin:0">${esc(t.title)} ${t.is_active ? '<span class="tag on">LIVE</span>' : '<span class="tag hid">HIDDEN</span>'}</div>
     <div class="meta">${kind === "fst" ? esc(t.subject) : examsOfA(t).map(e => '<span class="tag on" title="' + esc(e) + '">' + esc(exShortA(e)) + '</span>').join(" ")} · ${t.q_count} sawal · ${t.q_count * t.marks_per_q} marks${t.duration_min ? " · " + t.duration_min + " min" : ""}${t.neg_marking == null ? "" : (t.neg_marking > 0 ? " · neg " + t.neg_marking : " · neg nahi")}</div></div>
-    <div class="row" style="flex:none;flex-wrap:nowrap">${kind === "fmk" ? `<button class="sec" onclick="testEditExams('${kind}','${esc(t.id)}')">Exams</button>` : ""}<button class="sec" onclick="testToggle('${kind}','${esc(t.id)}',${t.is_active ? "false" : "true"})">${t.is_active ? "Hide" : "Show"}</button><button class="danger" onclick="testDelete('${kind}','${esc(t.id)}')">Delete</button></div></div>`).join("");
+    <div class="row" style="flex:none;flex-wrap:nowrap">${kind === "fmk" ? `<button class="sec" onclick="testEditExams('${kind}','${esc(t.id)}')">Exams</button>` : ""}<button class="sec" onclick="testEditNeg('${kind}','${esc(t.id)}')">Neg</button><button class="sec" onclick="testToggle('${kind}','${esc(t.id)}',${t.is_active ? "false" : "true"})">${t.is_active ? "Hide" : "Show"}</button><button class="danger" onclick="testDelete('${kind}','${esc(t.id)}')">Delete</button></div></div>`).join("");
 }
 
+async function testEditNeg(kind, id) {
+  const t = (TP[kind].tests || []).find(x => String(x.id) === String(id)); if (!t) return;
+  const v = prompt('"' + t.title + '" — Negative marking (har galat sawal par kitna katega)\n0 = nahi · 0.25 = 1/4 · 0.333333 = 1/3 · 0.5 = 1/2 · ya koi bhi number', t.neg_marking || 0);
+  if (v === null) return; const n = parseFloat(v);
+  if (!(n >= 0)) return alert("Sahi number daalo (0 ya usse zyada).");
+  try {
+    const r = await api("/rest/v1/tests?id=eq." + encodeURIComponent(id), { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ neg_marking: n }) });
+    if (!r || !r.length) throw new Error("Update nahi hua (admin permission check karo).");
+  } catch (e) { alert("Fail: " + e.message); }
+  testList(kind);
+}
 async function testToggle(kind, id, on) {
   try {
     const r = await api("/rest/v1/tests?id=eq." + encodeURIComponent(id), { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ is_active: on }) });
@@ -2286,6 +2299,7 @@ function showTab(n) {
   if (n === "tag") mountTag();
   if (n === "eng") mountEng();
   if (n === "mkb") mountMk();
+  if (n === "abk") mountAbk();
   if (n === "chap") render();
   if (n === "pdf" || n === "yt") mountMatForm(n);
   if (n === "fst" || n === "fmk") mountTestPane(n);
@@ -4298,6 +4312,205 @@ window.loadPapers=async function(){
 };
 window.admPdf={row,enqueue};
 })();
+</script>
+
+<script>
+/* ===== AUTO TEST MAKER — ek saath kai subjects ke kai Full Subject Tests (Question Bank se) =====
+   Existing helpers reuse: ALL, isAuthQ, qFingerprint, detectType, lrm, mulberry, api, T_NEG, T_SUBJECTS */
+const AB = { plan: [], used: null, busy: false };
+const AB_SUBS = ["राजस्थान का इतिहास", "राजस्थान का भूगोल", "राजस्थान की कला एवं संस्कृति", "सामान्य विज्ञान"];
+const AB_LV = { easy: [60, 30, 10], moderate: [30, 50, 20], hard: [10, 40, 50] };
+const AB_TY = [["statement", 15], ["match", 8], ["assertion_reason", 5], ["table", 5]];
+const abMsg = (t, ok) => { const m = $("abMsg"); if (m) { m.style.color = ok ? "var(--ok)" : "var(--bad)"; m.textContent = t; } };
+function mountAbk() {
+  const p = document.querySelector('[data-pane="abk"]');
+  if (!p.dataset.ready) {
+    p.dataset.ready = 1;
+    const allSubs = [...new Set([...T_SUBJECTS, ...ALL.map(q => q.subject)])];
+    p.innerHTML = `<button class="sec bk" data-go="dash">← Dashboard</button>
+    <div class="pghead c-amber"><b>⚡ Auto Test Maker</b><span>Ek baar me kai subjects ke kai Full Subject Tests: Question Bank se auto-select → preview → ek click me publish.</span></div>
+    <div class="sc2 c-blue"><div class="sch"><span class="scn">1</span>Subjects <small>(kitne sawal bank me hain)</small></div><div id="abSubs" class="exbox" style="--c:#1457d9">${allSubs.map(s => `<label class="exopt"><input type="checkbox" value="${esc(s)}" ${AB_SUBS.includes(s) ? "checked" : ""}> ${esc(s)} <span class="meta" data-cnt="${esc(s)}"></span></label>`).join("")}</div></div>
+    <div class="sc2 c-amber"><div class="sch"><span class="scn">2</span>Test ki setting</div>
+      <div class="row"><div style="flex:1;min-width:110px"><div class="lbl" style="margin-top:0">Har subject ke kitne test</div><input id="abT" type="number" min="1" value="10" style="margin:0"></div>
+      <div style="flex:1;min-width:110px"><div class="lbl" style="margin-top:0">Sawal / test</div><input id="abN" type="number" min="1" value="100" style="margin:0"></div>
+      <div style="flex:1;min-width:110px"><div class="lbl" style="margin-top:0">Time (min)</div><input id="abDur" type="number" min="1" value="120" style="margin:0"></div></div>
+      <div class="row" style="margin-top:8px"><div style="flex:1;min-width:110px"><div class="lbl" style="margin-top:0">Marks / sawal</div><input id="abMk" type="number" min="0.25" step="0.25" value="2" style="margin:0"></div>
+      <div style="flex:2;min-width:150px"><div class="lbl" style="margin-top:0">➖ Negative marking <small>(baad me test list me 'Neg' se badal sakte ho)</small></div><select id="abNeg" style="margin:0">${T_NEG.map(o => `<option value="${o[0]}" ${o[0] === "0.333333" ? "selected" : ""}>${esc(o[1])}</option>`).join("")}</select></div></div>
+      <div class="meta" id="abTot" style="margin-top:6px"></div>
+      <div class="lbl">Test ka naam: prefix <small>(Test 1, Test 2 ... aage ka number apne-aap judega)</small></div><input id="abPre" value="Test" style="margin-bottom:0"></div>
+    <div class="sc2 c-violet"><div class="sch"><span class="scn">3</span>Level aur sawal ke prakar</div>
+      <div class="row"><div style="flex:1;min-width:110px"><div class="lbl" style="margin-top:0">Easy tests (shuru me)</div><input id="abE" type="number" min="0" value="2" style="margin:0"></div>
+      <div style="flex:1;min-width:110px"><div class="lbl" style="margin-top:0">Hard tests (aakhir me)</div><input id="abH" type="number" min="0" value="2" style="margin:0"></div></div>
+      <div class="meta" style="margin:6px 0">Baaki sab Moderate. Easy test = 60/30/10 %, Moderate = 30/50/20 %, Hard = 10/40/50 % (Easy/Mod/Hard sawal).</div>
+      <div class="lbl">Har test me minimum type ke sawal <small>(0 = natural)</small></div>
+      <div class="tboxes">${AB_TY.map(([t, v]) => `<label class="tbox t-${t}"><span>${t.replace("_", " ")}</span><input id="abTy_${t}" type="number" min="0" value="${v}"></label>`).join("")}</div></div>
+    <div class="sc2 c-green"><div class="sch"><span class="scn">4</span>Niyam</div>
+      <div class="meta">✔ Naye (kabhi use na hue) sawal pehle liye jayenge. Kami padi to purane tests ke sawal dohraye jayenge (preview me 'dohraye' count dikhega). Authentic Practice ke sawal nahi liye jate. Ek chapter se max 30%.</div>
+      <label style="display:block;margin-top:8px;font-size:14px"><input id="abNR" type="checkbox" style="width:auto;margin:0 6px 0 0"> Purane/doosre test ke sawal DOHRAO MAT (kami rahegi to test me sawal kam honge)</label><label style="display:block;margin-top:8px;font-size:14px"><input id="abAct" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Publish karte hi LIVE (app me dikhe)</label></div>
+    <div class="sc2 c-pink"><div class="sch"><span class="scn">5</span>Banao</div>
+      <div class="row"><button id="abGen" style="flex:1">⚡ 1. Tests generate karo (preview)</button></div>
+      <div id="abMsg" class="msg" style="white-space:pre-wrap"></div><div id="abPrev"></div>
+      <button id="abPub" disabled style="margin-top:8px;background:#16a34a">🚀 2. Sab publish karo</button></div>
+    <div class="pghead c-violet" style="margin-top:18px"><b>🎯 CET (Senior Secondary) — Full Mock × kai</b><span>Asli pattern: 120 sawal · 240 marks (2/sawal) · 2.30 ghanta · 1/3 negative. Subject-wise sawal neeche table me.</span></div>
+    <div class="sc2 c-violet"><div class="sch">📊 Pattern (subject × sawal)</div><div class="meta" id="cetPat"></div></div>
+    <div class="sc2 c-amber"><div class="sch">Mock ki setting</div>
+      <div class="row"><div style="flex:1;min-width:110px"><div class="lbl" style="margin-top:0">Kitne mock</div><input id="cetT" type="number" min="1" value="10" style="margin:0"></div>
+      <div style="flex:1;min-width:110px"><div class="lbl" style="margin-top:0">Easy mock (shuru me)</div><input id="cetE" type="number" min="0" value="2" style="margin:0"></div>
+      <div style="flex:1;min-width:110px"><div class="lbl" style="margin-top:0">Hard mock (aakhir me)</div><input id="cetH" type="number" min="0" value="2" style="margin:0"></div></div>
+      <div class="lbl">Test ka naam (prefix)</div><input id="cetPre" value="CET Full Mock" style="margin-bottom:0">
+      <label style="display:block;margin-top:8px;font-size:14px"><input id="cetNR" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Sawal DOHRAO MAT — jis subject me naye sawal khatam, wahan kami rahegi (mock DRAFT me rahega, baad me naye sawal se bharenge)</label><label style="display:block;margin-top:8px;font-size:14px"><input id="cetAct" type="checkbox" checked style="width:auto;margin:0 6px 0 0"> Jo mock poora bhar jaye use turant LIVE karo (adhoore apne-aap DRAFT rahenge)</label></div>
+    <div class="sc2 c-pink"><div class="row"><button id="cetGen" style="flex:1">⚡ 1. CET mocks generate karo</button></div>
+      <div id="cetMsg" class="msg" style="white-space:pre-wrap"></div><div id="cetPrev"></div>
+      <div class="row" style="margin-top:8px"><button id="cetGap" class="sec" disabled>⬇️ Kami ki table (CSV)</button><button id="cetPub" disabled style="flex:1;background:#16a34a">🚀 2. Save / Publish</button></div></div>`;
+    const tot = () => { const n = +$("abN").value || 0, m = +$("abMk").value || 0; $("abTot").textContent = n + " sawal × " + m + " marks = " + +(n * m).toFixed(2) + " marks"; };
+    ["abN", "abMk"].forEach(i => $(i).oninput = tot); tot();
+    $("abGen").onclick = abGen; $("abPub").onclick = abPublish;
+    $("cetPat").innerHTML = '<div style="overflow-x:auto"><table style="width:100%;font-size:12px;border-collapse:collapse">' + CET_SEC.map(([s, n]) => `<tr><td>${esc(s)}</td><td align=right><b>${n}</b></td></tr>`).join("") + `<tr><td><b>Kul</b></td><td align=right><b>${CET_SEC.reduce((a, r) => a + r[1], 0)}</b></td></tr></table></div>`;
+    $("cetGen").onclick = cetGen; $("cetPub").onclick = cetPublish; $("cetGap").onclick = cetGapCsv;
+  }
+  const cnt = s => ALL.filter(q => q.subject === s && q.is_active !== false && !isAuthQ(q)).length;
+  p.querySelectorAll("[data-cnt]").forEach(e => e.textContent = "· " + cnt(e.dataset.cnt) + " sawal");
+}
+async function abLoadUsed() {   /* purane tests ke qid + subject-wise existing titles */
+  const used = new Set(), titles = {};
+  const t = await api("/rest/v1/tests?select=id,title,subject,kind,questions&kind=eq.subject&order=created_at.desc&limit=500") || [];
+  t.forEach(x => { (x.questions || []).forEach(q => q && q.qid && used.add(q.qid)); (titles[x.subject] = titles[x.subject] || []).push(x.title || ""); });
+  return { used, titles };
+}
+function abBuild(sub, N, lv, tmin, seed, taken, capPct, noReuse) {
+  const rnd = mulberry(seed), fp = new Set(), D = ["easy", "moderate", "hard"], quota = {}, inT = new Set(), cc = {}, pick = [];
+  const pool = ALL.filter(q => q.is_active !== false && q.subject === sub && !isAuthQ(q)).sort((a, b) => String(a.id) < String(b.id) ? -1 : 1)
+    .filter(q => { const k = qFingerprint(q.question, q.options, q.q_type); if (fp.has(k)) return false; fp.add(k); return true; })
+    .map(q => ({ q, d: q.difficulty || "moderate", t: q.q_type || detectType(q.question, q.options) }));
+  lrm(N, lv).forEach((n, i) => quota[D[i]] = n);
+  const cap = Math.max(1, Math.ceil(capPct / 100 * N));
+  let reused = 0;
+  const pull = f => {
+    for (const fresh of (noReuse ? [true] : [true, false])) for (const useCap of [true, false]) {
+      const c = pool.filter(x => !inT.has(x.q.id) && (taken.has(x.q.id) !== fresh) && f(x) && (!useCap || (cc[x.q.chapter] || 0) < cap));
+      if (!c.length) continue;
+      const by = {}; c.forEach(x => (by[x.q.chapter] = by[x.q.chapter] || []).push(x));
+      const ks = Object.keys(by).sort(), w = ks.map(k => by[k].length); let r = rnd() * w.reduce((a, b) => a + b, 0), i = 0;
+      while (i < ks.length - 1 && r >= w[i]) { r -= w[i]; i++; }
+      const a = by[ks[i]], x = a[Math.floor(rnd() * a.length)];
+      inT.add(x.q.id); cc[x.q.chapter] = (cc[x.q.chapter] || 0) + 1; if (!fresh) reused++; pick.push(x); return x;
+    }
+    return null;
+  };
+  const dec = x => { if (quota[x.d] > 0) quota[x.d]--; else { const k = D.slice().sort((a, b) => quota[b] - quota[a])[0]; if (quota[k] > 0) quota[k]--; } };
+  Object.entries(tmin).forEach(([t, m]) => { while (m-- > 0 && pick.length < N) { const x = pull(y => y.t === t && quota[y.d] > 0) || pull(y => y.t === t); if (!x) break; dec(x); } });
+  const near = { easy: ["moderate", "hard"], moderate: ["easy", "hard"], hard: ["moderate", "easy"] }; let left = 0;
+  D.forEach(d => { let n = quota[d]; while (n > 0 && pull(x => x.d === d)) n--; for (const o of near[d]) while (n > 0 && pull(x => x.d === o)) n--; left += n; });
+  while (left > 0 && pull(() => true)) left--;
+  for (let i = pick.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pick[i], pick[j]] = [pick[j], pick[i]]; }
+  pick.forEach(x => taken.add(x.q.id));
+  return { pick, reused, short: N - pick.length };
+}
+async function abGen() {
+  if (!ALL.length) return abMsg("Question bank abhi load nahi hua. Dashboard par jao, load hone do, phir aao.", 0);
+  const subs = [...document.querySelectorAll("#abSubs input:checked")].map(i => i.value);
+  const T = +$("abT").value | 0, N = +$("abN").value | 0, E = +$("abE").value | 0, H = +$("abH").value | 0, pre = $("abPre").value.trim() || "Test";
+  if (!subs.length) return abMsg("Kam se kam ek subject chuno.", 0);
+  if (T < 1 || N < 1) return abMsg("Test aur sawal ki sankhya sahi daalo.", 0);
+  if (E + H > T) return abMsg("Easy + Hard tests kul tests (" + T + ") se zyada nahi ho sakte.", 0);
+  const tmin = {}; AB_TY.forEach(([t]) => { const v = +$("abTy_" + t).value | 0; if (v > 0) tmin[t] = v; });
+  $("abGen").disabled = true; $("abPub").disabled = true; abMsg("Purane tests check ho rahe hain...", 1);
+  let U; try { U = await abLoadUsed(); } catch (e) { $("abGen").disabled = false; return abMsg("Purane tests load nahi hue: " + e.message, 0); }
+  const base = Math.floor(Math.random() * 1e8), levels = Array.from({ length: T }, (_, i) => i < E ? "easy" : i >= T - H ? "hard" : "moderate"), plan = [];
+  subs.forEach((sub, si) => {
+    const taken = new Set(U.used), re = new RegExp("^" + pre.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*(\\d+)\\s*$", "i");
+    let start = 0; (U.titles[sub] || []).forEach(t => { const m = re.exec(t.trim()); if (m) start = Math.max(start, +m[1]); });
+    levels.forEach((lvl, i) => {
+      const r = abBuild(sub, N, AB_LV[lvl], tmin, base + si * 1000 + i, taken, 30, $("abNR").checked);
+      plan.push({ sub, title: pre + " " + (start + i + 1), lvl, ...r, seed: base + si * 1000 + i });
+    });
+  });
+  AB.plan = plan;
+  const ty = p => { const m = {}; p.pick.forEach(x => m[x.t] = (m[x.t] || 0) + 1); return m; };
+  const rows = plan.map(p => { const c = d => p.pick.filter(x => x.d === d).length, t = ty(p);
+    return `<tr><td>${esc(p.sub)}</td><td>${esc(p.title)}</td><td>${p.lvl}</td><td align=center>${p.pick.length}</td><td align=center>${c("easy")}/${c("moderate")}/${c("hard")}</td><td align=center>${t.statement || 0}/${t.match || 0}/${t.assertion_reason || 0}/${t.table || 0}</td><td align=center style="${p.reused ? "color:#d97706" : ""}">${p.reused}</td><td align=center style="${p.short ? "color:var(--bad);font-weight:700" : ""}">${p.short}</td></tr>`; }).join("");
+  $("abPrev").innerHTML = `<div style="overflow-x:auto;margin-top:10px"><table style="width:100%;font-size:12px;border-collapse:collapse"><tr><th align=left>Subject</th><th align=left>Test</th><th>Level</th><th>Sawal</th><th>E/M/H</th><th>St/Mt/AR/Tb</th><th>Dohraye</th><th>Kami</th></tr>${rows}</table></div>`;
+  const short = plan.filter(p => p.short > 0), ok = plan.filter(p => p.pick.length > 0);
+  abMsg(plan.length + " tests tayyar (" + subs.length + " subject × " + T + ")." + (short.length ? "\n⚠ " + short.length + " test me sawal kam hain (Kami column). Wo test jitne sawal mile utne ke hi banenge — bank me aur sawal jodkar dobara bhi bana sakte ho." : "\n✅ Sab tests poore " + N + " sawal ke hain.") + "\nSab theek lage to 'Sab publish karo' dabao. Dobara Generate dabane par naye random sawal aayenge.", !short.length);
+  $("abGen").disabled = false; $("abPub").disabled = !ok.length;
+}
+async function abPublish() {
+  if (AB.busy || !AB.plan.length) return;
+  const list = AB.plan.filter(p => p.pick.length), neg = $("abNeg").value, mk = parseFloat($("abMk").value) || 1, dur = parseInt($("abDur").value, 10) || null, act = $("abAct").checked;
+  if (!confirm(list.length + " tests publish karein?" + (act ? "\n(Turant LIVE honge)" : "\n(Hidden rahenge)"))) return;
+  AB.busy = true; $("abPub").disabled = true; $("abGen").disabled = true;
+  const post = b => api("/rest/v1/tests", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(b) });
+  let done = 0, fail = [];
+  for (const p of list) {
+    abMsg("Publish ho raha hai: " + (done + 1) + "/" + list.length + " — " + p.sub + " · " + p.title, 1);
+    const qs = p.pick.map(x => ({ qid: x.q.id, subject: x.q.subject, chapter: x.q.chapter, question: x.q.question, options: x.q.options, answer: x.q.answer, explanation: x.q.explanation || "", exams: x.q.exams || [], difficulty: x.q.difficulty || null, q_type: x.t }));
+    const body = { kind: "subject", title: p.title, subject: p.sub, exam: null, duration_min: dur, marks_per_q: mk, neg_marking: neg === "" ? 0 : parseFloat(neg), questions: qs, q_count: qs.length, is_active: act };
+    try {
+      let r; try { r = await post({ ...body, blueprint: { auto: 1, level: p.lvl, n: qs.length }, seed: p.seed }); } catch (e1) { if (/blueprint|seed/i.test(e1.message)) r = await post(body); else throw e1; }
+      if (!r || !r.length) throw new Error("save nahi hua (admin permission?)");
+      done++;
+    } catch (e) { fail.push(p.sub + " · " + p.title + ": " + e.message); }
+  }
+  AB.busy = false; $("abGen").disabled = false;
+  if (fail.length) { abMsg("✅ " + done + " publish hue, ❌ " + fail.length + " fail:\n" + fail.slice(0, 8).join("\n") + "\n\nFail wale dobara banane ke liye Generate dabao (jo ban chuke wo skip nahi hote — pehle Full Subject Test list check karo).", 0); }
+  else { abMsg("✅ " + done + " tests publish ho gaye. 'Full Subject Test' me list dekh sakte ho; negative marking 'Neg' button se badal sakte ho.", 1); AB.plan = []; $("abPrev").innerHTML = ""; }
+}
+</script>
+
+<script>
+/* ===== CET (Senior Secondary 2026) — asli pattern se kai Full Mock ===== */
+const CET_EXAM = "Rajasthan CET (Senior Secondary Level)", CET_DUR = 150, CET_MK = 2, CET_NEG = 0.333333;
+const CET_SEC = [["गणित", 10], ["रीजनिंग", 10], ["सामान्य विज्ञान", 19], ["हिंदी", 17], ["इंग्लिश", 15], ["राजस्थान का भूगोल", 6], ["राजस्थान का बजट एवं आर्थिक समीक्षा", 4], ["राजस्थान की समसामयिक घटनाएँ", 5], ["भारत और विश्व के समसामयिक घटनाक्रम", 5], ["कंप्यूटर", 8], ["भारत की राजव्यवस्था एवं संविधान", 5], ["राजस्थान का इतिहास", 5], ["भारत का भूगोल", 4], ["राजस्थान की कला एवं संस्कृति", 4], ["राजस्थान की राजव्यवस्था एवं प्रशासन", 2], ["भारत का इतिहास", 1]];
+const CET = { plan: [], busy: false };
+const cetMsg = (t, ok) => { const m = $("cetMsg"); if (m) { m.style.color = ok ? "var(--ok)" : "var(--bad)"; m.textContent = t; } };
+async function cetGen() {
+  if (!ALL.length) return cetMsg("Question bank abhi load nahi hua. Dashboard par jao, load hone do, phir aao.", 0);
+  const T = +$("cetT").value | 0, E = +$("cetE").value | 0, H = +$("cetH").value | 0, pre = $("cetPre").value.trim() || "CET Full Mock";
+  if (T < 1) return cetMsg("Mock ki sankhya daalo.", 0); if (E + H > T) return cetMsg("Easy + Hard mock kul se zyada nahi ho sakte.", 0);
+  $("cetGen").disabled = true; $("cetPub").disabled = true; $("cetGap").disabled = true; cetMsg("Purane mocks check ho rahe hain...", 1);
+  const taken = new Set(); let start = 0;
+  try {
+    const t = await api("/rest/v1/tests?select=title,questions&kind=eq.mock&order=created_at.desc&limit=300") || [], re = new RegExp("^" + pre.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*(\\d+)\\s*$", "i");
+    t.forEach(x => { (x.questions || []).forEach(q => q && q.qid && taken.add(q.qid)); const m = re.exec((x.title || "").trim()); if (m) start = Math.max(start, +m[1]); });
+  } catch (e) { $("cetGen").disabled = false; return cetMsg("Purane mocks load nahi hue: " + e.message, 0); }
+  const base = Math.floor(Math.random() * 1e8), plan = [];
+  for (let i = 0; i < T; i++) {
+    const lvl = i < E ? "easy" : i >= T - H ? "hard" : "moderate", seed = base + i * 100, qs = [], gaps = []; let reused = 0;
+    CET_SEC.forEach(([s, n], si) => { const r = abBuild(s, n, AB_LV[lvl], {}, seed + si, taken, 100, $("cetNR").checked); r.pick.forEach(x => qs.push(mkSnap(x, si))); reused += r.reused; if (r.short) gaps.push({ sec: si, subject: s, needed: r.short }); });
+    plan.push({ title: pre + " " + (start + i + 1), lvl, qs, gaps, reused, seed, bp: { sections: CET_SEC.map(([s, n]) => ({ s, n, a: 0 })), level: AB_LV[lvl], seed, pol: "m", gaps } });
+  }
+  CET.plan = plan;
+  const tot = CET_SEC.reduce((a, r) => a + r[1], 0), need = {}; plan.forEach(p => p.gaps.forEach(g => need[g.subject] = (need[g.subject] || 0) + g.needed));
+  $("cetPrev").innerHTML = `<div style="overflow-x:auto;margin-top:10px"><table style="width:100%;font-size:12px;border-collapse:collapse"><tr><th align=left>Mock</th><th>Level</th><th>Bhare</th><th>Dohraye</th><th>Status</th></tr>${plan.map(p => `<tr><td>${esc(p.title)}</td><td>${p.lvl}</td><td align=center>${p.qs.length}/${tot}</td><td align=center>${p.reused}</td><td align=center style="color:${p.gaps.length ? "var(--bad)" : "var(--ok)"}">${p.gaps.length ? "DRAFT" : "✓ poora"}</td></tr>`).join("")}</table></div>` +
+    (Object.keys(need).length ? `<div class="meta" style="margin-top:8px"><b>Kami (kul, sab mocks mila kar):</b><br>${Object.entries(need).map(([s, n]) => esc(s) + ": " + n).join("<br>")}</div>` : "");
+  const full = plan.filter(p => !p.gaps.length).length;
+  cetMsg(plan.length + " mocks tayyar: " + full + " poore, " + (plan.length - full) + " me kami." + (Object.keys(need).length ? "\nKami ki table (CSV) download karke mujhe bhejo — baaki sawal bana kar denge, phir Mock Builder ke 'Refill' se bhar jayenge." : "\n✅ Sab poore."), !Object.keys(need).length);
+  $("cetGen").disabled = false; $("cetPub").disabled = !plan.some(p => p.qs.length); $("cetGap").disabled = !Object.keys(need).length;
+}
+function cetGapCsv() {
+  const rows = []; CET.plan.forEach(p => p.gaps.forEach(g => rows.push([p.title, p.lvl, g.subject, g.needed])));
+  tgDl("jakhar_cet_kami.csv", "\uFEFF" + ["mock,level,subject,needed"].concat(rows.map(r => r.map(csvCell).join(","))).join("\r\n"), "text/csv;charset=utf-8");
+}
+async function cetPublish() {
+  if (CET.busy) return; const list = CET.plan.filter(p => p.qs.length); if (!list.length) return;
+  if (!confirm(list.length + " mocks save karein?\nPoore bhare hue: " + (($("cetAct").checked) ? "LIVE" : "hidden") + " · adhoore: DRAFT (app me nahi dikhenge)")) return;
+  CET.busy = true; $("cetPub").disabled = true; $("cetGen").disabled = true;
+  const post = b => api("/rest/v1/tests", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(b) });
+  let done = 0; const fail = [], notes = new Set();
+  for (const p of list) {
+    cetMsg("Save ho raha hai: " + (done + 1) + "/" + list.length + " — " + p.title, 1);
+    const draft = p.gaps.length > 0, b = { kind: "mock", title: p.title, subject: null, exam: CET_EXAM, exams: [CET_EXAM], duration_min: CET_DUR, marks_per_q: CET_MK, neg_marking: CET_NEG, questions: p.qs, q_count: p.qs.length, is_active: !draft && $("cetAct").checked, blueprint: p.bp, seed: p.seed };
+    try {
+      let r; for (let k = 0; k < 3; k++) { try { r = await post(b); break; } catch (e) { const m = e.message;
+        if (/blueprint|seed/i.test(m) && "blueprint" in b) { delete b.blueprint; delete b.seed; notes.add("blueprint/seed column nahi — Refill kaam nahi karega"); if (draft) b.is_active = false; }
+        else if (/exams/i.test(m) && "exams" in b) { delete b.exams; notes.add("'exams' column nahi"); } else throw e; } }
+      if (!r || !r.length) throw new Error("save nahi hua (admin permission?)"); done++;
+    } catch (e) { fail.push(p.title + ": " + e.message); }
+  }
+  CET.busy = false; $("cetGen").disabled = false;
+  cetMsg((fail.length ? "✅ " + done + " save, ❌ " + fail.length + " fail:\n" + fail.slice(0, 6).join("\n") : "✅ " + done + " mocks save ho gaye. Adhoore 'Mock Builder' ke Drafts me dikhenge (Refill / Publish wahin se).") + (notes.size ? "\n⚠ " + [...notes].join("; ") + " — update_setup.sql chalao." : ""), !fail.length);
+  if (!fail.length) { CET.plan = []; $("cetPrev").innerHTML = ""; $("cetGap").disabled = true; }
+}
 </script>
 </body>
 </html>
