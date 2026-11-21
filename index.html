@@ -301,6 +301,9 @@ a.row{text-decoration:none;color:inherit}
 .dark .nbadge.wg{box-shadow:0 0 0 2px rgba(15,23,42,.9),0 2px 7px rgba(0,0,0,.5)}
 @keyframes nbw{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 @media (prefers-reduced-motion:reduce){.nbadge.wg{animation:none}}
+.tiles2 button>.nbw{position:absolute!important;top:8px;right:8px;z-index:3;display:flex;align-items:center;gap:5px}
+.tiles2 .nbw .nbadge{position:static;top:auto;right:auto}
+.nbadge.nbn,.nw.nwn{background:#fff!important;color:#111827!important;box-shadow:0 0 0 2px rgba(0,0,0,.12),0 2px 7px rgba(0,0,0,.3)}
 /* Part 3: Privacy policy lists + copyright footer */
 .pol ul{margin:6px 0 0;padding-left:20px}.pol li{margin:5px 0;font-size:14px;line-height:1.55}.pol p+p{margin-top:8px}.pol p,.pol li{overflow-wrap:anywhere}
 .vtk{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:#1d9bf0;color:#fff;font-size:10px;margin-left:4px;vertical-align:1px}
@@ -1400,7 +1403,7 @@ function view(html,tab,keep,bf){
 function goTab(k){clearInterval(tick);exI=-1;fromSub=false;({home:home,subj:subjSubjects,pyq:pyqSubjects,tests:tests,mist:mistakes,prof:profile})[k]()}
 /* एक पंक्ति (row): o = {c रंग, i आइकन, raw (SVG हो तो), t, s, b बैज, soon, on क्लिक, href, ext} */
 function R(o){
-  const inner=`<span class="ic${o.raw?" raw":""}">${o.i}</span><span class="tx"><b>${o.t}</b><small>${o.s||""}</small></span>${o.n?`<span class="nw"${o.nc?` style="${nbStyle(o.nc)}"`:""}>${o.n}</span>`:""}${o.b?`<span class="bg${o.soon?" soon":""}">${o.b}</span>`:""}<i>›</i>`;
+  const inner=`<span class="ic${o.raw?" raw":""}">${o.i}</span><span class="tx"><b>${o.t}</b><small>${o.s||""}</small></span>${o.n?(m=>`<span class="nw"${o.nc?` style="${nbStyle(o.nc)}"`:""}>${m?"NEW":o.n}</span>${m?`<span class="nw nwn" style="margin-left:4px">${m[1]}+</span>`:""}`)(String(o.n).match(/^NEW (\d+)$/)):""}${o.b?`<span class="bg${o.soon?" soon":""}">${o.b}</span>`:""}<i>›</i>`;
   return o.href?`<a class="row" style="--c:${o.c}" href="${o.href}"${o.ext?' target="_blank" rel="noopener"':""}>${inner}</a>`:`<button class="row" style="--c:${o.c}" onclick="${o.on}">${inner}</button>`;
 }
 function comingSoon(t,bf,tab,sub){
@@ -1827,7 +1830,10 @@ const YT_VIDEOS=[
   {url:"https://youtu.be/K92eBpLem1g?si=zIeXQlXCFrfuE9E_"}
 ];
 const ytId=u=>{const m=String(u).match(/(?:youtu\.be\/|v=|embed\/|shorts\/|live\/)([A-Za-z0-9_-]{11})/);return m?m[1]:""};
-const ytTitles={};
+const ytTitles={};try{Object.assign(ytTitles,JSON.parse(localStorage.getItem("jkx_yt_titles")||"{}"))}catch(e){}
+function ytTitleSet(id,t){ytTitles[id]=t;try{localStorage.setItem("jkx_yt_titles",JSON.stringify(ytTitles))}catch(e){}
+  document.querySelectorAll('.yc[data-vid="'+id+'"] .ycn').forEach(e=>{e.textContent=t});
+  const x=ytList().find(y=>y.id===id);if(x&&x.i===ytCur){const h=document.getElementById("ytvt");if(h)h.textContent=t}}
 /* चैनल का नाम। views / upload time असली डेटा मिलने पर ही दिखते हैं —
    YT_VIDEOS में {url:"...", views:12345, date:"2026-10-01T10:00:00Z"} लिख सकते हैं,
    या नीचे YT_API_KEY भरने पर YouTube Data API से अपने-आप आ जाएँगे। खाली रहने पर ये छिपे रहते हैं। */
@@ -1851,7 +1857,7 @@ function ytAgo(x){
   return "just now";
 }
 const ytMeta=x=>[YT_CHANNEL,ytViews(x),ytAgo(x)].filter(Boolean).join(" · ");
-const ytCard=x=>`<button class="yc" onclick="ytPlay(${x.i})" data-vid="${x.id}"><span class="yct"><img src="https://i.ytimg.com/vi/${x.id}/hqdefault.jpg" alt="" loading="lazy"></span><span class="ycb"><span class="yav">${ytEsc(YT_CHANNEL.charAt(0))}</span><span class="yci"><span class="ycn">${ytEsc(ytTitle(x))}</span><span class="ycm">${ytEsc(ytMeta(x))}</span></span></span></button>`;
+const ytCard=x=>`<button class="yc" onclick="ytPlayId('${x.id}')" data-vid="${x.id}"><span class="yct"><img src="https://i.ytimg.com/vi/${x.id}/hqdefault.jpg" alt="" loading="lazy"></span><span class="ycb"><span class="yav">${ytEsc(YT_CHANNEL.charAt(0))}</span><span class="yci"><span class="ycn">${ytEsc(ytTitle(x))}</span><span class="ycm">${ytEsc(ytMeta(x))}</span></span></span></button>`;
 const YT_BACK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H5M11.5 5.5L5 12l6.5 6.5"/></svg>';
 function ytHeadHTML(){
   if(ytSon)return `<div class="ytH"><button class="yb" id="ytsx" aria-label="वापस">${YT_BACK}</button><div class="yts"><input id="ytsi" type="text" enterkeyhint="search" autocomplete="off" placeholder="Jakhar TV में खोजें" value="${ytEsc(ytSq)}"><button class="yb" id="ytsc" aria-label="साफ़ करें"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>`;
@@ -1879,19 +1885,19 @@ function ytFetch(){
   const all=ytList();
   all.forEach(x=>{
     if(x.v.title||ytTitles[x.id])return;
-    fetch("https://noembed.com/embed?url="+encodeURIComponent("https://www.youtube.com/watch?v="+x.id)).then(r=>r.json()).then(d=>{
-      if(!d||!d.title)return;ytTitles[x.id]=d.title;ytRefresh();
-    }).catch(()=>{});
+    const u="https://www.youtube.com/watch?v="+x.id;
+    const get=b=>fetch(b+encodeURIComponent(u)).then(r=>r.json()).then(d=>{if(!d||!d.title)throw 0;return d.title});
+    get("https://www.youtube.com/oembed?format=json&url=").catch(()=>get("https://noembed.com/embed?url=")).then(t=>ytTitleSet(x.id,t)).catch(()=>{});
   });
   if(YT_API_KEY&&all.length){
     fetch("https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id="+all.map(x=>x.id).join(",")+"&key="+encodeURIComponent(YT_API_KEY)).then(r=>r.json()).then(d=>{
       (d.items||[]).forEach(it=>{ytStats[it.id]={views:it.statistics&&it.statistics.viewCount,date:it.snippet&&it.snippet.publishedAt,title:it.snippet&&it.snippet.title}});
-      ytRefresh();
+      all.forEach(x=>{const t=ytStats[x.id]&&ytStats[x.id].title;if(t)ytTitleSet(x.id,t)});
     }).catch(()=>{});
   }
 }
 function ytVideos(){
-  clearInterval(tick);ytSq="";ytSon=false;
+  clearInterval(tick);ytSq="";ytSon=false;ytCur=-1;{const o=document.getElementById("ytv");if(o)o.remove()}
   view(`<div class="ytHw" id="ytHw">${ytHeadHTML()}</div><main class="ytm"><div class="ytl" id="ytl"></div></main>`,"",false,youtube);
   ytWire();ytRenderList();ytFetch();
 }
@@ -1906,6 +1912,7 @@ function ytWatchFill(){
   if(pw){const a=vpFor(x.id);pw.innerHTML=a.length?`<button class="ytpb" onclick="ytPdfGo()"><span>📄 ${a.length} PDF${a.length>1?"s":""} Attached</span><small>View PDFs ›</small></button>`:""}
 }
 function ytPdfGo(){const x=ytList().find(y=>y.i===ytCur);if(!x)return;const id=x.id;ytClose();studyMat(id)}
+function ytPlayId(id){const x=ytList().find(y=>y.id===id);if(x)ytPlay(x.i)}
 function ytPlay(i){
   const x=ytList().find(y=>y.i===i);if(!x)return;
   let d=document.getElementById("ytv");const fresh=!d;
@@ -2966,7 +2973,7 @@ splash();
     [/^BADEMAIL$/,"सही ईमेल लिखें।"],
     [/^SHORTPW$/,"पासवर्ड कम से कम 8 अक्षर का रखें।"],
     [/^NOREC$/,"लिंक पुराना हो गया है। दोबारा 'पासवर्ड भूल गए' से नया लिंक मँगाएँ।"],
-    [/invalid login credentials/i,"ईमेल या पासवर्ड गलत है।"],
+    [/invalid login credentials/i,"ईमेल या पासवर्ड गलत है। अगर अकाउंट नहीं बनाया तो नीचे \"Create an Account\" दबाएँ, या \"Forgot Password?\" से नया पासवर्ड सेट करें।"],
     [/email not confirmed/i,"पहले अपना ईमेल कन्फ़र्म करें (ईमेल में आया लिंक खोलें)।"],
     [/already registered|already been registered|user already/i,"यह ईमेल पहले से रजिस्टर है। लॉगिन करें।"],
     [/rate limit|too many|security purposes|over_.*limit/i,"बहुत बार कोशिश हो गई। थोड़ी देर बाद फिर कोशिश करें।"],
@@ -2997,8 +3004,10 @@ splash();
     }catch(e){return ""}
   }
   function signIn(email,password){return once("in",async()=>{
-    email=String(email||"").trim();if(!email||!password)throw new Error("EMPTY");
-    save(pack(await call("/auth/v1/token?grant_type=password",{email,password})));return load()})}
+    email=String(email||"").trim().toLowerCase();if(!email||!password)throw new Error("EMPTY");
+    let j;try{j=await call("/auth/v1/token?grant_type=password",{email,password})}
+    catch(e){const tp=String(password).trim();if(/invalid login credentials/i.test(String(e&&e.message))&&tp&&tp!==password)j=await call("/auth/v1/token?grant_type=password",{email,password:tp});else throw e}
+    save(pack(j));return load()})}
   function signUp(email,password){return once("up",async()=>{
     email=String(email||"").trim();if(!email||!password)throw new Error("EMPTY");
     if(!validEmail(email))throw new Error("BADEMAIL");if(String(password).length<8)throw new Error("SHORTPW");
@@ -3333,7 +3342,8 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
   }
   window.loginScreen=function(note,ok){
     shell('<h2>\u0935\u093e\u092a\u0938 \u0938\u094d\u0935\u093e\u0917\u0924 \u0939\u0948 \u{1F44B}</h2><p class="sub">Welcome Back \u2022 \u0905\u092a\u0928\u0947 \u0905\u0915\u093e\u0909\u0902\u091f \u092e\u0947\u0902 \u0932\u0949\u0917\u093f\u0928 \u0915\u0930\u0947\u0902</p>'+
-      '<label for="lgE">Email</label><input id="lgE" type="email" autocomplete="username" inputmode="email" placeholder="Yahan apni email likhein">'+
+      '<div style="background:#e8f1ff;color:#0f3d8f;border:1px solid #b9d3ff;border-radius:10px;padding:10px 12px;margin:0 0 14px;font-size:14px;line-height:1.5">\u{1F195} <b>पहली बार आए हैं?</b> पहले अकाउंट बनाएँ, फिर लॉगिन करें। <button class="lgl" id="lgNew2" type="button">Create an Account</button></div>'+
+      '<label for="lgE">Email</label><input id="lgE" type="email" autocomplete="username" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Yahan apni email likhein">'+
       pw("lgP","Password","current-password")+
       '<div class="lgr"><span></span><button class="lgl" id="lgF" type="button">Forgot Password?</button></div>'+
       '<button class="lgb" id="lgGo" type="button">Login</button><div class="lgm" id="lgM"></div>'+
@@ -3341,11 +3351,11 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
     eye("lgP");if(note)msg(note,ok);
     const go=()=>run($("lgGo"),async()=>{await JKAuth.signIn($("lgE").value,$("lgP").value);home();window.JKSync&&JKSync.run()});
     $("lgGo").onclick=go;$("lgP").onkeydown=e=>{if(e.key==="Enter")go()};
-    $("lgF").onclick=()=>forgotScreen($("lgE").value);$("lgNew").onclick=()=>signupScreen();
+    $("lgF").onclick=()=>forgotScreen($("lgE").value);$("lgNew").onclick=()=>signupScreen();$("lgNew2").onclick=()=>signupScreen();
   };
   window.signupScreen=function(){
     shell('<h2>\u0928\u092f\u093e \u0905\u0915\u093e\u0909\u0902\u091f \u092c\u0928\u093e\u090f\u0902</h2><p class="sub">Create Account \u2022 \u0938\u093f\u0930\u094d\u092b \u0915\u0941\u091b \u0938\u0947\u0915\u0902\u0921 \u0915\u093e \u0915\u093e\u092e</p>'+
-      '<label for="suE">Email</label><input id="suE" type="email" autocomplete="username" inputmode="email" placeholder="Yahan apni email likhein">'+
+      '<label for="suE">Email</label><input id="suE" type="email" autocomplete="username" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Yahan apni email likhein">'+
       pw("suP","Password (\u0915\u092e \u0938\u0947 \u0915\u092e 8 \u0905\u0915\u094d\u0937\u0930)","new-password")+
       pw("suC","Confirm Password","new-password","Password dobara likhein")+
       '<div class="lgw">Dhyan dein: Yahan aapko naya password create karna hai. Apne Gmail ka purana password nahi daalna hai.</div>'+
@@ -3365,7 +3375,7 @@ const JK_LOGIN={bg:"login-background.webp",cardTop:66};
   };
   window.forgotScreen=function(prefill){
     shell('<h2>Password \u092d\u0942\u0932 \u0917\u090f?</h2><p class="sub">\u0905\u092a\u0928\u093e email \u0921\u093e\u0932\u0947\u0902, \u0939\u092e reset \u0932\u093f\u0902\u0915 \u092d\u0947\u091c\u0947\u0902\u0917\u0947\u0964</p>'+
-      '<label for="fpE">Email</label><input id="fpE" type="email" autocomplete="username" inputmode="email" placeholder="Yahan apni email likhein" value="'+esc(prefill||"")+'">'+
+      '<label for="fpE">Email</label><input id="fpE" type="email" autocomplete="username" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Yahan apni email likhein" value="'+esc(prefill||"")+'">'+
       '<button class="lgb" id="fpGo" type="button">Reset Link \u092d\u0947\u091c\u0947\u0902</button><div class="lgm" id="lgM"></div>'+
       '<div style="text-align:center"><button class="lgl" id="fpBack" type="button">\u2190 Login \u092a\u0930 \u0935\u093e\u092a\u0938</button></div>');
     $("fpGo").onclick=()=>run($("fpGo"),async()=>{await JKAuth.resetPassword($("fpE").value);msg("\u0932\u093f\u0902\u0915 \u092d\u0947\u091c \u0926\u093f\u092f\u093e\u0964 Email (\u0914\u0930 Spam) \u0926\u0947\u0916\u0947\u0902\u0964",true)});
@@ -4197,10 +4207,11 @@ const nbStyle=card=>{const c=nbColorFor(card);return"background:"+c[0]+";color:"
 /* square card ke liye NEW badge (static addedOn): nbNew("rank", cardColor) */
 const nbNew=(key,card)=>nbIs(NB_ADDED[key],NB_D.card)?`<span class="nbadge wg" data-nb="1" style="${nbStyle(card)}">NEW</span>`:"";
 const NBCOL={pyq:"linear-gradient(135deg,#0b3a8c,#1457d9)",subject:"#16a34a",mock:"#7c3aed"};
-function nb(cat){const n=newCount(cat);return n?`<span class="nbadge wg" data-nb="1" style="${nbStyle(NBCOL[cat])}">NEW${cat!=="pyq"&&n>1?" · "+n:""}</span>`:""}
+function nb(cat){const n=newCount(cat);if(!n)return"";const st=nbStyle(NBCOL[cat]);
+  return `<span class="nbw" data-nb="1"><span class="nbadge wg" style="${st}">NEW</span>${cat!=="pyq"&&n>1?`<span class="nbadge wg nbn">${n}+</span>`:""}</span>`}
 const nbTxt=cat=>{const n=newCount(cat);return n?"NEW"+(cat!=="pyq"&&n>1?" "+n:""):""};
 function newRefresh(){
-  document.querySelectorAll(".tiles2 button[data-cat]").forEach(b=>{const o=b.querySelector(".nbadge");if(o)o.remove();const h=nb(b.dataset.cat);if(h)b.insertAdjacentHTML("afterbegin",h)});
+  document.querySelectorAll(".tiles2 button[data-cat]").forEach(b=>{b.querySelectorAll("[data-nb]").forEach(o=>o.remove());const h=nb(b.dataset.cat);if(h)b.insertAdjacentHTML("afterbegin",h)});
 }
 function homeExtras(){
   jvBackfill();newRefresh();
